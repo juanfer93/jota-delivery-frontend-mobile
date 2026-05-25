@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import api from '@/core/api/axios.instance';
 import { TokenStorage } from '@/core/storage/token.storage';
-import { User, LoginResponse } from '../domain/auth.types';
+import { User, LoginResponse } from '@/features/auth/domain/auth.types';
 
 interface AuthState {
   user: User | null;
