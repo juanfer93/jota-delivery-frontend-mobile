@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { 
-  View, Text, TextInput, TouchableOpacity, ActivityIndicator, 
-  KeyboardAvoidingView, Platform, Image, SafeAreaView 
+import {
+  View, Text, TextInput, TouchableOpacity, ActivityIndicator,
+  KeyboardAvoidingView, Platform, Image, SafeAreaView
 } from 'react-native';
 import tw from '@/lib/tailwind';
 import { useAuthStore } from '@/features/auth/application/auth.store';
@@ -11,7 +11,7 @@ export default function LoginClient() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [serverError, setServerError] = useState<string | null>(null);
-  
+
   const login = useAuthStore((state) => state.login);
   const isLoading = useAuthStore((state) => state.isLoading);
   const router = useRouter();
@@ -22,13 +22,15 @@ export default function LoginClient() {
       setServerError('Por favor ingresa tu correo y contraseña');
       return;
     }
-    
+
     try {
       await login({ email, password });
       const user = useAuthStore.getState().user;
       const rol = (user?.rol || '').toLowerCase();
-      
-      rol === 'domiciliario' ? router.replace('/(tabs)/delivery') : router.replace('/(tabs)');
+
+      rol === 'domiciliario'
+        ? router.replace('/(app)/delivery')
+        : router.replace('/(app)/');
     } catch (error: any) {
       setServerError(error?.response?.data?.message || 'Credenciales inválidas.');
     }
@@ -36,12 +38,12 @@ export default function LoginClient() {
 
   return (
     <SafeAreaView style={tw`flex-1 bg-jj-beigeSoft`}>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={tw`flex-1`}
       >
         <View style={tw`flex-1 px-6 py-12 justify-center max-w-[800px] w-full self-center`}>
-          
+
           <View style={tw`flex-row items-center justify-between rounded-3xl border border-jj-beige/30 bg-jj-blueDark p-6 shadow-lg mb-10`}>
             <View style={tw`flex-row items-center`}>
               <View style={tw`h-12 w-12 items-center justify-center rounded-full bg-jj-beige overflow-hidden mr-4`}>
@@ -88,7 +90,7 @@ export default function LoginClient() {
               disabled={isLoading}
               style={tw`items-center justify-center rounded-2xl bg-jj-blue px-4 py-3.5 shadow-md ${isLoading ? 'opacity-50' : ''}`}
             >
-              {isLoading ? <ActivityIndicator color="#F5E9C8" /> : 
+              {isLoading ? <ActivityIndicator color="#F5E9C8" /> :
                 <Text style={tw`text-sm font-medium text-jj-beige`}>Ingresar</Text>}
             </TouchableOpacity>
           </View>
