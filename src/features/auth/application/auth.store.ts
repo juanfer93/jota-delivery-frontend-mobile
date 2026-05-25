@@ -1,12 +1,13 @@
 import { create } from 'zustand';
 import api from '@/core/api/axios.instance';
 import { TokenStorage } from '@/core/storage/token.storage';
+import { User, LoginResponse } from '../domain/auth.types';
 
 interface AuthState {
-  user: any | null;
+  user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: any) => Promise<void>;
+  login: (credentials: { email: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
 }
@@ -19,9 +20,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (credentials) => {
     set({ isLoading: true });
     try {
-      const { data } = await api.post('/auth/login', credentials);
+      const { data } = await api.post<LoginResponse>('/auth/login', credentials);
+      
       await TokenStorage.setToken(data.token);
       set({ user: data.user, isAuthenticated: true });
+    } catch (error) {
+      throw error;
     } finally {
       set({ isLoading: false });
     }
