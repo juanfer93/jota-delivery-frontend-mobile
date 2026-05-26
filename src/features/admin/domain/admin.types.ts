@@ -1,36 +1,28 @@
-import { UserRole } from '@/features/auth/domain/auth.types';
+import { User } from '@/features/auth/domain/auth.types';
 
-export interface DomiciliarioItem {
-  id: string;
+export interface Comercio {
+  id: number;
   nombre: string;
-  email: string;
-  rol?: UserRole;
-  saldo?: number;
-  codigo?: string;
+  direccion: string;
+  telefono: string;
+  estado: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface ComercioItem {
-  id: string;
+export interface CreateComercioDTO {
   nombre: string;
-}
-
-export interface CreateAdminDTO {
-  nombre: string;
-  email: string;
-  password?: string;
+  direccion: string;
+  telefono: string;
 }
 
 export interface CreateDomiciliarioDTO {
   nombre: string;
-  email: string;
+  correo: string;
+  telefono: string;
+  vehiculo?: string;
+  placa?: string;
+  password?: string; 
 }
 
-export interface SetPasswordDTO {
-  token: string;
-  password: string;
-}
-
-export interface AdminStatusResponse {
-  hasAdmin: boolean;
-  adminName?: string;
-}
+export type DomiciliarioItem = User;

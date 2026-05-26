@@ -1,17 +1,24 @@
 export enum UserRole {
-    ADMIN = 'admin',
-    DOMICILIARIO = 'domiciliario',
-    COMERCIO = 'comercio',
-  }
-  
-  export interface User {
-    id: string;
-    nombre: string;
-    email: string;
-    rol: UserRole;
-  }
-  
-  export interface LoginResponse {
-    user: User;
-    token: string;
-  }
+  ADMIN = 'ADMIN',
+  DOMICILIARIO = 'DOMICILIARIO',
+}
+
+export interface User {
+  id: number; 
+  nombre: string;
+  correo: string;
+  rol: UserRole;
+  telefono?: string;
+  estado: boolean; 
+  vehiculo?: string;
+  placa?: string;
+  createdAt: string; 
+  updatedAt: string;
+}
+
+export interface AuthState {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
