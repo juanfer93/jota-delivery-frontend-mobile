@@ -1,34 +1,121 @@
-import { Modal, FlatList, TouchableOpacity } from 'react-native';
-import { ThemedView } from '@/components/themed-view';
-import { ThemedText } from '@/components/themed-text';
-import { useDomiciliariosStore } from '@/features/admin/application/domiciliarios.store';
+import React from 'react';
+import { Modal, View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import tw from '@/lib/tailwind';
 
-interface Props {
-  visible: boolean;
-  onClose: () => void;
+export interface DomiciliarioItem {
+  id: string;
+  nombre: string;
+  email: string;
 }
 
-export const DomiciliariosModal = ({ visible, onClose }: Props) => {
-  const { list } = useDomiciliariosStore();
+type DomiciliariosModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  domiciliarios: DomiciliarioItem[];
+  loadingList: boolean;
+  errorList: string | null;
+  onSelectDomiToDelete: (domi: DomiciliarioItem) => void;
+  createDomi: boolean;
+  handleCreateDomi: () => void;
+};
 
+export function DomiciliariosModal({
+  isOpen,
+  onClose,
+  domiciliarios,
+  loadingList,
+  errorList,
+  onSelectDomiToDelete,
+  handleCreateDomi,
+  createDomi,
+}: DomiciliariosModalProps) {
   return (
-    <Modal visible={visible} animationType="slide" transparent>
-      <ThemedView className="flex-1 mt-20 p-5 bg-white rounded-t-3xl">
-        <ThemedText className="text-xl font-bold mb-4">Gestión de Domiciliarios</ThemedText>
-        <FlatList
-          data={list}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <ThemedView className="p-3 border-b border-gray-200">
-              <ThemedText>{item.nombre}</ThemedText>
-              <ThemedText className="text-sm text-gray-500">{item.email}</ThemedText>
-            </ThemedView>
+    <Modal
+      visible={isOpen}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <View style={tw`flex-1 justify-center items-center bg-black/40 px-4`}>
+
+        <View style={tw`bg-jj-beigeSoft rounded-3xl shadow-lg w-full max-w-md p-6 relative`}>
+
+          <TouchableOpacity
+            onPress={onClose}
+            style={tw`absolute right-5 top-5 z-10 p-2`}
+          >
+            <Text style={tw`text-jj-blueDark/70 font-bold text-lg`}>✕</Text>
+          </TouchableOpacity>
+
+          <Text style={tw`text-xl font-semibold text-jj-blueDark`}>
+            Domiciliarios
+          </Text>
+          <Text style={tw`mt-1 text-sm text-jj-blue/80`}>
+            Lista de domiciliarios registrados.
+          </Text>
+
+          <View style={tw`mt-5 max-h-[300px]`}>
+            {loadingList && (
+              <View style={tw`py-4`}>
+                <ActivityIndicator color={tw.color('jj-blue')} />
+                <Text style={tw`text-xs text-jj-blue/80 text-center mt-2`}>Cargando...</Text>
+              </View>
+            )}
+
+            {!loadingList && domiciliarios.length === 0 && (
+              <Text style={tw`text-sm text-jj-blue/80 text-center py-4`}>
+                No hay domiciliarios registrados.
+              </Text>
+            )}
+
+            {!loadingList && domiciliarios.length > 0 && (
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {domiciliarios.map((domi) => (
+                  <View
+                    key={domi.id}
+                    style={tw`flex-row items-center justify-between bg-jj-blueDark rounded-2xl px-4 py-3 mb-3`}
+                  >
+                    <View style={tw`flex-1 mr-2`}>
+                      <Text style={tw`text-sm font-semibold text-jj-beige`} numberOfLines={1}>
+                        {domi.nombre}
+                      </Text>
+                      <Text style={tw`text-xs text-jj-beige/80`} numberOfLines={1}>
+                        {domi.email}
+                      </Text>
+                    </View>
+
+                    <TouchableOpacity
+                      onPress={() => onSelectDomiToDelete(domi)}
+                      style={tw`px-3 py-1.5 rounded-full bg-jj-beige`}
+                    >
+                      <Text style={tw`text-xs text-jj-blueDark font-bold`}>
+                        Eliminar
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+
+          {errorList && (
+            <Text style={tw`mt-3 text-xs text-red-600`}>{errorList}</Text>
           )}
-        />
-        <TouchableOpacity onPress={onClose} className="mt-5 p-3 bg-blue-600 rounded">
-          <ThemedText className="text-white text-center">Cerrar</ThemedText>
-        </TouchableOpacity>
-      </ThemedView>
+
+          <View style={tw`mt-6 flex-row justify-end`}>
+            <TouchableOpacity
+              onPress={handleCreateDomi}
+              disabled={createDomi}
+              style={tw`px-5 py-3 rounded-full bg-jj-blueDark shadow-md ${createDomi ? 'opacity-50' : ''}`}
+            >
+              <Text style={tw`text-jj-beige text-xs font-bold`}>
+                {createDomi ? "Cargando..." : "Crear Domiciliario"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+        </View>
+      </View>
     </Modal>
   );
-};
+}
