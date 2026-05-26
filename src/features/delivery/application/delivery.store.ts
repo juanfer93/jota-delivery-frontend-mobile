@@ -1,13 +1,13 @@
 import { create } from "zustand";
 import { DeliveryRepository } from "@/core/repositories/delivery.repository";
 import { Pedido, PedidoEstado, CreatePedidoDTO } from "@/features/delivery/domain/delivery.types";
-import { DomiciliarioItem, ComercioItem } from "@/features/admin/domain/admin.types";
+import { DomiciliarioItem, Comercio } from "@/features/admin/domain/admin.types";
 
 interface DeliveryState {
   pedidosHoy: Pedido[];
   pedidosHistorial: Pedido[];
   domiciliarios: DomiciliarioItem[];
-  comercios: ComercioItem[];
+  comercios: Comercio[];
   status: 'idle' | 'loading' | 'success' | 'error';
   error: string | null;
 
@@ -50,7 +50,11 @@ export const useDeliveryStore = create<DeliveryState>((set, get) => ({
 
   updateEstado: async (pedidoId, estado) => {
     try {
-      await DeliveryRepository.updatePedidoEstado(pedidoId, { estado });
+
+      await DeliveryRepository.updatePedidoEstado(pedidoId, { 
+        pedidoId: Number(pedidoId), 
+        nuevoEstado: estado         
+      });
       await get().loadData();
     } catch (e) {
       set({ error: "Error actualizando estado" });

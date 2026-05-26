@@ -48,20 +48,19 @@ export default function DeliveryHistoryClient() {
             {pedidosHistorial.map((p) => (
               <View key={p.id} style={tw`bg-white p-5 rounded-3xl border border-jj-blueDark/5 shadow-sm`}>
                 <View style={tw`flex-row justify-between items-center mb-3`}>
-                  <Text style={tw`font-bold text-jj-blue`}>ID: {p.id.slice(-6)}</Text>
+                  <Text style={tw`font-bold text-jj-blue`}>ID: {p.id.toString().slice(-6)}</Text>
 
-                  <View style={tw`px-3 py-1 rounded-full ${p.estado === PedidoEstado.ENTREGADO ? "bg-status-hecho/20" : "bg-status-cancelado/20"
-                    }`}>
-                    <Text style={tw`text-xs font-bold ${p.estado === PedidoEstado.ENTREGADO ? "text-status-hecho" : "text-status-cancelado"
-                      }`}>
+                  <View style={tw`px-3 py-1 rounded-full ${p.estado === PedidoEstado.ENTREGADO ? "bg-status-hecho/20" : "bg-status-cancelado/20"}`}>
+                    <Text style={tw`text-xs font-bold ${p.estado === PedidoEstado.ENTREGADO ? "text-status-hecho" : "text-status-cancelado"}`}>
                       {p.estado}
                     </Text>
                   </View>
                 </View>
 
-                <Text style={tw`text-sm text-jj-blueDark/80`}>Dirección: {p.direccionDestino}</Text>
+                <Text style={tw`text-sm text-jj-blueDark/80`}>Dirección: {p.direccionEntrega}</Text>
+
                 <Text style={tw`text-sm font-bold mt-2 text-jj-blueDark`}>
-                  Valor: {Number(p.valorFinal ?? 0).toLocaleString()}
+                  Valor: {Number(p.valorPedido ?? 0).toLocaleString()}
                 </Text>
               </View>
             ))}

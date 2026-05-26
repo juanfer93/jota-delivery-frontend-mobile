@@ -26,3 +26,13 @@ export interface CreateDomiciliarioDTO {
 }
 
 export type DomiciliarioItem = User;
+
+export interface AdminStatusResponse {
+  active: boolean;
+}
+
+export interface CreateAdminDTO {
+  nombre: string;
+  correo: string;
+  password?: string;
+}

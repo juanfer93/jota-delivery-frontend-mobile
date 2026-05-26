@@ -4,7 +4,7 @@ import {
   CreatePedidoDTO, 
   UpdatePedidoEstadoDTO 
 } from '@/features/delivery/domain/delivery.types';
-import { DomiciliarioItem, ComercioItem } from '@/features/admin/domain/admin.types';
+import { DomiciliarioItem, Comercio } from '@/features/admin/domain/admin.types';
 
 export const DeliveryRepository = {
   getPedidosHoy: async (): Promise<Pedido[]> => {
@@ -31,8 +31,8 @@ export const DeliveryRepository = {
     return data;
   },
 
-  getComercios: async (): Promise<ComercioItem[]> => {
-    const { data } = await api.get<ComercioItem[]>('/comercios');
+  getComercios: async (): Promise<Comercio[]> => {
+    const { data } = await api.get<Comercio[]>('/comercios');
     return data;
   }
 };

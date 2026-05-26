@@ -16,7 +16,13 @@ export const useAdminStore = create<AdminState>((set) => ({
   checkStatus: async () => {
     try {
       const data = await AdminRepository.getAdminStatus();
-      set({ hasAdmin: data.hasAdmin, adminName: data.adminName ?? null });
+
+      const rawData = data as any; 
+      
+      set({ 
+        hasAdmin: rawData.hasAdmin ?? data.active, 
+        adminName: rawData.adminName ?? null 
+      });
     } catch (e) {
       set({ hasAdmin: false });
     }

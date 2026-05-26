@@ -40,6 +40,7 @@ export interface CreatePedidoDTO {
   valorPedido: number;
   valorDomicilio: number;
   comercioId: number;
+  domiciliarioId?: number; 
 }
 
 export interface UpdatePedidoEstadoDTO {

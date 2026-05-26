@@ -22,3 +22,8 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
 }
+
+export interface LoginResponse {
+  token: string;
+  user: User;
+}

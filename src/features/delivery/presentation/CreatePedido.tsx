@@ -11,23 +11,27 @@ export default function CreatePedido() {
   const { assignPedido, status } = useDeliveryStore();
   
   const [form, setForm] = useState({
-    usuarioId: '',
+    domiciliarioId: '', 
     comercioId: '',
-    valorFinal: '',
-    direccionDestino: ''
+    valorPedido: '',    
+    direccionEntrega: '' 
   });
 
   const handleCreate = async () => {
-    if (!form.usuarioId || !form.comercioId || !form.valorFinal || !form.direccionDestino) {
+    if (!form.domiciliarioId || !form.comercioId || !form.valorPedido || !form.direccionEntrega) {
       return;
     }
 
     try {
       await assignPedido({
-        usuarioId: form.usuarioId,
-        comercioId: form.comercioId,
-        valorFinal: Number(form.valorFinal),
-        direccionDestino: form.direccionDestino,
+        domiciliarioId: Number(form.domiciliarioId), 
+        comercioId: Number(form.comercioId),
+        valorPedido: Number(form.valorPedido),
+        valorDomicilio: 0, 
+        clienteNombre: "Cliente", 
+        clienteTelefono: "0000000", 
+        direccionRecogida: "N/A", 
+        direccionEntrega: form.direccionEntrega,
       });
       router.back();
     } catch (e) {
@@ -55,8 +59,9 @@ export default function CreatePedido() {
               <TextInput
                 style={tw`w-full rounded-xl border border-jj-beige px-4 py-3 text-sm text-jj-blueDark bg-white`}
                 placeholder="Ingresa ID"
-                value={form.usuarioId}
-                onChangeText={(text) => setForm({...form, usuarioId: text})}
+                value={form.domiciliarioId}
+                onChangeText={(text) => setForm({...form, domiciliarioId: text})}
+                keyboardType="numeric"
               />
             </View>
 
@@ -67,16 +72,17 @@ export default function CreatePedido() {
                 placeholder="Ingresa ID"
                 value={form.comercioId}
                 onChangeText={(text) => setForm({...form, comercioId: text})}
+                keyboardType="numeric"
               />
             </View>
 
             <View style={tw`mb-5`}>
-              <Text style={tw`text-sm font-medium text-jj-blueDark mb-2`}>Dirección Destino</Text>
+              <Text style={tw`text-sm font-medium text-jj-blueDark mb-2`}>Dirección Entrega</Text>
               <TextInput
                 style={tw`w-full rounded-xl border border-jj-beige px-4 py-3 text-sm text-jj-blueDark bg-white`}
                 placeholder="Carrera 00 #00-00"
-                value={form.direccionDestino}
-                onChangeText={(text) => setForm({...form, direccionDestino: text})}
+                value={form.direccionEntrega}
+                onChangeText={(text) => setForm({...form, direccionEntrega: text})}
               />
             </View>
 
@@ -85,8 +91,8 @@ export default function CreatePedido() {
               <TextInput
                 style={tw`w-full rounded-xl border border-jj-beige px-4 py-3 text-sm text-jj-blueDark bg-white`}
                 placeholder="0"
-                value={form.valorFinal}
-                onChangeText={(text) => setForm({...form, valorFinal: text})}
+                value={form.valorPedido}
+                onChangeText={(text) => setForm({...form, valorPedido: text})}
                 keyboardType="numeric"
               />
             </View>

@@ -17,16 +17,16 @@ export default function Dashboard() {
   return (
     <ThemedView className="flex-1 p-4">
       <ThemedView className="flex-row justify-between mb-6">
-        <TouchableOpacity 
+        <TouchableOpacity
           className="bg-blue-600 p-3 rounded-lg flex-1 mr-2"
           onPress={() => setIsDomiModalVisible(true)}
         >
           <ThemedText className="text-white text-center font-bold">Domiciliarios</ThemedText>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           className="bg-green-600 p-3 rounded-lg flex-1"
-          // onPress={() => setIsComercioModalVisible(true)}
+        // onPress={() => setIsComercioModalVisible(true)}
         >
           <ThemedText className="text-white text-center font-bold">Comercios</ThemedText>
         </TouchableOpacity>
@@ -39,22 +39,28 @@ export default function Dashboard() {
       ) : (
         <FlatList
           data={pedidosHoy}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity
               className="p-4 mb-2 bg-gray-100 rounded-lg"
               onPress={() => router.push(`/delivery/${item.id}` as any)}
             >
-              <ThemedText>Dirección: {item.direccionDestino}</ThemedText>
+              <ThemedText>Dirección: {item.direccionEntrega}</ThemedText>
               <ThemedText>Estado: {item.estado}</ThemedText>
             </TouchableOpacity>
           )}
         />
       )}
 
-      <DomiciliariosModal 
-        visible={isDomiModalVisible} 
-        onClose={() => setIsDomiModalVisible(false)} 
+      <DomiciliariosModal
+        isOpen={isDomiModalVisible}
+        onClose={() => setIsDomiModalVisible(false)}
+        domiciliarios={[]}
+        loadingList={false}
+        errorList={null}
+        onSelectDomiToDelete={(domi) => console.log(domi)}
+        createDomi={false}
+        handleCreateDomi={() => console.log("Crear")}
       />
     </ThemedView>
   );
