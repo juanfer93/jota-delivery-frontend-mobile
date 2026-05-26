@@ -7,6 +7,11 @@
     "icon": "./assets/images/icon.png",
     "scheme": "jotadeliverymobile",
     "userInterfaceStyle": "automatic",
+    "extra": {
+      "eas": {
+        "projectId": "57d42d38-7913-4395-926e-44c211246990"
+      }
+    },
     "ios": {
       "icon": "./assets/expo.icon"
     },

@@ -1,13 +1,20 @@
+import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import tw from '@/lib/tailwind'; 
+import tw from '@/lib/tailwind';
+import { registerForPushNotificationsAsync } from '@/features/notifications/notification.service';
 
 export default function AppLayout() {
+
+  useEffect(() => {
+    registerForPushNotificationsAsync();
+  }, []);
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: tw.color('jj-blue'), 
+        tabBarActiveTintColor: tw.color('jj-blue'),
         tabBarInactiveTintColor: tw.color('gray-400'),
         tabBarLabelStyle: tw`font-bold text-xs pb-1`,
         tabBarStyle: tw`bg-white border-t border-gray-200 h-16 pt-2`,
