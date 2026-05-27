@@ -59,5 +59,8 @@
     "lint": "expo lint",
     "test": "jest"
   },
+  "overrides": {
+    "react-test-renderer": "19.2.3"
+  },
   "private": true
 }
