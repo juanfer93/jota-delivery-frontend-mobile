@@ -40,6 +40,7 @@ export default function CreateAdminClient() {
       };
 
       await createFirstAdmin(payload);
+      console.log("Creación exitosa, intentando navegar...");
       router.replace('/login');
     } catch (err) {
       console.error("ERROR DETECTADO EN API:", err);

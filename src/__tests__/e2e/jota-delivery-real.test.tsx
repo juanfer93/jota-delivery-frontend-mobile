@@ -1,17 +1,17 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react-native';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import CreateAdminClient from '@/features/admin/presentation/CreateAdminClient';
 import LoginClient from '@/features/auth/presentation/LoginClient';
 import Dashboard from '@/features/dashboard/presentation/Dashboard';
 import { TokenStorage } from '@/core/storage/token.storage';
 
-// 1. Mock de Router: Solo capturamos la navegación
+jest.setTimeout(90000); // 90s para el test completo
+
 const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
 
-// 2. Mock de SafeArea: Necesario para el renderizado
 jest.mock('react-native-safe-area-context', () => {
   const React = require('react');
   return {
@@ -24,52 +24,47 @@ jest.mock('react-native-safe-area-context', () => {
 describe('E2E REAL: Flujo completo Backend', () => {
   
   beforeAll(async () => {
-    // Limpiamos token local antes de empezar
     await TokenStorage.removeToken();
   });
 
-  test('Debe crear admin, loguear y entrar al dashboard (Backend Real)', async () => {
-    
+  test('Debe crear admin, loguear y entrar al dashboard', async () => {
     // --- PASO 1: Crear Admin ---
     render(<CreateAdminClient />);
-    await screen.findByText('Crear administrador inicial', { exact: false }, { timeout: 15000 });
+    await screen.findByText('Crear administrador inicial', { exact: false });
     
     fireEvent.changeText(screen.getByTestId('admin-nombre-input'), 'Admin Real Test');
     fireEvent.changeText(screen.getByTestId('admin-email-input'), 'real-test@jota.com');
     fireEvent.changeText(screen.getByTestId('admin-password-input'), '12345678');
     fireEvent.changeText(screen.getByTestId('admin-confirmPassword-input'), '12345678');
     
-    // Esta llamada irá a tu backend real en 192.168.1.10:3000
-    await act(async () => {
-      fireEvent.press(screen.getByTestId('create-admin-button'));
-    });
-    
-    // Verificamos que navegó al login tras creación exitosa
-    expect(mockReplace).toHaveBeenCalledWith('/login');
+    fireEvent.press(screen.getByTestId('create-admin-button'));
+
+    // Esperamos a que la API responda y ocurra la navegación
+    await waitFor(() => {
+        expect(mockReplace).toHaveBeenCalledWith('/login');
+    }, { timeout: 20000 });
 
     // --- PASO 2: Login ---
     jest.clearAllMocks();
     render(<LoginClient />);
     
-    await screen.findByText('Iniciar sesión', { exact: false }, { timeout: 15000 });
+    await screen.findByText('Iniciar sesión', { exact: false });
     
     fireEvent.changeText(screen.getByTestId('email-input'), 'real-test@jota.com');
     fireEvent.changeText(screen.getByTestId('password-input'), '12345678');
     
-    // Esta llamada hará el login real contra el backend
-    await act(async () => {
-      fireEvent.press(screen.getByTestId('login-button'));
-    });
+    fireEvent.press(screen.getByTestId('login-button'));
     
-    // Verificamos que el router intentó cambiar de ruta tras login
-    expect(mockReplace).toHaveBeenCalled(); 
+    // Esperamos a que el login procese y navegue
+    await waitFor(() => {
+        expect(mockReplace).toHaveBeenCalled(); // O el nombre de tu ruta de dashboard
+    }, { timeout: 20000 });
 
     // --- PASO 3: Dashboard ---
-    // Renderizamos Dashboard, este hará una petición GET real al cargar
     render(<Dashboard />);
     
-    // Buscamos el elemento del Dashboard real
+    // Aquí el dashboard hará su petición GET. Necesitamos esperar a que los datos carguen.
     const btnCrear = await screen.findByTestId('btn-nav-crear-domiciliario', {}, { timeout: 20000 });
     expect(btnCrear).toBeTruthy();
-  }, 90000); 
+  }); 
 });
