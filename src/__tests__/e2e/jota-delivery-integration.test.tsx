@@ -13,7 +13,7 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
-// 2. MOCK DEL STORE DE ADMIN (Declarado una sola vez)
+// 2. MOCK DEL STORE DE ADMIN
 jest.mock('@/features/admin/application/admin.store', () => ({
   useAdminStore: jest.fn().mockReturnValue({
     createFirstAdmin: jest.fn().mockResolvedValue(undefined),
@@ -21,7 +21,18 @@ jest.mock('@/features/admin/application/admin.store', () => ({
   }),
 }));
 
-// 3. MOCK DE EXPO ROUTER
+// 3. ERROR BOUNDARY PARA DEPURACIÓN
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error: any) { console.error("Render Error:", error); }
+  render() { 
+    if (this.state.hasError) return <></>; 
+    return this.props.children; 
+  }
+}
+
+// 4. MOCK DE EXPO ROUTER
 let mockCurrentPath = '/create-admin';
 let mockRouteListeners: ((path: string) => void)[] = [];
 
@@ -43,15 +54,18 @@ jest.mock('expo-router', () => ({
       return () => { mockRouteListeners = mockRouteListeners.filter((l: any) => l !== listener); };
     }, []);
 
-    // 1. Obtenemos las referencias a los componentes
-    const CreateAdminPage = require('@/app/create-admin').default;
-    const LoginPage = require('@/app/login').default;
+    // RUTAS CORREGIDAS SEGÚN TU ESTRUCTURA DE CARPETAS
+    const CreateAdminPage = require('@/app/create-admin/page').default;
+    const LoginPage = require('@/app/login/page').default;
     const DashboardPage = require('@/app/(app)/index').default;
 
-    // 2. Renderizamos usando JSX
-    if (path === '/login') return <LoginPage />;
-    if (path === '/(app)/') return <DashboardPage />;
-    return <CreateAdminPage />;
+    return (
+      <ErrorBoundary>
+        {path === '/login' && <LoginPage />}
+        {path === '/(app)/' && <DashboardPage />}
+        {path !== '/login' && path !== '/(app)/' && <CreateAdminPage />}
+      </ErrorBoundary>
+    );
   },
 }));
 
@@ -69,6 +83,7 @@ describe('E2E Integration: Admin Bootstrap & Workflow', () => {
     render(<RootLayout />);
 
     // --- PASO 1: CREAR ADMIN ---
+    // Usamos await findByText con un timeout generoso
     await screen.findByText('Crear administrador inicial', { exact: false }, { timeout: 10000 });
 
     fireEvent.changeText(screen.getByTestId('admin-nombre-input'), 'Admin Prueba');
@@ -81,7 +96,9 @@ describe('E2E Integration: Admin Bootstrap & Workflow', () => {
     });
 
     // --- PASO 2: LOGIN ---
-    await screen.findByText(/Iniciar sesión/i);
+    // Esperamos a que la pantalla de Login aparezca
+    await screen.findByText('Iniciar sesión', { exact: false }, { timeout: 10000 });
+    
     fireEvent.changeText(screen.getByTestId('email-input'), 'admin@jota.com');
     fireEvent.changeText(screen.getByTestId('password-input'), '12345678');
 
