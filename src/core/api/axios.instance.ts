@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios';
+import fetchAdapter from 'axios-fetch-adapter';
 import { TokenStorage } from '@/core/storage/token.storage';
 import { ApiResponse, ApiListResponse } from '@/core/domain/api.types';
 
@@ -11,7 +12,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  adapter: 'xhr',
+  adapter: fetchAdapter,
 });
 
 api.interceptors.request.use(async (config) => {
