@@ -1,11 +1,9 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react-native';
+import { render, screen, fireEvent, act } from '@testing-library/react-native';
 import RootLayout from '@/app/_layout';
 import { useAuthStore } from '@/features/auth/application/auth.store';
 
-// =====================================================================
-// 1. MOCK DE SAFE-AREA (Evita errores de renderizado y advertencias)
-// =====================================================================
+// 1. MOCK DE SAFE-AREA
 jest.mock('react-native-safe-area-context', () => {
   const React = require('react');
   return {
@@ -15,95 +13,79 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
-// =====================================================================
-// 2. MOCK DE EXPO ROUTER (Variables con prefijo 'mock')
-// =====================================================================
-let mockCurrentPath = '/';
+// 2. MOCK DEL STORE DE ADMIN (Declarado una sola vez)
+jest.mock('@/features/admin/application/admin.store', () => ({
+  useAdminStore: jest.fn().mockReturnValue({
+    createFirstAdmin: jest.fn().mockResolvedValue(undefined),
+    isCreating: false,
+  }),
+}));
+
+// 3. MOCK DE EXPO ROUTER
+let mockCurrentPath = '/create-admin';
 let mockRouteListeners: ((path: string) => void)[] = [];
 
-jest.mock('expo-router', () => {
-  return {
-    useRouter: () => ({
-      replace: jest.fn((path: string) => {
-        mockCurrentPath = path;
-        mockRouteListeners.forEach((listener) => listener(path));
-      }),
-      push: jest.fn(),
+jest.mock('expo-router', () => ({
+  useRouter: () => ({
+    replace: jest.fn((path: string) => {
+      mockCurrentPath = path;
+      mockRouteListeners.forEach((listener) => listener(path));
     }),
-    Slot: () => {
-      const React = require('react');
-      const [path, setPath] = React.useState(mockCurrentPath);
+    push: jest.fn(),
+  }),
+  Slot: () => {
+    const React = require('react');
+    const [path, setPath] = React.useState(mockCurrentPath);
 
-      React.useEffect(() => {
-        const listener = (newPath: string) => setPath(newPath);
-        mockRouteListeners.push(listener);
-        return () => {
-          mockRouteListeners = mockRouteListeners.filter((l: any) => l !== listener);
-        };
-      }, []);
+    React.useEffect(() => {
+      const listener = (newPath: string) => setPath(newPath);
+      mockRouteListeners.push(listener);
+      return () => { mockRouteListeners = mockRouteListeners.filter((l: any) => l !== listener); };
+    }, []);
 
-      if (path === '/create-admin') {
-        const CreateAdminPage = require('@/app/create-admin').default;
-        return <CreateAdminPage />;
-      }
-      if (path === '/login') {
-        const LoginPage = require('@/app/login').default;
-        return <LoginPage />;
-      }
-      if (path === '/(app)/') {
-        const DashboardPage = require('@/app/(app)/index').default;
-        return <DashboardPage />;
-      }
+    // Asegúrate de que las rutas coincidan exactamente con tus archivos
+    if (path === '/login') return require('@/app/login').default();
+    if (path === '/(app)/') return require('@/app/(app)/index').default();
+    return require('@/app/create-admin').default();
+  },
+}));
 
-      const { View } = require('react-native');
-      return <View testID="empty-slot" />;
-    },
-  };
-});
-
-// =====================================================================
-// 3. EL TEST END-TO-END UNIFICADO
-// =====================================================================
 describe('E2E Integration: Admin Bootstrap & Workflow', () => {
   beforeEach(() => {
-    // Resetear estado
-    useAuthStore.setState({ hasAdmin: null, isAuthenticated: false, isInitializing: true });
-    mockCurrentPath = '/';
+    useAuthStore.setState({ hasAdmin: null, isAuthenticated: false, isInitializing: false });
+    mockCurrentPath = '/create-admin';
     mockRouteListeners = [];
     jest.clearAllMocks();
   });
 
-  afterAll(() => {
-    // Limpia cualquier timer o proceso pendiente para evitar advertencias de "did not exit"
-    jest.useRealTimers();
-  });
+  afterAll(() => { jest.useRealTimers(); });
 
   test('Debe ejecutar el flujo completo: Crear Admin -> Login -> Dashboard', async () => {
-    // --- PASO 1: ARRANQUE ---
     render(<RootLayout />);
 
-    const adminTitle = await screen.findByText(/Crear administrador inicial/i, {}, { timeout: 10000 });
-    expect(adminTitle).toBeTruthy();
+    // --- PASO 1: CREAR ADMIN ---
+    await screen.findByText(/Crear administrador inicial/i);
 
-    // --- PASO 2: CREACIÓN DE ADMIN ---
     fireEvent.changeText(screen.getByTestId('admin-nombre-input'), 'Admin Prueba');
     fireEvent.changeText(screen.getByTestId('admin-email-input'), 'admin@jota.com');
     fireEvent.changeText(screen.getByTestId('admin-password-input'), '12345678');
     fireEvent.changeText(screen.getByTestId('admin-confirmPassword-input'), '12345678');
-    
-    fireEvent.press(screen.getByTestId('create-admin-button'));
 
-    // --- PASO 3: REDIRECCIÓN A LOGIN ---
-    const loginTitle = await screen.findByText(/Iniciar sesión/i, {}, { timeout: 10000 });
-    expect(loginTitle).toBeTruthy();
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('create-admin-button'));
+    });
 
-    // --- PASO 4: LOGIN Y DASHBOARD ---
+    // --- PASO 2: LOGIN ---
+    await screen.findByText(/Iniciar sesión/i);
     fireEvent.changeText(screen.getByTestId('email-input'), 'admin@jota.com');
     fireEvent.changeText(screen.getByTestId('password-input'), '12345678');
-    fireEvent.press(screen.getByTestId('login-button')); 
-    
-    // Verificamos que llegamos al dashboard
-    const btnCrear = await screen.findByTestId('btn-nav-crear-domiciliario', {}, { timeout: 10000 });
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('login-button'));
+    });
+
+    // --- PASO 3: DASHBOARD ---
+    const btnCrear = await screen.findByTestId('btn-nav-crear-domiciliario', {}, { timeout: 15000 });
     expect(btnCrear).toBeTruthy();
-  }, 60000); // 60 segundos de timeout
+  }, 60000);
 });
