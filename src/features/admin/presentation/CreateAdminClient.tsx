@@ -4,7 +4,8 @@ import { useRouter } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useAdminStore } from '@/features/admin/application/admin.store';
 import { createAdminSchema, CreateAdminForm } from '@/features/admin/domain/admin.schema';
-import { CreateAdminDTO } from '../domain/admin.types';
+import { CreateAdminDTO } from '@/features/admin/domain/admin.types';
+import { isAxiosError } from 'axios';
 
 export default function CreateAdminClient() {
   const router = useRouter();
@@ -42,9 +43,14 @@ export default function CreateAdminClient() {
       await createFirstAdmin(payload);
       console.log("Creación exitosa, intentando navegar...");
       router.replace('/login');
-    } catch (err) {
-      console.error("ERROR DETECTADO EN API:", err);
-      setServerError('No se pudo crear el administrador. Intenta de nuevo.');
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        console.error("ERROR DETECTADO EN API:", err.response?.data);
+        setServerError('No se pudo crear el administrador.');
+      } else {
+        console.error("Error desconocido:", err);
+        setServerError('Error inesperado.');
+      }
     }
 };
 

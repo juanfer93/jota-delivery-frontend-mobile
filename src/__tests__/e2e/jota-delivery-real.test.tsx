@@ -54,6 +54,8 @@ describe('E2E REAL: Flujo completo Backend', () => {
     fireEvent.changeText(screen.getByTestId('password-input'), '12345678');
     
     fireEvent.press(screen.getByTestId('login-button'));
+
+    console.log("¿Cuántas veces fue llamado el router?", mockReplace.mock.calls.length);
     
     // Esperamos a que el login procese y navegue
     await waitFor(() => {
