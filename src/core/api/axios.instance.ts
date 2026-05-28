@@ -1,10 +1,11 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import fetchAdapter from 'axios-fetch-adapter';
 import { TokenStorage } from '@/core/storage/token.storage';
 import { ApiResponse, ApiListResponse } from '@/core/domain/api.types';
 
-// const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.10:3000/api/v1';
-const baseUrl = 'http://192.168.1.10:3000/api/v1';
+ const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.10:3000/api/v1';
+// const baseUrl = 'http://192.168.1.10:3000/api/v1';
+
+const isNode = typeof window === 'undefined';
 
 const api = axios.create({
   baseURL: baseUrl,
@@ -12,7 +13,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  adapter: fetchAdapter,
+  adapter: isNode ? 'http' : undefined,
 });
 
 api.interceptors.request.use(async (config) => {
