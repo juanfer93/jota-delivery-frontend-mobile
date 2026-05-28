@@ -17,6 +17,7 @@ export default function CreateAdminClient() {
     const result = createAdminSchema.safeParse(form);
 
     if (!result.success) {
+      console.log("Error de validación:", result.error); 
       const fieldErrors: any = {};
       result.error.issues.forEach(issue => fieldErrors[issue.path[0]] = issue.message);
       setErrors(fieldErrors);
@@ -24,9 +25,12 @@ export default function CreateAdminClient() {
     }
 
     try {
+      console.log("Llamando a API con:", result.data); 
       await createFirstAdmin(result.data);
+      console.log("API llamada con éxito, navegando..."); 
       router.replace('/login');
     } catch (err) {
+      console.error("ERROR DETECTADO EN API:", err); 
       setServerError('No se pudo crear el administrador. Intenta de nuevo.');
     }
   };
