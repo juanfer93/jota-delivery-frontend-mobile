@@ -5,7 +5,6 @@ import { ApiResponse, ApiListResponse } from '@/core/domain/api.types';
  const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.10:3000/api/v1';
 // const baseUrl = 'http://192.168.1.10:3000/api/v1';
 
-
 const api = axios.create({
   baseURL: baseUrl,
   timeout: 15000,
