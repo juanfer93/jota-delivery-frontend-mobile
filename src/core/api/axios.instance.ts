@@ -1,9 +1,12 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import { TokenStorage } from '@/core/storage/token.storage';
 import { ApiResponse, ApiListResponse } from '@/core/domain/api.types';
 
+const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.10:3000/api/v1';
+
+
 const api = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL,
+  baseURL: baseUrl,
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',

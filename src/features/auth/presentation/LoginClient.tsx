@@ -60,6 +60,7 @@ export default function LoginClient() {
             <View style={tw`mb-6`}>
               <Text style={tw`text-sm font-medium text-jj-blueDark mb-2`}>Correo</Text>
               <TextInput
+                testID="email-input"
                 style={tw`w-full rounded-xl border border-jj-beige px-4 py-3 text-sm text-jj-blueDark bg-white`}
                 placeholder="Ingresa tu correo"
                 value={email}
@@ -71,6 +72,7 @@ export default function LoginClient() {
             <View style={tw`mb-6`}>
               <Text style={tw`text-sm font-medium text-jj-blueDark mb-2`}>Contraseña</Text>
               <TextInput
+                testID="password-input"
                 style={tw`w-full rounded-xl border border-jj-beige px-4 py-3 text-sm text-jj-blueDark bg-white`}
                 placeholder="Ingresa tu contraseña"
                 value={password}
@@ -80,12 +82,13 @@ export default function LoginClient() {
             </View>
 
             {serverError && (
-              <View style={tw`bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-6`}>
+              <View testID="server-error" style={tw`bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-6`}>
                 <Text style={tw`text-xs text-red-600`}>{serverError}</Text>
               </View>
             )}
 
             <TouchableOpacity
+              testID="login-button"
               onPress={handleLogin}
               disabled={isLoading}
               style={tw`items-center justify-center rounded-2xl bg-jj-blue px-4 py-3.5 shadow-md ${isLoading ? 'opacity-50' : ''}`}
