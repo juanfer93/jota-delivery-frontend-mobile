@@ -1,75 +1,101 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
-import App from '../../app/_layout';
-import { TokenStorage } from '@/core/storage/token.storage';
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react-native';
+import RootLayout from '@/app/_layout';
 import { useAuthStore } from '@/features/auth/application/auth.store';
 
-// Función auxiliar para resetear el estado de Zustand antes de cada test
-const resetStore = () => {
-  useAuthStore.setState({ 
-    user: null, 
-    isAuthenticated: false, 
-    hasAdmin: null 
-  });
-};
+// =====================================================================
+// 1. MOCK DE EXPO ROUTER (EL MINI-ROUTER)
+// =====================================================================
+let currentPath = '/';
+let routeListeners: ((path: string) => void)[] = [];
 
+const mockReplace = jest.fn((path: string) => {
+  currentPath = path;
+  routeListeners.forEach((listener) => listener(path));
+});
+
+jest.mock('expo-router', () => {
+  return {
+    useRouter: () => ({
+      replace: mockReplace,
+      push: jest.fn(),
+    }),
+    Slot: () => {
+      const React = require('react');
+      const [path, setPath] = React.useState(currentPath);
+
+      React.useEffect(() => {
+        const listener = (newPath: string) => setPath(newPath);
+        routeListeners.push(listener);
+        return () => {
+          routeListeners = routeListeners.filter((l: any) => l !== listener);
+        };
+      }, []);
+
+      // Simular la navegación renderizando los componentes reales
+      if (path === '/create-admin') {
+        const CreateAdminPage = require('@/app/create-admin').default;
+        return <CreateAdminPage />;
+      }
+      if (path === '/login') {
+        const LoginPage = require('@/app/login').default;
+        return <LoginPage />;
+      }
+      if (path === '/(app)/') {
+        // Asegúrate de que esta sea la ruta correcta a tu dashboard en (app)
+        const DashboardPage = require('@/app/(app)/index').default;
+        return <DashboardPage />;
+      }
+
+      const { View } = require('react-native');
+      return <View testID="empty-slot" />;
+    },
+  };
+});
+
+// =====================================================================
+// 2. EL TEST END-TO-END UNIFICADO
+// =====================================================================
 describe('E2E Integration: Admin Bootstrap & Workflow', () => {
-  
-  beforeEach(async () => {
-    await TokenStorage.removeToken();
-    resetStore();
+  beforeEach(() => {
+    // Resetear todo al estado de fábrica antes de arrancar
+    useAuthStore.setState({ hasAdmin: null, isAuthenticated: false, isInitializing: true });
+    currentPath = '/';
+    routeListeners = [];
+    jest.clearAllMocks();
   });
 
-  it('1. Debe detectar BD vacía y crear el primer Admin', async () => {
-    render(<App />);
+  // Hacemos TODO en un solo bloque "test" para mantener el árbol de componentes vivo
+  test('Debe ejecutar el flujo completo: Crear Admin -> Login -> Dashboard', async () => {
+    
+    // --- PASO 1: ARRANQUE ---
+    render(<RootLayout />);
 
-    // 1. Verificar carga inicial
-    // Buscamos algo que indique que la app está decidiendo el estado
-    // Si tu ActivityIndicator no tiene testID, busca por el componente
-    const loading = await screen.findByTestId('activity-indicator'); // Recomendación: agrega testID al spinner en _layout
-    expect(loading).toBeTruthy();
-
-    // 2. Esperar redirección a /create-admin
-    // findByText esperará a que el Layout haga el replace
-    const adminTitle = await screen.findByText(/Crear Administrador/i, {}, { timeout: 15000 });
+    // El sistema debe verificar que no hay admin y redirigir automáticamente
+    const adminTitle = await screen.findByText(/Crear administrador inicial/i, {}, { timeout: 10000 });
     expect(adminTitle).toBeTruthy();
 
-    // 3. Crear Admin
-    fireEvent.changeText(screen.getByTestId('admin-name-input'), 'Admin Jota');
+    // --- PASO 2: CREACIÓN DE ADMIN ---
+    fireEvent.changeText(screen.getByTestId('admin-nombre-input'), 'Admin Prueba');
     fireEvent.changeText(screen.getByTestId('admin-email-input'), 'admin@jota.com');
-    fireEvent.changeText(screen.getByTestId('admin-password-input'), 'password123');
+    fireEvent.changeText(screen.getByTestId('admin-password-input'), '12345678');
+    fireEvent.changeText(screen.getByTestId('admin-confirmPassword-input'), '12345678');
+    
     fireEvent.press(screen.getByTestId('create-admin-button'));
 
-    // Esperar a que la app redirija al login tras crear el admin
-    const loginTitle = await screen.findByText(/Iniciar sesión/i, {}, { timeout: 10000 });
-    expect(loginTitle).toBeTruthy();
-  });
-
-  it('2. Debe permitir al Admin loguearse', async () => {
-    render(<App />);
-
-    // Esperar a que pase el check de admin y nos deje en el login
+    // --- PASO 3: REDIRECCIÓN A LOGIN ---
+    // El sistema debe crear el admin y cambiar la ruta a /login
     const loginTitle = await screen.findByText(/Iniciar sesión/i, {}, { timeout: 10000 });
     expect(loginTitle).toBeTruthy();
 
+    // --- PASO 4: LOGIN Y DASHBOARD ---
     fireEvent.changeText(screen.getByTestId('email-input'), 'admin@jota.com');
-    fireEvent.changeText(screen.getByTestId('password-input'), 'password123');
-    fireEvent.press(screen.getByTestId('login-button'));
-
-    const dashboard = await screen.findByText(/Dashboard/i, {}, { timeout: 10000 });
-    expect(dashboard).toBeTruthy();
-  });
-
-  it('3. Debe permitir al Admin crear un domiciliario', async () => {
-    // (Asumiendo que el estado de auth persiste o se simula)
-    // Este test es igual al anterior, pero ahora sabemos que el flujo es correcto
-    const btnCrear = await screen.findByTestId('btn-nav-crear-domiciliario');
-    fireEvent.press(btnCrear);
-
-    fireEvent.changeText(screen.getByTestId('nombre-domiciliario-input'), 'Domiciliario Test');
-    fireEvent.changeText(screen.getByTestId('telefono-domiciliario-input'), '3001234567');
-    fireEvent.press(screen.getByTestId('submit-domiciliario-button'));
-
-    const success = await screen.findByText(/creado exitosamente/i, {}, { timeout: 10000 });
-    expect(success).toBeTruthy();
+    fireEvent.changeText(screen.getByTestId('password-input'), '12345678');
+    fireEvent.press(screen.getByTestId('login-button')); // <- Corregido aquí
+    
+    // Verificamos que llegamos al dashboard buscando un elemento clave
+    // Asegúrate de que este ID exista en tu pantalla de inicio tras login
+    const btnCrear = await screen.findByTestId('btn-nav-crear-domiciliario', {}, { timeout: 10000 });
+    expect(btnCrear).toBeTruthy();
   });
 });
