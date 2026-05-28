@@ -11,6 +11,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  adapter: 'xhr',
 });
 
 api.interceptors.request.use(async (config) => {
