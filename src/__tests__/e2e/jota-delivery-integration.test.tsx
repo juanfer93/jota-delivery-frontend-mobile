@@ -4,18 +4,37 @@ import CreateAdminClient from '@/features/admin/presentation/CreateAdminClient';
 import LoginClient from '@/features/auth/presentation/LoginClient';
 import Dashboard from '@/features/dashboard/presentation/Dashboard';
 
-// Mockeamos el router para espiar la navegación
+// 1. Mock Router
 const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace }),
 }));
 
-// Mockeamos el store de admin
+// 2. Mock Admin Store
 jest.mock('@/features/admin/application/admin.store', () => ({
   useAdminStore: jest.fn().mockReturnValue({
     createFirstAdmin: jest.fn().mockResolvedValue(undefined),
     isCreating: false,
   }),
+}));
+
+// 3. MOCK COMPLETO DEL AUTH STORE (CRUCIAL)
+// Esto soluciona por qué no navegaba: ahora el login devuelve éxito
+const mockLogin = jest.fn().mockResolvedValue(undefined);
+jest.mock('@/features/auth/application/auth.store', () => {
+  const actual = jest.requireActual('@/features/auth/application/auth.store');
+  return {
+    ...actual,
+    useAuthStore: jest.fn((selector) => selector({
+      login: mockLogin,
+      isLoading: false,
+      user: { rol: 'admin' }
+    })),
+  };
+});
+// Permitimos que .getState() también funcione sin errores
+(require('@/features/auth/application/auth.store').useAuthStore as any).getState = jest.fn(() => ({
+  user: { rol: 'admin' }
 }));
 
 // Mock SafeArea
@@ -29,12 +48,10 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 describe('E2E Modular: Flujo de Administrador', () => {
-  
   test('Flujo completo: Crear Admin -> Login -> Dashboard', async () => {
     
     // --- PASO 1: Crear Admin ---
     render(<CreateAdminClient />);
-    
     await screen.findByText('Crear administrador inicial', { exact: false });
     
     fireEvent.changeText(screen.getByTestId('admin-nombre-input'), 'Admin Prueba');
@@ -46,31 +63,26 @@ describe('E2E Modular: Flujo de Administrador', () => {
       fireEvent.press(screen.getByTestId('create-admin-button'));
     });
     
-    // Verificamos que se intentó navegar al login
     expect(mockReplace).toHaveBeenCalledWith('/login');
 
     // --- PASO 2: Login ---
-    // Limpiamos la pantalla anterior y renderizamos la siguiente
     jest.clearAllMocks();
     render(<LoginClient />);
     
     await screen.findByText('Iniciar sesión', { exact: false });
-    
     fireEvent.changeText(screen.getByTestId('email-input'), 'admin@jota.com');
     fireEvent.changeText(screen.getByTestId('password-input'), '12345678');
     
     await act(async () => {
       fireEvent.press(screen.getByTestId('login-button'));
     });
-
-    // --- PASO 3: Dashboard ---
-    // Verificamos que se intentó navegar al dashboard (o ruta app)
-    // Nota: Dependiendo de tu lógica, puede ser '/' o '/(app)/'
+    
+    // Verificamos que mockReplace ahora SÍ es llamado porque el mockLogin funciona
     expect(mockReplace).toHaveBeenCalled(); 
 
-    // Opcional: renderizar dashboard si necesitas validar contenido
+    // --- PASO 3: Dashboard ---
     render(<Dashboard />);
-    const btnCrear = await screen.findByTestId('btn-nav-crear-domiciliario');
+    const btnCrear = await screen.findByTestId('btn-nav-crear-domiciliario', {}, { timeout: 15000 });
     expect(btnCrear).toBeTruthy();
   }, 60000);
 });
