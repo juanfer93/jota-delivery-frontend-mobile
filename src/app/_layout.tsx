@@ -1,43 +1,45 @@
-import { useEffect } from 'react';
-import { useRouter, useSegments, Slot } from 'expo-router';
+// src/app/_layout.tsx
+import { useEffect, useState } from 'react';
+import { Slot, useRouter } from 'expo-router';
 import { useAuthStore } from '@/features/auth/application/auth.store';
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import { ActivityIndicator, useColorScheme, View } from 'react-native';
-
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { ActivityIndicator, View } from 'react-native';
+import tw from '@/lib/tailwind';
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
-  const segments = useSegments();
+  const { hasAdmin, isAuthenticated, checkAdminStatus, checkAuth } = useAuthStore();
   const router = useRouter();
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    checkAuth();
+    const initializeApp = async () => {
+      await checkAdminStatus();
+      await checkAuth();
+      
+      setIsReady(true); 
+    };
+
+    initializeApp();
   }, []);
 
   useEffect(() => {
-    if (isLoading) return;
-    const inAuthGroup = segments[0] === 'login';
-    if (!isAuthenticated && !inAuthGroup) {
-      router.replace('/login');
-    } else if (isAuthenticated && inAuthGroup) {
-      router.replace('/');
-    }
-  }, [isAuthenticated, segments, isLoading]);
+    if (!isReady) return;
 
-  if (isLoading) {
+    if (hasAdmin === false) {
+      router.replace('/create-admin');
+    } else if (isAuthenticated) {
+      router.replace('/(app)/');
+    } else {
+      router.replace('/login');
+    }
+  }, [isReady, hasAdmin, isAuthenticated]);
+
+  if (!isReady) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+      <View testID="activity-indicator" style={tw`flex-1 justify-center items-center bg-jj-beigeSoft`}>
+        <ActivityIndicator size="large" color="#174A8B" />
       </View>
     );
   }
 
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <Slot />
-    </ThemeProvider>
-  );
+  return <Slot />;
 }

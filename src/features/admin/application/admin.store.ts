@@ -1,35 +1,24 @@
-import { create } from "zustand";
-import { AdminRepository } from "@/core/repositories/admin.repository";
-import { CreateAdminDTO } from "@/features/admin/domain/admin.types";
+import { create } from 'zustand';
+import api from '@/core/api/axios.instance';
+import { CreateAdminForm } from '@/features/admin/domain/admin.schema';
 
-interface AdminState {
-  hasAdmin: boolean | null;
-  adminName: string | null;
-  checkStatus: () => Promise<void>;
-  createAdmin: (payload: CreateAdminDTO) => Promise<void>;
+interface AdminStore {
+  isCreating: boolean;
+  createFirstAdmin: (data: CreateAdminForm) => Promise<void>;
 }
 
-export const useAdminStore = create<AdminState>((set) => ({
-  hasAdmin: null,
-  adminName: null,
-
-  checkStatus: async () => {
+export const useAdminStore = create<AdminStore>((set) => ({
+  isCreating: false,
+  createFirstAdmin: async (data) => {
+    set({ isCreating: true });
     try {
-      const data = await AdminRepository.getAdminStatus();
-
-      const rawData = data as any; 
-      
-      set({ 
-        hasAdmin: rawData.hasAdmin ?? data.active, 
-        adminName: rawData.adminName ?? null 
+      await api.post('/users/admin', {
+        nombre: data.nombre,
+        email: data.email,
+        password: data.password,
       });
-    } catch (e) {
-      set({ hasAdmin: false });
+    } finally {
+      set({ isCreating: false });
     }
   },
-
-  createAdmin: async (payload) => {
-    await AdminRepository.createAdmin(payload);
-    set({ hasAdmin: true, adminName: payload.nombre });
-  }
 }));

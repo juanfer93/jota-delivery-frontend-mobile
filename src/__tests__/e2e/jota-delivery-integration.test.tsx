@@ -1,51 +1,75 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
-import App from '../../app/_layout'; // Asegura la ruta de tu layout principal
+import App from '../../app/_layout';
 import { TokenStorage } from '@/core/storage/token.storage';
+import { useAuthStore } from '@/features/auth/application/auth.store';
 
-describe('E2E Integration: Admin Workflow', () => {
+// Función auxiliar para resetear el estado de Zustand antes de cada test
+const resetStore = () => {
+  useAuthStore.setState({ 
+    user: null, 
+    isAuthenticated: false, 
+    hasAdmin: null 
+  });
+};
+
+describe('E2E Integration: Admin Bootstrap & Workflow', () => {
   
-  beforeAll(async () => {
-    // Limpiar token previo para asegurar un inicio desde cero
+  beforeEach(async () => {
     await TokenStorage.removeToken();
+    resetStore();
   });
 
-  it('1. Debe permitir al Admin loguearse correctamente', async () => {
+  it('1. Debe detectar BD vacía y crear el primer Admin', async () => {
     render(<App />);
 
-    // Rellenar formulario
-    const emailInput = await screen.findByTestId('email-input');
-    const passwordInput = await screen.findByTestId('password-input');
-    const loginButton = await screen.findByTestId('login-button');
+    // 1. Verificar carga inicial
+    // Buscamos algo que indique que la app está decidiendo el estado
+    // Si tu ActivityIndicator no tiene testID, busca por el componente
+    const loading = await screen.findByTestId('activity-indicator'); // Recomendación: agrega testID al spinner en _layout
+    expect(loading).toBeTruthy();
 
-    fireEvent.changeText(emailInput, 'admin@jota.com'); // Ajusta con tu credencial real
-    fireEvent.changeText(passwordInput, 'password123'); // Ajusta con tu credencial real
-    fireEvent.press(loginButton);
+    // 2. Esperar redirección a /create-admin
+    // findByText esperará a que el Layout haga el replace
+    const adminTitle = await screen.findByText(/Crear Administrador/i, {}, { timeout: 15000 });
+    expect(adminTitle).toBeTruthy();
 
-    // Esperar a que la navegación ocurra tras el login
-    // Usamos findBy para esperar que aparezca un elemento del dashboard
-    const dashboardTitle = await screen.findByText(/Dashboard/i, {}, { timeout: 10000 });
-    expect(dashboardTitle).toBeTruthy();
+    // 3. Crear Admin
+    fireEvent.changeText(screen.getByTestId('admin-name-input'), 'Admin Jota');
+    fireEvent.changeText(screen.getByTestId('admin-email-input'), 'admin@jota.com');
+    fireEvent.changeText(screen.getByTestId('admin-password-input'), 'password123');
+    fireEvent.press(screen.getByTestId('create-admin-button'));
+
+    // Esperar a que la app redirija al login tras crear el admin
+    const loginTitle = await screen.findByText(/Iniciar sesión/i, {}, { timeout: 10000 });
+    expect(loginTitle).toBeTruthy();
   });
 
-  it('2. Debe permitir al Admin crear un nuevo domiciliario', async () => {
-    // Navegar a la creación (asumiendo botón de acceso)
-    const btnCrearDomiciliario = await screen.findByTestId('btn-nav-crear-domiciliario');
-    fireEvent.press(btnCrearDomiciliario);
+  it('2. Debe permitir al Admin loguearse', async () => {
+    render(<App />);
 
-    // Rellenar formulario de creación
-    const nombreInput = await screen.findByTestId('nombre-domiciliario-input');
-    const telefonoInput = await screen.findByTestId('telefono-domiciliario-input');
-    const submitButton = await screen.findByTestId('submit-domiciliario-button');
+    // Esperar a que pase el check de admin y nos deje en el login
+    const loginTitle = await screen.findByText(/Iniciar sesión/i, {}, { timeout: 10000 });
+    expect(loginTitle).toBeTruthy();
 
-    fireEvent.changeText(nombreInput, 'Domiciliario Test');
-    fireEvent.changeText(telefonoInput, '3001234567');
-    
-    // Disparar envío
-    fireEvent.press(submitButton);
+    fireEvent.changeText(screen.getByTestId('email-input'), 'admin@jota.com');
+    fireEvent.changeText(screen.getByTestId('password-input'), 'password123');
+    fireEvent.press(screen.getByTestId('login-button'));
 
-    // Validar respuesta visual de éxito
-    // findByText esperará a que el componente renderice el mensaje de éxito tras el response
-    const successMessage = await screen.findByText(/creado exitosamente/i, {}, { timeout: 10000 });
-    expect(successMessage).toBeTruthy();
+    const dashboard = await screen.findByText(/Dashboard/i, {}, { timeout: 10000 });
+    expect(dashboard).toBeTruthy();
+  });
+
+  it('3. Debe permitir al Admin crear un domiciliario', async () => {
+    // (Asumiendo que el estado de auth persiste o se simula)
+    // Este test es igual al anterior, pero ahora sabemos que el flujo es correcto
+    const btnCrear = await screen.findByTestId('btn-nav-crear-domiciliario');
+    fireEvent.press(btnCrear);
+
+    fireEvent.changeText(screen.getByTestId('nombre-domiciliario-input'), 'Domiciliario Test');
+    fireEvent.changeText(screen.getByTestId('telefono-domiciliario-input'), '3001234567');
+    fireEvent.press(screen.getByTestId('submit-domiciliario-button'));
+
+    const success = await screen.findByText(/creado exitosamente/i, {}, { timeout: 10000 });
+    expect(success).toBeTruthy();
   });
 });
