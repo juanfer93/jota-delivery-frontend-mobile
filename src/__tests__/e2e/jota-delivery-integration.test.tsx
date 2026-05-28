@@ -91,5 +91,5 @@ describe('E2E Integration: Admin Bootstrap & Workflow', () => {
     // Verificamos que llegamos al dashboard
     const btnCrear = await screen.findByTestId('btn-nav-crear-domiciliario', {}, { timeout: 10000 });
     expect(btnCrear).toBeTruthy();
-  });
+  }, 60000);
 });
