@@ -4,7 +4,19 @@ import RootLayout from '@/app/_layout';
 import { useAuthStore } from '@/features/auth/application/auth.store';
 
 // =====================================================================
-// 1. MOCK DE EXPO ROUTER (Variables con prefijo 'mock')
+// 1. MOCK DE SAFE-AREA (Evita errores de renderizado y advertencias)
+// =====================================================================
+jest.mock('react-native-safe-area-context', () => {
+  const React = require('react');
+  return {
+    SafeAreaProvider: ({ children }: any) => React.createElement('View', null, children),
+    SafeAreaView: ({ children }: any) => React.createElement('View', null, children),
+    useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+  };
+});
+
+// =====================================================================
+// 2. MOCK DE EXPO ROUTER (Variables con prefijo 'mock')
 // =====================================================================
 let mockCurrentPath = '/';
 let mockRouteListeners: ((path: string) => void)[] = [];
@@ -20,7 +32,6 @@ jest.mock('expo-router', () => {
     }),
     Slot: () => {
       const React = require('react');
-      // Ahora Jest permite el uso de estas variables porque empiezan con 'mock'
       const [path, setPath] = React.useState(mockCurrentPath);
 
       React.useEffect(() => {
@@ -31,7 +42,6 @@ jest.mock('expo-router', () => {
         };
       }, []);
 
-      // Simular la navegación renderizando los componentes reales
       if (path === '/create-admin') {
         const CreateAdminPage = require('@/app/create-admin').default;
         return <CreateAdminPage />;
@@ -52,19 +62,23 @@ jest.mock('expo-router', () => {
 });
 
 // =====================================================================
-// 2. EL TEST END-TO-END UNIFICADO
+// 3. EL TEST END-TO-END UNIFICADO
 // =====================================================================
 describe('E2E Integration: Admin Bootstrap & Workflow', () => {
   beforeEach(() => {
-    // Resetear estado de los mocks
+    // Resetear estado
     useAuthStore.setState({ hasAdmin: null, isAuthenticated: false, isInitializing: true });
     mockCurrentPath = '/';
     mockRouteListeners = [];
     jest.clearAllMocks();
   });
 
+  afterAll(() => {
+    // Limpia cualquier timer o proceso pendiente para evitar advertencias de "did not exit"
+    jest.useRealTimers();
+  });
+
   test('Debe ejecutar el flujo completo: Crear Admin -> Login -> Dashboard', async () => {
-    
     // --- PASO 1: ARRANQUE ---
     render(<RootLayout />);
 
@@ -91,5 +105,5 @@ describe('E2E Integration: Admin Bootstrap & Workflow', () => {
     // Verificamos que llegamos al dashboard
     const btnCrear = await screen.findByTestId('btn-nav-crear-domiciliario', {}, { timeout: 10000 });
     expect(btnCrear).toBeTruthy();
-  }, 60000);
+  }, 60000); // 60 segundos de timeout
 });
