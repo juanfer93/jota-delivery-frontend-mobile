@@ -12,7 +12,6 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  adapter: (process.env.NODE_ENV === 'test') ? 'http' : undefined,
 });
 
 api.interceptors.request.use(async (config) => {
