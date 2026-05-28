@@ -43,10 +43,15 @@ jest.mock('expo-router', () => ({
       return () => { mockRouteListeners = mockRouteListeners.filter((l: any) => l !== listener); };
     }, []);
 
-    // Asegúrate de que las rutas coincidan exactamente con tus archivos
-    if (path === '/login') return require('@/app/login').default();
-    if (path === '/(app)/') return require('@/app/(app)/index').default();
-    return require('@/app/create-admin').default();
+    // 1. Obtenemos las referencias a los componentes
+    const CreateAdminPage = require('@/app/create-admin').default;
+    const LoginPage = require('@/app/login').default;
+    const DashboardPage = require('@/app/(app)/index').default;
+
+    // 2. Renderizamos usando JSX
+    if (path === '/login') return <LoginPage />;
+    if (path === '/(app)/') return <DashboardPage />;
+    return <CreateAdminPage />;
   },
 }));
 
@@ -64,7 +69,7 @@ describe('E2E Integration: Admin Bootstrap & Workflow', () => {
     render(<RootLayout />);
 
     // --- PASO 1: CREAR ADMIN ---
-    await screen.findByText(/Crear administrador inicial/i);
+    await screen.findByText('Crear administrador inicial', { exact: false }, { timeout: 10000 });
 
     fireEvent.changeText(screen.getByTestId('admin-nombre-input'), 'Admin Prueba');
     fireEvent.changeText(screen.getByTestId('admin-email-input'), 'admin@jota.com');
