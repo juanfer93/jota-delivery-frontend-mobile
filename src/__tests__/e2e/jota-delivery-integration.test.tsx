@@ -4,31 +4,30 @@ import RootLayout from '@/app/_layout';
 import { useAuthStore } from '@/features/auth/application/auth.store';
 
 // =====================================================================
-// 1. MOCK DE EXPO ROUTER (EL MINI-ROUTER)
+// 1. MOCK DE EXPO ROUTER (Variables con prefijo 'mock')
 // =====================================================================
-let currentPath = '/';
-let routeListeners: ((path: string) => void)[] = [];
-
-const mockReplace = jest.fn((path: string) => {
-  currentPath = path;
-  routeListeners.forEach((listener) => listener(path));
-});
+let mockCurrentPath = '/';
+let mockRouteListeners: ((path: string) => void)[] = [];
 
 jest.mock('expo-router', () => {
   return {
     useRouter: () => ({
-      replace: mockReplace,
+      replace: jest.fn((path: string) => {
+        mockCurrentPath = path;
+        mockRouteListeners.forEach((listener) => listener(path));
+      }),
       push: jest.fn(),
     }),
     Slot: () => {
       const React = require('react');
-      const [path, setPath] = React.useState(currentPath);
+      // Ahora Jest permite el uso de estas variables porque empiezan con 'mock'
+      const [path, setPath] = React.useState(mockCurrentPath);
 
       React.useEffect(() => {
         const listener = (newPath: string) => setPath(newPath);
-        routeListeners.push(listener);
+        mockRouteListeners.push(listener);
         return () => {
-          routeListeners = routeListeners.filter((l: any) => l !== listener);
+          mockRouteListeners = mockRouteListeners.filter((l: any) => l !== listener);
         };
       }, []);
 
@@ -42,7 +41,6 @@ jest.mock('expo-router', () => {
         return <LoginPage />;
       }
       if (path === '/(app)/') {
-        // Asegúrate de que esta sea la ruta correcta a tu dashboard en (app)
         const DashboardPage = require('@/app/(app)/index').default;
         return <DashboardPage />;
       }
@@ -58,20 +56,18 @@ jest.mock('expo-router', () => {
 // =====================================================================
 describe('E2E Integration: Admin Bootstrap & Workflow', () => {
   beforeEach(() => {
-    // Resetear todo al estado de fábrica antes de arrancar
+    // Resetear estado de los mocks
     useAuthStore.setState({ hasAdmin: null, isAuthenticated: false, isInitializing: true });
-    currentPath = '/';
-    routeListeners = [];
+    mockCurrentPath = '/';
+    mockRouteListeners = [];
     jest.clearAllMocks();
   });
 
-  // Hacemos TODO en un solo bloque "test" para mantener el árbol de componentes vivo
   test('Debe ejecutar el flujo completo: Crear Admin -> Login -> Dashboard', async () => {
     
     // --- PASO 1: ARRANQUE ---
     render(<RootLayout />);
 
-    // El sistema debe verificar que no hay admin y redirigir automáticamente
     const adminTitle = await screen.findByText(/Crear administrador inicial/i, {}, { timeout: 10000 });
     expect(adminTitle).toBeTruthy();
 
@@ -84,17 +80,15 @@ describe('E2E Integration: Admin Bootstrap & Workflow', () => {
     fireEvent.press(screen.getByTestId('create-admin-button'));
 
     // --- PASO 3: REDIRECCIÓN A LOGIN ---
-    // El sistema debe crear el admin y cambiar la ruta a /login
     const loginTitle = await screen.findByText(/Iniciar sesión/i, {}, { timeout: 10000 });
     expect(loginTitle).toBeTruthy();
 
     // --- PASO 4: LOGIN Y DASHBOARD ---
     fireEvent.changeText(screen.getByTestId('email-input'), 'admin@jota.com');
     fireEvent.changeText(screen.getByTestId('password-input'), '12345678');
-    fireEvent.press(screen.getByTestId('login-button')); // <- Corregido aquí
+    fireEvent.press(screen.getByTestId('login-button')); 
     
-    // Verificamos que llegamos al dashboard buscando un elemento clave
-    // Asegúrate de que este ID exista en tu pantalla de inicio tras login
+    // Verificamos que llegamos al dashboard
     const btnCrear = await screen.findByTestId('btn-nav-crear-domiciliario', {}, { timeout: 10000 });
     expect(btnCrear).toBeTruthy();
   });
