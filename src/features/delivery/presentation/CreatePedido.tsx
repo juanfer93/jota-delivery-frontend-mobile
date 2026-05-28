@@ -17,25 +17,36 @@ export default function CreatePedido() {
     direccionEntrega: '' 
   });
 
+  const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg]     = useState('');
+
   const handleCreate = async () => {
     if (!form.domiciliarioId || !form.comercioId || !form.valorPedido || !form.direccionEntrega) {
+      setErrorMsg('Todos los campos son obligatorios');
       return;
     }
 
+    setSuccessMsg('');
+    setErrorMsg('');
+
     try {
       await assignPedido({
-        domiciliarioId: Number(form.domiciliarioId), 
-        comercioId: Number(form.comercioId),
-        valorPedido: Number(form.valorPedido),
-        valorDomicilio: 0, 
-        clienteNombre: "Cliente", 
-        clienteTelefono: "0000000", 
-        direccionRecogida: "N/A", 
+        domiciliarioId:   Number(form.domiciliarioId), 
+        comercioId:       Number(form.comercioId),
+        valorPedido:      Number(form.valorPedido),
+        valorDomicilio:   0, 
+        clienteNombre:    'Cliente', 
+        clienteTelefono:  '0000000', 
+        direccionRecogida:'N/A', 
         direccionEntrega: form.direccionEntrega,
       });
-      router.back();
-    } catch (e) {
-      console.error(e);
+
+      setSuccessMsg('Pedido creado exitosamente');
+      setTimeout(() => router.back(), 1500);
+
+    } catch (e: any) {
+      console.error('❌ Error al crear pedido:', e?.response?.data ?? e?.message ?? e);
+      setErrorMsg('Error al crear el pedido. Revisa los datos.');
     }
   };
 
@@ -51,6 +62,18 @@ export default function CreatePedido() {
             <Text style={tw`text-2xl font-semibold text-jj-beige`}>Nuevo Pedido</Text>
             <Text style={tw`text-xs uppercase tracking-widest text-jj-beige/80 mt-1`}>Configuración de entrega</Text>
           </View>
+
+          {successMsg !== '' && (
+            <View style={tw`mb-4 rounded-xl bg-green-100 border border-green-400 px-4 py-3`}>
+              <Text style={tw`text-green-800 text-sm font-medium`}>{successMsg}</Text>
+            </View>
+          )}
+
+          {errorMsg !== '' && (
+            <View style={tw`mb-4 rounded-xl bg-red-100 border border-red-400 px-4 py-3`}>
+              <Text style={tw`text-red-800 text-sm font-medium`}>{errorMsg}</Text>
+            </View>
+          )}
 
           <View style={tw`rounded-3xl border border-jj-blueDark/10 bg-white/80 p-6 shadow-sm`}>
             

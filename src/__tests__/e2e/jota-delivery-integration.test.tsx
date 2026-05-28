@@ -1,58 +1,71 @@
 import { render, fireEvent, waitFor, cleanup } from '@testing-library/react-native';
 import LoginClient from '../../features/auth/presentation/LoginClient';
 import CreatePedido from '../../features/delivery/presentation/CreatePedido';
-// Asegúrate de que esta importación sea la correcta para el archivo donde está createAdmin
-import { AdminRepository } from '../../core/repositories/admin.repository'; 
+import { AdminRepository } from '../../core/repositories/admin.repository';
+
+// ← Aumentar timeout global del suite completo
+jest.setTimeout(35000);
 
 describe('Plan Maestro E2E #1: Integración Real - Flujo Completo', () => {
   afterEach(cleanup);
 
+  // ← Timeout propio para el beforeAll
   beforeAll(async () => {
+    console.log('🌱 Sembrando Admin en backend...');
     try {
-        console.log('Sembrando Administrador en Backend...');
-        // CORRECCIÓN: Usando la estructura exacta de CreateAdminDTO
-        await AdminRepository.createAdmin({ 
-            nombre: 'Admin Test',
-            correo: 'admin_test@test.com', 
-            password: 'password123'
-        });
-        console.log('Admin creado correctamente.');
-    } catch (e) {
-        console.log('El admin ya existe o hubo error, continuando...', e);
+      await AdminRepository.createAdmin({ 
+        nombre:   'Admin Test',
+        correo:   'admin_test@test.com', 
+        password: 'password123'
+      });
+      console.log('✅ Admin creado.');
+    } catch (e: any) {
+      // 409 Conflict = ya existe, está bien
+      const status = e?.response?.status;
+      console.log(`ℹ️  Admin seed status ${status ?? 'desconocido'} — continuando.`);
     }
-  });
+  }, 30000); // ← timeout del beforeAll
 
+  // -------------------------------------------------------------------
   it('FASE 1: Autenticación', async () => {
-    const { getByPlaceholderText, getByText } = render(<LoginClient />);
+    console.log('🔐 Iniciando FASE 1...');
+    const { getByPlaceholderText, findByText } = render(<LoginClient />);
     
-    // Asegúrate de que los placeholders en LoginClient coincidan con estos
     fireEvent.changeText(getByPlaceholderText(/correo/i), 'admin_test@test.com');
     fireEvent.changeText(getByPlaceholderText(/contraseña/i), 'password123');
-    fireEvent.press(getByText(/Ingresar/i));
-
-    await waitFor(() => {
-      expect(getByText(/bienvenido/i)).toBeTruthy();
-    }, { timeout: 15000 });
-  }, 20000);
-
-  it('FASE 2: Registro de Pedido', async () => {
-    const { getAllByPlaceholderText, getByPlaceholderText, getByText } = render(<CreatePedido />);
-
-    // CORRECCIÓN: Acceso seguro a los inputs duplicados
-    const inputsId = getAllByPlaceholderText('Ingresa ID');
     
-    if (inputsId.length >= 2) {
-        fireEvent.changeText(inputsId[0], '123456'); // ID Domiciliario
-        fireEvent.changeText(inputsId[1], '987654'); // ID Comercio
-    }
+    console.log('📤 Presionando botón de ingreso...');
+    fireEvent.press(findByText ? await findByText(/Ingresar/i) : getByPlaceholderText(/Ingresar/i));
+
+    // ← findByText espera activamente (más robusto que waitFor + getByText)
+    // LoginClient debe mostrar "Bienvenido" ANTES de navegar (ver nota abajo)
+    const welcomeMsg = await findByText(/bienvenido/i, {}, { timeout: 25000 });
+    expect(welcomeMsg).toBeTruthy();
+    console.log('✅ FASE 1 completada.');
+
+  }, 30000);
+
+  // -------------------------------------------------------------------
+  it('FASE 2: Registro de Pedido', async () => {
+    console.log('📦 Iniciando FASE 2...');
+    const { getAllByPlaceholderText, getByPlaceholderText, findByText } = render(<CreatePedido />);
+
+    const inputsId = getAllByPlaceholderText('Ingresa ID');
+    expect(inputsId.length).toBeGreaterThanOrEqual(2);
+
+    fireEvent.changeText(inputsId[0], '1');  // ← usa IDs que existen en tu DB
+    fireEvent.changeText(inputsId[1], '1');
 
     fireEvent.changeText(getByPlaceholderText('Carrera 00 #00-00'), 'Carrera 12 #34-56');
     fireEvent.changeText(getByPlaceholderText('0'), '50000');
 
-    fireEvent.press(getByText(/Registrar Pedido/i));
+    console.log('📤 Presionando Registrar Pedido...');
+    fireEvent.press(await findByText(/Registrar Pedido/i));
 
-    await waitFor(() => {
-      expect(getByText(/creado exitosamente/i)).toBeTruthy();
-    }, { timeout: 15000 });
-  }, 20000);
+    // ← findByText es más robusto — hace polling interno
+    const confirmacion = await findByText(/creado exitosamente/i, {}, { timeout: 25000 });
+    expect(confirmacion).toBeTruthy();
+    console.log('✅ FASE 2 completada.');
+
+  }, 30000);
 });
