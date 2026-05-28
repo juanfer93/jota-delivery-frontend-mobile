@@ -21,53 +21,60 @@ jest.mock('@/features/admin/application/admin.store', () => ({
   }),
 }));
 
-// 3. ERROR BOUNDARY PARA DEPURACIÓN
-class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
-  state = { hasError: false };
-  static getDerivedStateFromError() { return { hasError: true }; }
-  componentDidCatch(error: any) { console.error("Render Error:", error); }
-  render() { 
-    if (this.state.hasError) return <></>; 
-    return this.props.children; 
-  }
-}
-
-// 4. MOCK DE EXPO ROUTER
+// 3. MOCK DE EXPO ROUTER
 let mockCurrentPath = '/create-admin';
 let mockRouteListeners: ((path: string) => void)[] = [];
 
-jest.mock('expo-router', () => ({
-  useRouter: () => ({
-    replace: jest.fn((path: string) => {
-      mockCurrentPath = path;
-      mockRouteListeners.forEach((listener) => listener(path));
+jest.mock('expo-router', () => {
+  const React = require('react');
+
+  // Error Boundary usando React.createElement para evitar problemas de JSX
+  class MockErrorBoundary extends React.Component {
+    constructor(props: any) {
+      super(props);
+      this.state = { hasError: false };
+    }
+    static getDerivedStateFromError() { return { hasError: true }; }
+    render() {
+      if ((this.state as any).hasError) return React.createElement('Text', null, 'Error en el componente');
+      return this.props.children;
+    }
+  }
+
+  return {
+    useRouter: () => ({
+      replace: jest.fn((path: string) => {
+        mockCurrentPath = path;
+        mockRouteListeners.forEach((listener) => listener(path));
+      }),
+      push: jest.fn(),
     }),
-    push: jest.fn(),
-  }),
-  Slot: () => {
-    const React = require('react');
-    const [path, setPath] = React.useState(mockCurrentPath);
+    Slot: () => {
+      const [path, setPath] = React.useState(mockCurrentPath);
 
-    React.useEffect(() => {
-      const listener = (newPath: string) => setPath(newPath);
-      mockRouteListeners.push(listener);
-      return () => { mockRouteListeners = mockRouteListeners.filter((l: any) => l !== listener); };
-    }, []);
+      React.useEffect(() => {
+        const listener = (newPath: string) => setPath(newPath);
+        mockRouteListeners.push(listener);
+        return () => { mockRouteListeners = mockRouteListeners.filter((l: any) => l !== listener); };
+      }, []);
 
-    // RUTAS CORREGIDAS SEGÚN TU ESTRUCTURA DE CARPETAS
-    const CreateAdminPage = require('@/app/create-admin/page').default;
-    const LoginPage = require('@/app/login/page').default;
-    const DashboardPage = require('@/app/(app)/index').default;
+      // RUTAS CORREGIDAS
+      const CreateAdminPage = require('@/app/create-admin').default;
+      const LoginPage = require('@/app/login').default;
+      const DashboardPage = require('@/app/(app)/index').default;
 
-    return (
-      <ErrorBoundary>
-        {path === '/login' && <LoginPage />}
-        {path === '/(app)/' && <DashboardPage />}
-        {path !== '/login' && path !== '/(app)/' && <CreateAdminPage />}
-      </ErrorBoundary>
-    );
-  },
-}));
+      let ComponentToRender = CreateAdminPage;
+      if (path === '/login') ComponentToRender = LoginPage;
+      else if (path === '/(app)/') ComponentToRender = DashboardPage;
+
+      return React.createElement(
+        MockErrorBoundary,
+        null,
+        React.createElement(ComponentToRender)
+      );
+    },
+  };
+});
 
 describe('E2E Integration: Admin Bootstrap & Workflow', () => {
   beforeEach(() => {
@@ -83,7 +90,6 @@ describe('E2E Integration: Admin Bootstrap & Workflow', () => {
     render(<RootLayout />);
 
     // --- PASO 1: CREAR ADMIN ---
-    // Usamos await findByText con un timeout generoso
     await screen.findByText('Crear administrador inicial', { exact: false }, { timeout: 10000 });
 
     fireEvent.changeText(screen.getByTestId('admin-nombre-input'), 'Admin Prueba');
@@ -93,12 +99,12 @@ describe('E2E Integration: Admin Bootstrap & Workflow', () => {
 
     await act(async () => {
       fireEvent.press(screen.getByTestId('create-admin-button'));
+      
     });
 
     // --- PASO 2: LOGIN ---
-    // Esperamos a que la pantalla de Login aparezca
     await screen.findByText('Iniciar sesión', { exact: false }, { timeout: 10000 });
-    
+
     fireEvent.changeText(screen.getByTestId('email-input'), 'admin@jota.com');
     fireEvent.changeText(screen.getByTestId('password-input'), '12345678');
 
