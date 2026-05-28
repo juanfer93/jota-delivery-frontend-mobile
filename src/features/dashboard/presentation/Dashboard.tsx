@@ -18,6 +18,7 @@ export default function Dashboard() {
     <ThemedView className="flex-1 p-4">
       <ThemedView className="flex-row justify-between mb-6">
         <TouchableOpacity
+          testID="btn-nav-crear-domiciliario"
           className="bg-blue-600 p-3 rounded-lg flex-1 mr-2"
           onPress={() => setIsDomiModalVisible(true)}
         >

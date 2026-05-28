@@ -18,8 +18,16 @@ jest.mock('@/features/admin/application/admin.store', () => ({
   }),
 }));
 
-// 3. MOCK COMPLETO DEL AUTH STORE (CRUCIAL)
-// Esto soluciona por qué no navegaba: ahora el login devuelve éxito
+// 3. Mock Delivery Store (IMPORTANTE: Esto evita que el Dashboard intente cargar datos reales)
+jest.mock('@/features/delivery/application/delivery.store', () => ({
+  useDeliveryStore: jest.fn().mockReturnValue({
+    pedidosHoy: [],
+    loadData: jest.fn(),
+    status: 'idle',
+  }),
+}));
+
+// 4. Mock Auth Store
 const mockLogin = jest.fn().mockResolvedValue(undefined);
 jest.mock('@/features/auth/application/auth.store', () => {
   const actual = jest.requireActual('@/features/auth/application/auth.store');
@@ -32,12 +40,11 @@ jest.mock('@/features/auth/application/auth.store', () => {
     })),
   };
 });
-// Permitimos que .getState() también funcione sin errores
 (require('@/features/auth/application/auth.store').useAuthStore as any).getState = jest.fn(() => ({
   user: { rol: 'admin' }
 }));
 
-// Mock SafeArea
+// 5. Mock SafeArea
 jest.mock('react-native-safe-area-context', () => {
   const React = require('react');
   return {
@@ -48,6 +55,7 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 describe('E2E Modular: Flujo de Administrador', () => {
+  
   test('Flujo completo: Crear Admin -> Login -> Dashboard', async () => {
     
     // --- PASO 1: Crear Admin ---
@@ -77,11 +85,11 @@ describe('E2E Modular: Flujo de Administrador', () => {
       fireEvent.press(screen.getByTestId('login-button'));
     });
     
-    // Verificamos que mockReplace ahora SÍ es llamado porque el mockLogin funciona
     expect(mockReplace).toHaveBeenCalled(); 
 
     // --- PASO 3: Dashboard ---
     render(<Dashboard />);
+    // Ahora que agregaste el testID en Dashboard.tsx, esto debería funcionar
     const btnCrear = await screen.findByTestId('btn-nav-crear-domiciliario', {}, { timeout: 15000 });
     expect(btnCrear).toBeTruthy();
   }, 60000);
