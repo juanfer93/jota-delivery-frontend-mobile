@@ -4,11 +4,19 @@ import { useRouter } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useAdminStore } from '@/features/admin/application/admin.store';
 import { createAdminSchema, CreateAdminForm } from '@/features/admin/domain/admin.schema';
+import { CreateAdminDTO } from '../domain/admin.types';
 
 export default function CreateAdminClient() {
   const router = useRouter();
   const { createFirstAdmin, isCreating } = useAdminStore();
-  const [form, setForm] = useState<CreateAdminForm>({ nombre: '', email: '', password: '', confirmPassword: '' });
+  const [form, setForm] = useState<CreateAdminForm>(
+    {
+      nombre: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      rol: 'admin'
+    });
   const [errors, setErrors] = useState<Partial<Record<keyof CreateAdminForm, string>>>({});
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -17,7 +25,6 @@ export default function CreateAdminClient() {
     const result = createAdminSchema.safeParse(form);
 
     if (!result.success) {
-      console.log("Error de validación:", result.error); 
       const fieldErrors: any = {};
       result.error.issues.forEach(issue => fieldErrors[issue.path[0]] = issue.message);
       setErrors(fieldErrors);
@@ -25,25 +32,30 @@ export default function CreateAdminClient() {
     }
 
     try {
-      console.log("Llamando a API con:", result.data); 
-      await createFirstAdmin(result.data);
-      console.log("API llamada con éxito, navegando..."); 
+      const { confirmPassword, ...dtoData } = result.data;
+      
+      const payload: CreateAdminDTO = {
+        ...dtoData,
+        rol: 'admin' 
+      };
+
+      await createFirstAdmin(payload);
       router.replace('/login');
     } catch (err) {
-      console.error("ERROR DETECTADO EN API:", err); 
+      console.error("ERROR DETECTADO EN API:", err);
       setServerError('No se pudo crear el administrador. Intenta de nuevo.');
     }
-  };
+};
 
   return (
     <SafeAreaView style={tw`flex-1 bg-jj-beigeSoft`}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={tw`flex-1`}>
         <ScrollView contentContainerStyle={tw`p-6 py-12`}>
-          
+
           <View style={tw`rounded-3xl border border-jj-beige/30 bg-jj-blueDark p-6 shadow-lg mb-10`}>
-             <Text style={tw`text-xs uppercase tracking-widest text-jj-beige/80`}>Jota Jota Delivery</Text>
-             <Text style={tw`text-2xl font-semibold text-jj-beige`}>Crear administrador inicial</Text>
-             <Text style={tw`text-sm text-jj-beige/80 mt-2`}>Esta acción solo está disponible mientras no exista un administrador.</Text>
+            <Text style={tw`text-xs uppercase tracking-widest text-jj-beige/80`}>Jota Jota Delivery</Text>
+            <Text style={tw`text-2xl font-semibold text-jj-beige`}>Crear administrador inicial</Text>
+            <Text style={tw`text-sm text-jj-beige/80 mt-2`}>Esta acción solo está disponible mientras no exista un administrador.</Text>
           </View>
 
           <View style={tw`rounded-3xl border border-jj-blueDark/10 bg-white/80 p-8 shadow-sm`}>

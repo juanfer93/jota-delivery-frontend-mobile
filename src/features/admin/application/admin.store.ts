@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import api from '@/core/api/axios.instance';
-import { CreateAdminForm } from '@/features/admin/domain/admin.schema';
+import { CreateAdminDTO } from '@/features/admin/domain/admin.types';
 
 interface AdminStore {
   isCreating: boolean;
-  createFirstAdmin: (data: CreateAdminForm) => Promise<void>;
+  createFirstAdmin: (data: CreateAdminDTO) => Promise<void>;
 }
 
 export const useAdminStore = create<AdminStore>((set) => ({
@@ -16,6 +16,7 @@ export const useAdminStore = create<AdminStore>((set) => ({
         nombre: data.nombre,
         email: data.email,
         password: data.password,
+        rol: data.rol,
       });
     } finally {
       set({ isCreating: false });

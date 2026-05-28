@@ -33,6 +33,7 @@ export interface AdminStatusResponse {
 
 export interface CreateAdminDTO {
   nombre: string;
-  correo: string;
-  password?: string;
+  email: string;   
+  password: string;
+  rol: 'admin';    
 }
