@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react-native';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react-native'; // ← Sin cleanup importado
 import CreateAdminClient from '@/features/admin/presentation/CreateAdminClient';
 import LoginClient from '@/features/auth/presentation/LoginClient';
 import Dashboard from '@/features/dashboard/presentation/Dashboard';
@@ -11,10 +11,8 @@ jest.setTimeout(90000);
 // MOCKS: Spy reutilizable para router.replace
 // ─────────────────────────────────────────────
 
-// 1. Crear el spy UNA VEZ para poder assertear después
 const mockReplace = jest.fn();
 
-// 2. Mock de expo-router: reusar el mismo spy
 jest.mock('expo-router', () => {
   const actual = jest.requireActual('expo-router');
   return {
@@ -24,7 +22,6 @@ jest.mock('expo-router', () => {
   };
 });
 
-// 3. Mock de TokenStorage: persistencia en memoria para tests
 let mockToken: string | null = null;
 jest.mock('@/core/storage/token.storage', () => ({
   TokenStorage: {
@@ -34,7 +31,6 @@ jest.mock('@/core/storage/token.storage', () => ({
   },
 }));
 
-// 4. Mock de safe-area (sin cambios)
 jest.mock('react-native-safe-area-context', () => {
   const React = require('react');
   return {
@@ -45,68 +41,72 @@ jest.mock('react-native-safe-area-context', () => {
 });
 
 describe('E2E REAL: Flujo completo Backend', () => {
-  
+
   beforeAll(async () => {
     await TokenStorage.removeToken();
   });
 
+  // ✅ cleanup() SOLO aquí, no dentro del test
   afterEach(() => {
-    cleanup();
     mockToken = null;
-    mockReplace.mockClear(); // ← Limpiar spy entre tests
+    mockReplace.mockClear();
     jest.clearAllMocks();
+    // cleanup() lo hace jest-expo automáticamente, pero si lo necesitas:
+    // const { cleanup } = require('@testing-library/react-native');
+    // cleanup();
   });
 
   test('Debe crear admin, loguear y entrar al dashboard', async () => {
     // ─────────────────────────────────────────────
-    // PASO 1: Crear Admin (SIN CAMBIOS - ya funciona)
+    // PASO 1: Crear Admin (SIN CAMBIOS)
     // ─────────────────────────────────────────────
     render(<CreateAdminClient />);
     await screen.findByText('Crear administrador inicial', {}, { timeout: 20000 });
-    
+
     fireEvent.changeText(screen.getByTestId('admin-nombre-input'), 'Admin Real Test');
     fireEvent.changeText(screen.getByTestId('admin-email-input'), 'real-test@jota.com');
     fireEvent.changeText(screen.getByTestId('admin-password-input'), '12345678');
     fireEvent.changeText(screen.getByTestId('admin-confirmPassword-input'), '12345678');
-    
+
     fireEvent.press(screen.getByTestId('create-admin-button'));
 
-    // 🔧 FIX: En lugar de buscar texto en UI, verificar que el mock de navegación fue llamado
+    // Verificar navegación vía mock
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('/login');
     }, { timeout: 20000 });
-    
+
     console.log("✅ Navegación a /login confirmada por mock");
 
     // ─────────────────────────────────────────────
-    // PASO 2: Login (render manual tras "navegación")
+    // PASO 2: Login (render manual, SIN cleanup intermedio)
     // ─────────────────────────────────────────────
-    cleanup();
+    // 🔧 FIX: NO llamar cleanup() aquí. Cada render() actualiza screen automáticamente.
     render(<LoginClient />);
-    
+
     fireEvent.changeText(screen.getByTestId('email-input'), 'real-test@jota.com');
-    
-    // 🔧 FIX CLAVE: changeText para inputs de texto, no press
+
+    // 🔧 FIX: changeText para inputs de texto
     fireEvent.changeText(screen.getByTestId('password-input'), '12345678');
-    
+
     fireEvent.press(screen.getByTestId('login-button'));
-    
-    // Esperar que se intente navegar al dashboard principal
+
+    // Esperar navegación al dashboard
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('/(app)/');
     }, { timeout: 20000 });
-    
+
     console.log("✅ Navegación a /(app)/ confirmada por mock");
 
     // ─────────────────────────────────────────────
-    // PASO 3: Dashboard
+    // PASO 3: Dashboard (render manual, SIN cleanup intermedio)
     // ─────────────────────────────────────────────
-    cleanup();
     render(<Dashboard />);
-    
+
     const btnCrear = await screen.findByTestId('btn-nav-crear-domiciliario', {}, { timeout: 20000 });
     expect(btnCrear).toBeTruthy();
-    
+    console.log("🔍 Token en mockToken:", mockToken);
+    console.log("🔍 Llamadas a router.replace:", mockReplace.mock.calls);
+
     console.log("🎉 Test finalizado con éxito: Dashboard alcanzado");
-  }); 
+  });
 });
