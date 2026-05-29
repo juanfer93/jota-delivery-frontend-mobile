@@ -8,7 +8,7 @@ import { TokenStorage } from '@/core/storage/token.storage';
 jest.setTimeout(90000);
 
 // ─────────────────────────────────────────────
-// MOCKS MÍNIMOS
+// MOCKS MÍNIMOS (solo TokenStorage, sin axios)
 // ─────────────────────────────────────────────
 
 // 1. Mock de TokenStorage: persistencia en memoria para tests
@@ -21,20 +21,7 @@ jest.mock('@/core/storage/token.storage', () => ({
   },
 }));
 
-// 2. Mock de axios: sin import previo, mock directo para evitar TS6133
-const mockAxios: any = {
-  create: jest.fn(() => mockAxios),
-  get: jest.fn(),
-  post: jest.fn(),
-  interceptors: {
-    request: { use: jest.fn(), eject: jest.fn() },
-    response: { use: jest.fn(), eject: jest.fn() },
-  },
-};
-
-jest.mock('axios', () => mockAxios);
-
-// 3. Mocks originales (sin cambios)
+// 2. Mocks originales (sin cambios)
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: jest.fn() }),
 }));
