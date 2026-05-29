@@ -25,7 +25,10 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "static"
+      "output": "static",
+      "bundler": "metro",
+      "output": "static",
+      "openBrowserOnStart": false  
     },
     "plugins": [
       "expo-router",
