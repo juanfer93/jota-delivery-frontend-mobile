@@ -27,7 +27,6 @@
     "web": {
       "output": "static",
       "bundler": "metro",
-      "output": "static",
       "openBrowserOnStart": false  
     },
     "plugins": [
