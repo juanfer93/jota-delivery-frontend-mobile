@@ -52,10 +52,10 @@
     "typescript": "~6.0.3",
     "xhr2": "^0.2.1"
   },
-    "scripts": {
+  "scripts": {
     "start": "expo start",
     "start:web": "expo start --web --host lan --clear",
-    "start:web:lan": "set EXPO_WEB_NO_OPEN=1 && expo start --web --host lan --clear",
+    "start:web:lan": "set EXPO_WEB_NO_OPEN=1&& expo start --web --host lan --clear",
     "start:web:tunnel": "expo start --web --host tunnel --clear",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -63,6 +63,6 @@
     "build:web": "expo export --platform web",
     "lint": "eslint . --ext .ts,.tsx",
     "clean": "rimraf .expo web-build node_modules/.cache"
-  }
+  },
   "private": true
 }
