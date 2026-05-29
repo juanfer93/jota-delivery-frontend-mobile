@@ -47,7 +47,7 @@ export default function LoginClient() {
           <View style={tw`flex-row items-center justify-between rounded-3xl border border-jj-beige/30 bg-jj-blueDark p-6 shadow-lg mb-10`}>
             <View style={tw`flex-row items-center`}>
               <View style={tw`h-12 w-12 items-center justify-center rounded-full bg-jj-beige overflow-hidden mr-4`}>
-                <Image source={require('@/assets/images/favicon.png')} style={tw`w-full h-full`} />
+                <Image source={require('@/assets/images/favicon.ico')} style={tw`w-full h-full`} />
               </View>
               <View>
                 <Text style={tw`text-xs uppercase tracking-widest text-jj-beige/80`}>Jota Jota Delivery</Text>
