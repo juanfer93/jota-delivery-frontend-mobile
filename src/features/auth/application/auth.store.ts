@@ -11,7 +11,7 @@ interface AuthState {
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   hasAdmin: boolean | null;
-  checkAdminStatus: () => Promise<void>;
+  checkAdminStatus: () => Promise<boolean>;
   isInitializing: boolean;
 }
 
@@ -25,9 +25,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   checkAdminStatus: async () => {
     try {
       const response = await api.get('/users/admin-status');
-      set({ hasAdmin: response.data.hasAdmin });
+      const hasAdmin = response.data.data?.hasAdmin ?? false;
+      set({ hasAdmin });
+      console.log("🔍 checkAdminStatus: hasAdmin =", hasAdmin);
+      return hasAdmin; 
     } catch (error) {
+      console.error("❌ Error en checkAdminStatus:", error);
       set({ hasAdmin: false });
+      return false;
     }
   },
 
@@ -35,7 +40,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     try {
       const { data } = await api.post<LoginResponse>('/auth/login', credentials);
-
       await TokenStorage.setToken(data.token);
       set({ user: data.user, isAuthenticated: true });
     } catch (error) {
@@ -53,7 +57,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   checkAuth: async () => {
     const token = await TokenStorage.getToken();
     if (!token) return;
-
     set({ isAuthenticated: true });
   }
 }));
