@@ -29,7 +29,7 @@ export default function RootLayout() {
     
     console.log("🔍 Decisión de ruta:", { hasAdmin, isAuthenticated });
     
-    if (hasAdmin === false) {
+    if (!hasAdmin) {
       console.log("👉 Redirigiendo a /create-admin");
       router.replace('/create-admin');
     } else if (isAuthenticated) {

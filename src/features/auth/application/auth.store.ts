@@ -23,15 +23,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   isInitializing: true,
 
   checkAdminStatus: async () => {
+    console.log("🔍 [STORE] checkAdminStatus INICIANDO"); 
     try {
       const response = await api.get('/users/admin-status');
       const hasAdmin = response.data.data?.hasAdmin ?? false;
+      console.log("🔍 [STORE] Respuesta API:", hasAdmin);
       set({ hasAdmin });
-      console.log("🔍 checkAdminStatus: hasAdmin =", hasAdmin);
-      return hasAdmin; 
-    } catch (error) {
-      console.error("❌ Error en checkAdminStatus:", error);
-      set({ hasAdmin: false });
+      return hasAdmin;
+    } catch (error: any) {
+      console.error("❌ [STORE] Error en checkAdminStatus:", error?.message || error);
+      set({ hasAdmin: false }); 
       return false;
     }
   },
