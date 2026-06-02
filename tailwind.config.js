@@ -18,6 +18,10 @@ module.exports = {
           beige: '#F5E9C8',
           beigeSoft: '#FFF9E8',
         },
+        jjBlue: '#174A8B',
+        jjBlueDark: '#102F59',
+        jjBeige: '#F5E9C8',
+        jjBeigeSoft: '#FFF9E8',
         neutral: {
           dark: '#111827',    
           card: '#ffffff',    
