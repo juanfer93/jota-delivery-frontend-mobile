@@ -16,15 +16,6 @@ export interface CreateComercioDTO {
   telefono: string;
 }
 
-export interface CreateDomiciliarioDTO {
-  nombre: string;
-  correo: string;
-  telefono: string;
-  vehiculo?: string;
-  placa?: string;
-  password?: string; 
-}
-
 export type DomiciliarioItem = User;
 
 export interface AdminStatusResponse {
@@ -36,4 +27,16 @@ export interface CreateAdminDTO {
   email: string;   
   password: string;
   rol: 'admin';    
+}
+
+export interface CreateDomiciliarioDTO {
+  nombre: string;
+  email: string;
+}
+
+export interface CreateDomiciliarioResponse {
+  id: string;
+  nombre: string;
+  email: string;
+  rol: string;
 }

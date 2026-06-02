@@ -1,7 +1,8 @@
+// src/features/auth/application/auth.store.ts
 import { create } from 'zustand';
 import api from '@/core/api/axios.instance';
 import { TokenStorage } from '@/core/storage/token.storage';
-import { User, LoginResponse } from '@/features/auth/domain/auth.types';
+import { User, LoginResponse, SetPasswordDTO } from '../domain/auth.types';
 
 interface AuthState {
   user: User | null;
@@ -13,6 +14,13 @@ interface AuthState {
   hasAdmin: boolean | null;
   checkAdminStatus: () => Promise<boolean>;
   isInitializing: boolean;
+
+  // NUEVO: Estados para set password
+  isSettingPassword: boolean;
+  setPasswordMessage: string | null;
+  setPasswordError: string | null;
+  setPassword: (data: SetPasswordDTO) => Promise<boolean>;
+  clearPasswordMessages: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -59,5 +67,29 @@ export const useAuthStore = create<AuthState>((set) => ({
     const token = await TokenStorage.getToken();
     if (!token) return;
     set({ isAuthenticated: true });
-  }
+  },
+
+  isSettingPassword: false,
+  setPasswordMessage: null,
+  setPasswordError: null,
+
+  clearPasswordMessages: () => {
+    set({ setPasswordMessage: null, setPasswordError: null });
+  },
+
+  setPassword: async (data) => {
+    set({ isSettingPassword: true, setPasswordMessage: null, setPasswordError: null });
+    
+    try {
+      await api.post('/auth/domiciliarios/set-password', data);
+      set({ setPasswordMessage: 'Contraseña creada correctamente. Ya puedes iniciar sesión.' });
+      return true;
+    } catch (error: any) {
+      const message = error?.response?.data?.message || 'No se pudo crear la contraseña. El enlace puede haber expirado.';
+      set({ setPasswordError: message });
+      return false;
+    } finally {
+      set({ isSettingPassword: false });
+    }
+  },
 }));

@@ -27,3 +27,12 @@ export interface LoginResponse {
   token: string;
   user: User;
 }
+
+export interface SetPasswordDTO {
+  token: string;
+  password: string;
+}
+
+export interface SetPasswordResponse {
+  message: string;
+}

@@ -12,3 +12,10 @@ export const createAdminSchema = z.object({
 });
 
 export type CreateAdminForm = z.infer<typeof createAdminSchema>;
+
+export const createDomiciliarioSchema = z.object({
+  nombre: z.string().min(1, 'El nombre es obligatorio'),
+  email: z.string().email('Correo electrónico inválido'),
+});
+
+export type CreateDomiciliarioForm = z.infer<typeof createDomiciliarioSchema>;
