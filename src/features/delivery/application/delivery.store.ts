@@ -26,14 +26,18 @@ export const useDeliveryStore = create<DeliveryState>((set, get) => ({
 
   loadData: async () => {
     set({ status: 'loading', error: null });
+    console.log('📦 [DELIVERY] Iniciando carga de datos...');
+    
     try {
       const [hoy, doms, coms] = await Promise.all([
         DeliveryRepository.getPedidosHoy(),
         DeliveryRepository.getDomiciliarios(),
         DeliveryRepository.getComercios(),
       ]);
+      console.log('📦 [DELIVERY] Datos cargados exitosamente');
       set({ pedidosHoy: hoy, domiciliarios: doms, comercios: coms, status: 'success' });
-    } catch (e) {
+    } catch (e: any) {
+      console.error('❌ [DELIVERY] Error al cargar datos:', e?.response?.status, e?.response?.data);
       set({ status: 'error', error: "Error al cargar datos de delivery" });
     }
   },

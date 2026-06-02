@@ -15,9 +15,12 @@ const api = axios.create({
 
 api.interceptors.request.use(async (config) => {
   const token = await TokenStorage.getToken();
-
+  console.log('🔍 [AXIOS] Petición a:', config.url);
+  console.log('🔍 [AXIOS] Token encontrado:', token ? 'SÍ' : 'NO');
+  
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+    console.log('🔍 [AXIOS] Header agregado:', config.headers.Authorization.substring(0, 20) + '...');
   }
   return config;
 });

@@ -48,9 +48,19 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     try {
       const { data } = await api.post<LoginResponse>('/auth/login', credentials);
-      await TokenStorage.setToken(data.accessToken);  
-      set({ user: data.usuario, isAuthenticated: true });  
+      console.log('🔐 [LOGIN] Respuesta del backend:', data);
+      
+      await TokenStorage.setToken(data.accessToken);
+      console.log('🔐 [LOGIN] Token guardado:', data.accessToken);
+      
+      // Verificar que se guardó correctamente
+      const savedToken = await TokenStorage.getToken();
+      console.log('🔐 [LOGIN] Token recuperado del storage:', savedToken);
+      
+      set({ user: data.usuario, isAuthenticated: true });
+      console.log('🔐 [LOGIN] Estado actualizado:', { user: data.usuario, isAuthenticated: true });
     } catch (error) {
+      console.error('❌ [LOGIN] Error:', error);
       throw error;
     } finally {
       set({ isLoading: false });
