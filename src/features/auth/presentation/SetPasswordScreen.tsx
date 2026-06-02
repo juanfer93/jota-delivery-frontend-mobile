@@ -1,4 +1,3 @@
-// src/features/auth/presentation/SetPasswordScreen.tsx
 import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -93,7 +92,7 @@ export const SetPasswordScreen = () => {
       contentContainerStyle={tw`flex-grow justify-center items-center p-4`}
     >
       <View style={tw`w-full max-w-md bg-neutral-card rounded-xl shadow-lg p-6`}>
-        <Text style={tw`text-xl font-semibold text-neutral-dark mb-2`}>
+        <Text testID="screen-title" style={tw`text-xl font-semibold text-neutral-dark mb-2`}>
           Crear contraseña
         </Text>
         <Text style={tw`text-sm text-neutral-gray mb-6`}>
@@ -101,12 +100,12 @@ export const SetPasswordScreen = () => {
         </Text>
 
         <View style={tw`gap-4`}>
-          {/* Password */}
           <View style={tw`gap-1`}>
             <Text style={tw`text-sm font-medium text-jjBlueDark`}>
               Nueva contraseña
             </Text>
             <TextInput
+              testID="password-input" 
               style={tw`px-3 py-2 rounded-lg border border-neutral-light bg-neutral-card text-neutral-dark`}
               value={password}
               onChangeText={(text) => {
@@ -124,12 +123,12 @@ export const SetPasswordScreen = () => {
             )}
           </View>
 
-          {/* Confirm password */}
           <View style={tw`gap-1`}>
             <Text style={tw`text-sm font-medium text-jjBlueDark`}>
               Confirmar contraseña
             </Text>
             <TextInput
+              testID="confirm-password-input" 
               style={tw`px-3 py-2 rounded-lg border border-neutral-light bg-neutral-card text-neutral-dark`}
               value={confirmPassword}
               onChangeText={(text) => {
@@ -148,6 +147,7 @@ export const SetPasswordScreen = () => {
           </View>
 
           <TouchableOpacity
+            testID="submit-button" 
             onPress={handleSubmit}
             disabled={isSettingPassword}
             style={tw`mt-2 py-3 rounded-lg ${isSettingPassword ? 'bg-neutral-gray' : 'bg-jjBlue'}`}
@@ -163,12 +163,12 @@ export const SetPasswordScreen = () => {
         </View>
 
         {setPasswordMessage && (
-          <Text style={tw`mt-4 text-status-hecho text-sm text-center`}>
+          <Text testID="success-message" style={tw`mt-4 text-status-hecho text-sm text-center`}>
             {setPasswordMessage}
           </Text>
         )}
         {setPasswordError && (
-          <Text style={tw`mt-4 text-status-cancelado text-sm text-center`}>
+          <Text testID="error-message" style={tw`mt-4 text-status-cancelado text-sm text-center`}>
             {setPasswordError}
           </Text>
         )}

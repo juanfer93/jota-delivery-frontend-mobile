@@ -24,7 +24,7 @@ export const CreateDeliveryScreen = () => {
 
   const validateForm = () => {
     const newErrors: { nombre?: string; email?: string } = {};
-    
+
     try {
       createDomiciliarioSchema.parse({ nombre, email });
     } catch (error: any) {
@@ -35,14 +35,14 @@ export const CreateDeliveryScreen = () => {
         });
       }
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
     clearDomiciliarioMessages();
-    
+
     if (!validateForm()) return;
 
     const success = await createDomiciliario({ nombre, email });
@@ -54,12 +54,12 @@ export const CreateDeliveryScreen = () => {
   };
 
   return (
-    <ScrollView 
+    <ScrollView
       style={tw`flex-1 bg-jjBeigeSoft`}
       contentContainerStyle={tw`flex-grow justify-center items-center p-4`}
     >
       <View style={tw`w-full max-w-md bg-neutral-card shadow-lg rounded-xl p-6`}>
-        <Text style={tw`text-xl font-semibold text-jjBlue mb-2`}>
+        <Text testID="screen-title" style={tw`text-xl font-semibold text-jjBlue mb-2`}>
           Crear domiciliario
         </Text>
 
@@ -71,6 +71,7 @@ export const CreateDeliveryScreen = () => {
           <View style={tw`gap-1`}>
             <Text style={tw`text-sm font-medium text-jjBlueDark`}>Nombre</Text>
             <TextInput
+              testID="nombre-input" 
               style={tw`px-3 py-2 rounded-lg border border-neutral-light bg-neutral-card text-neutral-dark`}
               value={nombre}
               onChangeText={(text) => {
@@ -88,6 +89,7 @@ export const CreateDeliveryScreen = () => {
           <View style={tw`gap-1`}>
             <Text style={tw`text-sm font-medium text-jjBlueDark`}>Correo electrónico</Text>
             <TextInput
+              testID="email-input" 
               style={tw`px-3 py-2 rounded-lg border border-neutral-light bg-neutral-card text-neutral-dark`}
               value={email}
               onChangeText={(text) => {
@@ -105,6 +107,7 @@ export const CreateDeliveryScreen = () => {
           </View>
 
           <TouchableOpacity
+            testID="submit-button" 
             onPress={handleSubmit}
             disabled={isCreatingDomiciliario}
             style={tw`mt-2 py-3 rounded-lg ${isCreatingDomiciliario ? 'bg-neutral-gray' : 'bg-jjBlue'}`}
@@ -120,12 +123,12 @@ export const CreateDeliveryScreen = () => {
         </View>
 
         {domiciliarioMessage && (
-          <Text style={tw`mt-4 text-status-hecho text-sm text-center`}>
+          <Text testID="success-message" style={tw`mt-4 text-status-hecho text-sm text-center`}>
             {domiciliarioMessage}
           </Text>
         )}
         {domiciliarioError && (
-          <Text style={tw`mt-4 text-status-cancelado text-sm text-center`}>
+          <Text testID="error-message" style={tw`mt-4 text-status-cancelado text-sm text-center`}>
             {domiciliarioError}
           </Text>
         )}
