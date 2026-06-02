@@ -73,9 +73,18 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   checkAuth: async () => {
+    console.log('🔐 [AUTH] checkAuth INICIANDO...');
     const token = await TokenStorage.getToken();
-    if (!token) return;
+    console.log('🔐 [AUTH] Token encontrado:', token ? 'SÍ (' + token.substring(0, 10) + '...)' : 'NO');
+    
+    if (!token) {
+      console.log('❌ [AUTH] No hay token, usuario NO autenticado');
+      set({ isAuthenticated: false, user: null });
+      return;
+    }
+    
     set({ isAuthenticated: true });
+    console.log('✅ [AUTH] Usuario autenticado');
   },
 
   isSettingPassword: false,
