@@ -1,4 +1,3 @@
-// src/features/admin/application/admin.store.ts
 import { create } from 'zustand';
 import api from '@/core/api/axios.instance';
 import { CreateAdminDTO, CreateDomiciliarioDTO } from '../domain/admin.types';

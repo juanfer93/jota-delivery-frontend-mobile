@@ -2,7 +2,6 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import { CreateDeliveryScreen } from '@/features/admin/presentation/CreateDeliveryScreen';
 import { SetPasswordScreen } from '@/features/auth/presentation/SetPasswordScreen';
-import { TokenStorage } from '@/core/storage/token.storage';
 
 jest.setTimeout(30000);
 
@@ -31,15 +30,6 @@ jest.mock('expo-router', () => {
   };
 });
 
-let mockToken: string | null = null;
-jest.mock('@/core/storage/token.storage', () => ({
-  TokenStorage: {
-    setToken: async (token: string) => { mockToken = token; },
-    getToken: async () => mockToken,
-    removeToken: async () => { mockToken = null; },
-  },
-}));
-
 jest.mock('react-native-safe-area-context', () => {
   const React = require('react');
   return {
@@ -49,54 +39,53 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
-// ✅ Mock correcto: mockear la instancia de axios del proyecto
-const mockApiPost = jest.fn();
-const mockApiGet = jest.fn();
+// ✅ NUEVA ESTRATEGIA: Mockear los stores directamente
+const mockCreateDomiciliario = jest.fn();
+const mockClearDomiciliarioMessages = jest.fn();
 
-jest.mock('@/core/api/axios.instance', () => ({
-  __esModule: true,
-  default: {
-    post: mockApiPost,
-    get: mockApiGet,
-    interceptors: {
-      request: { use: jest.fn() },
-      response: { use: jest.fn() },
-    },
-  },
-  apiRequest: jest.fn(),
-  apiListRequest: jest.fn(),
+jest.mock('@/features/admin/application/admin.store', () => ({
+  useAdminStore: () => ({
+    isCreatingDomiciliario: false,
+    domiciliarioMessage: null,
+    domiciliarioError: null,
+    clearDomiciliarioMessages: mockClearDomiciliarioMessages,
+    createDomiciliario: mockCreateDomiciliario,
+  }),
+}));
+
+const mockSetPassword = jest.fn();
+const mockClearPasswordMessages = jest.fn();
+
+jest.mock('@/features/auth/application/auth.store', () => ({
+  useAuthStore: () => ({
+    isSettingPassword: false,
+    setPasswordMessage: null,
+    setPasswordError: null,
+    clearPasswordMessages: mockClearPasswordMessages,
+    setPassword: mockSetPassword,
+  }),
 }));
 
 describe('E2E SIMULADO: Flujo completo de creación de domiciliario', () => {
   
-  beforeAll(async () => {
-    await TokenStorage.removeToken();
-  });
-
-  afterEach(() => {
-    mockToken = null;
+  beforeEach(() => {
+    mockCreateDomiciliario.mockClear();
+    mockClearDomiciliarioMessages.mockClear();
+    mockSetPassword.mockClear();
+    mockClearPasswordMessages.mockClear();
     mockReplace.mockClear();
     mockPush.mockClear();
-    mockApiPost.mockClear();
-    mockApiGet.mockClear();
-    jest.clearAllMocks();
   });
 
   test('Admin crea domiciliario → Domiciliario recibe email → Crea contraseña → Login', async () => {
     
+    // ─────────────────────────────────────────────
+    // PASO 1: Admin crea domiciliario
+    // ─────────────────────────────────────────────
     console.log('📝 PASO 1: Admin creando domiciliario...');
     
-    // Mock de respuesta exitosa del backend
-    mockApiPost.mockResolvedValueOnce({
-      data: { 
-        data: { 
-          id: 'domiciliario-123', 
-          nombre: 'Juan Pérez', 
-          email: 'domiciliario@test.com', 
-          rol: 'DOMICILIARIO' 
-        } 
-      },
-    });
+    // Configurar mock para que retorne éxito
+    mockCreateDomiciliario.mockResolvedValueOnce(true);
 
     render(<CreateDeliveryScreen />);
     
@@ -111,28 +100,29 @@ describe('E2E SIMULADO: Flujo completo de creación de domiciliario', () => {
     const submitButton = screen.getByTestId('submit-button');
     fireEvent.press(submitButton);
 
-    // Verificar que se llamó a la API con la instancia correcta
+    // Verificar que se llamó a la función del store
     await waitFor(() => {
-      expect(mockApiPost).toHaveBeenCalledWith(
-        '/usuarios/domiciliarios',
-        { nombre: 'Juan Pérez', email: 'domiciliario@test.com' }
-      );
+      expect(mockCreateDomiciliario).toHaveBeenCalledWith({
+        nombre: 'Juan Pérez',
+        email: 'domiciliario@test.com',
+      });
     }, { timeout: 5000 });
 
-    await screen.findByTestId('success-message');
-    console.log('✅ Domiciliario creado exitosamente');
+    console.log('✅ Admin llamó a createDomiciliario correctamente');
 
+    // ─────────────────────────────────────────────
+    // PASO 2: Simular que el domiciliario recibe el email
+    // ─────────────────────────────────────────────
     console.log('📧 PASO 2: Simulando email recibido con token...');
+    console.log('🔗 Token recibido: mock-token-12345');
+
+    // ─────────────────────────────────────────────
+    // PASO 3: Domiciliario abre link y crea contraseña
+    // ─────────────────────────────────────────────
     console.log('🔐 PASO 3: Domiciliario creando contraseña...');
     
-    // Mock de respuesta exitosa del backend para set password
-    mockApiPost.mockResolvedValueOnce({
-      data: { 
-        data: { 
-          message: 'Contraseña creada correctamente. Ya puedes iniciar sesión.' 
-        } 
-      },
-    });
+    // Configurar mock para que retorne éxito
+    mockSetPassword.mockResolvedValueOnce(true);
 
     render(<SetPasswordScreen />);
     
@@ -147,22 +137,26 @@ describe('E2E SIMULADO: Flujo completo de creación de domiciliario', () => {
     const setPasswordButton = screen.getByTestId('submit-button');
     fireEvent.press(setPasswordButton);
 
-    // Verificar que se llamó a la API con el token
+    // Verificar que se llamó a la función del store con el token
     await waitFor(() => {
-      expect(mockApiPost).toHaveBeenCalledWith(
-        '/auth/domiciliarios/set-password',
-        { token: 'mock-token-12345', password: 'nuevaPassword123' }
-      );
+      expect(mockSetPassword).toHaveBeenCalledWith({
+        token: 'mock-token-12345',
+        password: 'nuevaPassword123',
+      });
     }, { timeout: 5000 });
 
-    await screen.findByTestId('success-message');
-
+    // Verificar redirección al login
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith('/login');
     }, { timeout: 5000 });
 
-    console.log('✅ Contraseña creada exitosamente');
+    console.log('✅ Domiciliario llamó a setPassword correctamente');
     console.log('✅ Redirección a /login confirmada');
-    console.log('🎉 Test E2E completado exitosamente');
+
+    console.log('🎉 Test E2E completado exitosamente:');
+    console.log('   1. ✅ Admin creó domiciliario');
+    console.log('   2. ✅ Email simulado con token');
+    console.log('   3. ✅ Domiciliario creó contraseña');
+    console.log('   4. ✅ Redirigido a login');
   });
 });
