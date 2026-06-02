@@ -97,17 +97,23 @@ describe('E2E SIMULADO: Flujo completo de creación de domiciliario', () => {
 
     render(<CreateDeliveryScreen />);
     
-    await screen.findByText('Crear domiciliario', {}, { timeout: 5000 });
+    // Usar getByText con exactitud o findByRole si es posible, pero aquí usaremos un selector más específico
+    // Buscamos el título principal
+    const title = await screen.findByText('Crear domiciliario', { exact: true });
+    expect(title).toBeTruthy();
 
-    // Llenar formulario
+    // Llenar formulario usando placeholders (son únicos)
     const nombreInput = screen.getByPlaceholderText('Nombre completo');
     const emailInput = screen.getByPlaceholderText('correo@ejemplo.com');
     
     fireEvent.changeText(nombreInput, 'Juan Pérez');
     fireEvent.changeText(emailInput, 'domiciliario@test.com');
 
-    // Enviar formulario
-    const submitButton = screen.getByText('Crear domiciliario');
+    // Enviar formulario buscando por el texto del botón dentro de un TouchableOpacity
+    // Como hay dos textos iguales, buscamos el que está dentro de un componente presionable o usamos getAllByText
+    const buttons = screen.getAllByText('Crear domiciliario');
+    // El segundo elemento suele ser el botón en esta estructura
+    const submitButton = buttons[1]; 
     fireEvent.press(submitButton);
 
     // Verificar que se llamó a la API
@@ -128,7 +134,6 @@ describe('E2E SIMULADO: Flujo completo de creación de domiciliario', () => {
     // ─────────────────────────────────────────────
     console.log('📧 PASO 2: Simulando email recibido con token...');
     
-    // El token ya está mockeado en useLocalSearchParams: 'mock-token-12345'
     const token = 'mock-token-12345';
     console.log(`🔗 Token recibido: ${token}`);
 
@@ -148,11 +153,13 @@ describe('E2E SIMULADO: Flujo completo de creación de domiciliario', () => {
 
     render(<SetPasswordScreen />);
     
-    await screen.findByText('Crear contraseña', {}, { timeout: 5000 });
+    await screen.findByText('Crear contraseña', { exact: true });
 
     // Llenar formulario de contraseña
-    const passwordInput = screen.getByPlaceholderText('••••••');
-    const confirmPasswordInput = screen.getAllByPlaceholderText('••••••')[1];
+    // Hay dos inputs con el mismo placeholder, los seleccionamos por índice
+    const passwordInputs = screen.getAllByPlaceholderText('••••••');
+    const passwordInput = passwordInputs[0];
+    const confirmPasswordInput = passwordInputs[1];
     
     fireEvent.changeText(passwordInput, 'nuevaPassword123');
     fireEvent.changeText(confirmPasswordInput, 'nuevaPassword123');
@@ -180,14 +187,10 @@ describe('E2E SIMULADO: Flujo completo de creación de domiciliario', () => {
     console.log('✅ Contraseña creada exitosamente');
     console.log('✅ Redirección a /login confirmada');
 
-    // ─────────────────────────────────────────────
-    // RESUMEN FINAL
-    // ─────────────────────────────────────────────
     console.log('🎉 Test E2E completado exitosamente:');
     console.log('   1. ✅ Admin creó domiciliario');
     console.log('   2. ✅ Email simulado con token');
     console.log('   3. ✅ Domiciliario creó contraseña');
     console.log('   4. ✅ Redirigido a login');
-    console.log('🔗 Flujo completo verificado sin consumir API real');
   });
 });
