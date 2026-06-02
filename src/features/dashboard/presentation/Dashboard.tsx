@@ -14,6 +14,11 @@ export default function Dashboard() {
     loadData();
   }, []);
 
+  const handleCreateDomi = () => {
+    setIsDomiModalVisible(false); 
+    router.push('/(admin)/domiciliarios/create'); 
+  };
+
   return (
     <ThemedView className="flex-1 p-4">
       <ThemedView className="flex-row justify-between mb-6">
@@ -61,7 +66,7 @@ export default function Dashboard() {
         errorList={null}
         onSelectDomiToDelete={(domi) => console.log(domi)}
         createDomi={false}
-        handleCreateDomi={() => console.log("Crear")}
+        handleCreateDomi={handleCreateDomi} 
       />
     </ThemedView>
   );
