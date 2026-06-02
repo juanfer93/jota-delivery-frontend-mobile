@@ -18,9 +18,16 @@ export interface AuthState {
 }
 
 export interface LoginResponse {
-  accessToken: string;  
-  usuario: User;  
+  accessToken: string;
+  usuario: User;
 }
+
+export interface RawLoginResponse {
+  data: LoginResponse;
+  success: boolean;
+  timestamp: string;
+}
+
 
 export interface SetPasswordDTO {
   token: string;

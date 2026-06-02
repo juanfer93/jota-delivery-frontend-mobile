@@ -1,8 +1,7 @@
-// src/features/auth/application/auth.store.ts
 import { create } from 'zustand';
 import api from '@/core/api/axios.instance';
 import { TokenStorage } from '@/core/storage/token.storage';
-import { User, LoginResponse, SetPasswordDTO } from '../domain/auth.types';
+import { User, RawLoginResponse, SetPasswordDTO } from '@/features/auth/domain/auth.types'; 
 
 interface AuthState {
   user: User | null;
@@ -47,20 +46,27 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (credentials) => {
     set({ isLoading: true });
     try {
-      const { data } = await api.post<LoginResponse>('/auth/login', credentials);
-      console.log('🔐 [LOGIN] Respuesta del backend:', data);
+      const response = await api.post<RawLoginResponse>('/auth/login', credentials);
       
-      await TokenStorage.setToken(data.accessToken);
-      console.log('🔐 [LOGIN] Token guardado:', data.accessToken);
+      const loginData = response.data.data; 
       
-      // Verificar que se guardó correctamente
+      console.log('🔐 [LOGIN] Datos extraídos:', loginData);
+  
+      if (!loginData?.accessToken) {
+        throw new Error('No se recibió token del servidor');
+      }
+  
+      await TokenStorage.setToken(loginData.accessToken);
+      console.log(' [LOGIN] Token guardado correctamente');
+      
       const savedToken = await TokenStorage.getToken();
-      console.log('🔐 [LOGIN] Token recuperado del storage:', savedToken);
+      console.log('🔐 [LOGIN] Token verificado en storage:', savedToken ? 'SÍ' : 'NO');
       
-      set({ user: data.usuario, isAuthenticated: true });
-      console.log('🔐 [LOGIN] Estado actualizado:', { user: data.usuario, isAuthenticated: true });
-    } catch (error) {
-      console.error('❌ [LOGIN] Error:', error);
+      set({ user: loginData.usuario, isAuthenticated: true });
+      console.log('✅ [LOGIN] Estado actualizado exitosamente');
+      
+    } catch (error: any) {
+      console.error('❌ [LOGIN] Error crítico:', error.message);
       throw error;
     } finally {
       set({ isLoading: false });
@@ -78,7 +84,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     console.log('🔐 [AUTH] Token encontrado:', token ? 'SÍ (' + token.substring(0, 10) + '...)' : 'NO');
     
     if (!token) {
-      console.log('❌ [AUTH] No hay token, usuario NO autenticado');
+      console.log(' [AUTH] No hay token, usuario NO autenticado');
       set({ isAuthenticated: false, user: null });
       return;
     }
