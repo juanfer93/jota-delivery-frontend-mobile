@@ -4,16 +4,10 @@ export enum UserRole {
 }
 
 export interface User {
-  id: number; 
+  id: string;  
   nombre: string;
-  correo: string;
+  email: string;  
   rol: UserRole;
-  telefono?: string;
-  estado: boolean; 
-  vehiculo?: string;
-  placa?: string;
-  createdAt: string; 
-  updatedAt: string;
 }
 
 export interface AuthState {
@@ -24,8 +18,8 @@ export interface AuthState {
 }
 
 export interface LoginResponse {
-  token: string;
-  user: User;
+  accessToken: string;  
+  usuario: User;  
 }
 
 export interface SetPasswordDTO {

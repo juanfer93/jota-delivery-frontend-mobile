@@ -15,7 +15,6 @@ interface AuthState {
   checkAdminStatus: () => Promise<boolean>;
   isInitializing: boolean;
 
-  // NUEVO: Estados para set password
   isSettingPassword: boolean;
   setPasswordMessage: string | null;
   setPasswordError: string | null;
@@ -49,8 +48,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     try {
       const { data } = await api.post<LoginResponse>('/auth/login', credentials);
-      await TokenStorage.setToken(data.token);
-      set({ user: data.user, isAuthenticated: true });
+      await TokenStorage.setToken(data.accessToken);  
+      set({ user: data.usuario, isAuthenticated: true });  
     } catch (error) {
       throw error;
     } finally {
