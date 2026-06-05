@@ -16,7 +16,8 @@ function isPublicRoute(pathname: string): boolean {
 }
 
 function isProtectedRoute(pathname: string): boolean {
-  return pathname.startsWith('/(app)') || pathname.startsWith('/(admin)');
+  if (!pathname || pathname === '/') return false;
+  return !isPublicRoute(pathname);
 }
 
 export default function RootLayout() {
