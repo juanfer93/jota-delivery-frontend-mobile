@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import tw from '@/lib/tailwind';
 import { useAdminStore } from '@/features/admin/application/admin.store';
@@ -52,6 +52,16 @@ export const CreateDeliveryScreen = () => {
       setErrors({});
     }
   };
+
+  useEffect(() => {
+    if (!domiciliarioMessage && !domiciliarioError) return;
+
+    const timer = setTimeout(() => {
+      clearDomiciliarioMessages();
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [domiciliarioMessage, domiciliarioError, clearDomiciliarioMessages]);
 
   return (
     <ScrollView

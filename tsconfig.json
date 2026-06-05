@@ -6,10 +6,21 @@
     "ignoreDeprecations": "6.0",
     "jsx": "react-native",
     "esModuleInterop": true,
-    "moduleResolution": "bundler", 
-    "types": ["jest", "node"], 
+    "moduleResolution": "bundler",
+    "types": [
+      "jest",
+      "node"
+    ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
-  }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ]
 }
