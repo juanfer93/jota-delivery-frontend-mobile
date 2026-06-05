@@ -1,12 +1,23 @@
 import { useEffect, useState } from 'react';
-import { Slot, useRouter } from 'expo-router';
+import { Slot, useRouter, useSegments, usePathname } from 'expo-router';
 import { useAuthStore } from '@/features/auth/application/auth.store';
 import { ActivityIndicator, View } from 'react-native';
 import tw from '@/lib/tailwind';
 
+const PUBLIC_ROUTES = [
+  '/login',
+  '/create-admin',
+  '/auth/domiciliario/set-password', 
+];
+
+function isPublicRoute(pathname: string): boolean {
+  return PUBLIC_ROUTES.some(route => pathname.startsWith(route));
+}
+
 export default function RootLayout() {
   const { hasAdmin, isAuthenticated, checkAdminStatus, checkAuth } = useAuthStore();
   const router = useRouter();
+  const pathname = usePathname();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -27,19 +38,24 @@ export default function RootLayout() {
   useEffect(() => {
     if (!isReady) return;
     
-    console.log("🔍 Decisión de ruta:", { hasAdmin, isAuthenticated });
+    if (isPublicRoute(pathname)) {
+      console.log("🔓 Ruta pública detectada, permitiendo acceso:", pathname);
+      return; 
+    }
+    
+    console.log("🔍 Decisión de ruta:", { hasAdmin, isAuthenticated, pathname });
     
     if (!hasAdmin) {
       console.log("👉 Redirigiendo a /create-admin");
-      router.replace('/create-admin');
+      router.replace('/create-admin' as any);
     } else if (isAuthenticated) {
       console.log("👉 Redirigiendo a /(app)/");
-      router.replace('/(app)/');
+      router.replace('/(app)/' as any); 
     } else {
       console.log("👉 Redirigiendo a /login");
-      router.replace('/login');
+      router.replace('/login' as any);
     }
-  }, [isReady, hasAdmin, isAuthenticated]);
+  }, [isReady, hasAdmin, isAuthenticated, pathname]); 
 
   if (!isReady) {
     return (
