@@ -2,8 +2,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { TokenStorage } from '@/core/storage/token.storage';
 import { ApiResponse, ApiListResponse } from '@/core/domain/api.types';
 
- const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.10:3000/api/v1';
-// const baseUrl = 'http://localhost:3000/api/v1'
+const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.26:3000/api/v1';
 
 const api = axios.create({
   baseURL: baseUrl,
@@ -17,7 +16,7 @@ api.interceptors.request.use(async (config) => {
   const token = await TokenStorage.getToken();
   console.log('🔍 [AXIOS] Petición a:', config.url);
   console.log('🔍 [AXIOS] Token encontrado:', token ? 'SÍ' : 'NO');
-  
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
     console.log('🔍 [AXIOS] Header agregado:', config.headers.Authorization.substring(0, 20) + '...');
@@ -37,12 +36,12 @@ api.interceptors.response.use(
 
 export const apiRequest = async <T>(config: AxiosRequestConfig): Promise<T> => {
   const response = await api.request<ApiResponse<T>>(config);
-  return response.data.data; 
+  return response.data.data;
 };
 
 export const apiListRequest = async <T>(config: AxiosRequestConfig): Promise<T[]> => {
   const response = await api.request<ApiListResponse<T>>(config);
-  return response.data.data; 
+  return response.data.data;
 };
 
 export default api;

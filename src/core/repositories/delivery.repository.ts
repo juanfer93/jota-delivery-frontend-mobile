@@ -8,20 +8,23 @@ import { DomiciliarioItem, Comercio } from '@/features/admin/domain/admin.types'
 
 export const DeliveryRepository = {
   getPedidosHoy: async (): Promise<Pedido[]> => {
-    return await apiListRequest<Pedido>({ method: 'GET', url: '/pedidos/hoy' });
+    return await apiListRequest<Pedido>({ 
+      method: 'GET', 
+      url: '/pedidos/admin/hoy'  // ← Cambiado: /pedidos/hoy → /pedidos/admin/hoy
+    });
   },
 
   getPedidosHistorial: async (fecha: string): Promise<Pedido[]> => {
     return await apiListRequest<Pedido>({ 
       method: 'GET', 
-      url: `/pedidos/historial?fecha=${fecha}` 
+      url: `/pedidos/admin/history?fecha=${fecha}`  
     });
   },
 
   createPedido: async (payload: CreatePedidoDTO): Promise<Pedido> => {
     return await apiRequest<Pedido>({ 
       method: 'POST', 
-      url: '/pedidos', 
+      url: '/pedidos/admin',  
       data: payload 
     });
   },
@@ -29,16 +32,22 @@ export const DeliveryRepository = {
   updatePedidoEstado: async (id: string, payload: UpdatePedidoEstadoDTO): Promise<void> => {
     await apiRequest<void>({ 
       method: 'PATCH', 
-      url: `/pedidos/${id}/estado`, 
+      url: `/pedidos/admin/${id}/estado`,  
       data: payload 
     });
   },
 
   getDomiciliarios: async (): Promise<DomiciliarioItem[]> => {
-    return await apiListRequest<DomiciliarioItem>({ method: 'GET', url: '/domiciliarios' });
+    return await apiListRequest<DomiciliarioItem>({ 
+      method: 'GET', 
+      url: '/usuarios/domiciliarios'  
+    });
   },
 
   getComercios: async (): Promise<Comercio[]> => {
-    return await apiListRequest<Comercio>({ method: 'GET', url: '/comercios' });
+    return await apiListRequest<Comercio>({ 
+      method: 'GET', 
+      url: '/comercios'  
+    });
   }
 };
