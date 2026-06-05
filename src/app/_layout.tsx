@@ -1,17 +1,22 @@
 import { useEffect, useState } from 'react';
-import { Slot, useRouter, useSegments, usePathname } from 'expo-router';
+import { Slot, useRouter, usePathname } from 'expo-router';
 import { useAuthStore } from '@/features/auth/application/auth.store';
 import { ActivityIndicator, View } from 'react-native';
 import tw from '@/lib/tailwind';
 
+// Rutas que NO requieren autenticación (públicas especiales)
 const PUBLIC_ROUTES = [
   '/login',
   '/create-admin',
-  '/auth/domiciliario/set-password', 
+  '/auth/domiciliario/set-password',
 ];
 
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some(route => pathname.startsWith(route));
+}
+
+function isProtectedRoute(pathname: string): boolean {
+  return pathname.startsWith('/(app)') || pathname.startsWith('/(admin)');
 }
 
 export default function RootLayout() {
@@ -40,7 +45,12 @@ export default function RootLayout() {
     
     if (isPublicRoute(pathname)) {
       console.log("🔓 Ruta pública detectada, permitiendo acceso:", pathname);
-      return; 
+      return;
+    }
+    
+    if (isProtectedRoute(pathname)) {
+      console.log("✅ Ya estamos en una ruta protegida:", pathname);
+      return;
     }
     
     console.log("🔍 Decisión de ruta:", { hasAdmin, isAuthenticated, pathname });
@@ -50,12 +60,12 @@ export default function RootLayout() {
       router.replace('/create-admin' as any);
     } else if (isAuthenticated) {
       console.log("👉 Redirigiendo a /(app)/");
-      router.replace('/(app)/' as any); 
+      router.replace('/(app)/' as any);
     } else {
       console.log("👉 Redirigiendo a /login");
       router.replace('/login' as any);
     }
-  }, [isReady, hasAdmin, isAuthenticated, pathname]); 
+  }, [isReady, hasAdmin, isAuthenticated, pathname]);
 
   if (!isReady) {
     return (
