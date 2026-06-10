@@ -19,3 +19,11 @@ export const createDomiciliarioSchema = z.object({
 });
 
 export type CreateDomiciliarioForm = z.infer<typeof createDomiciliarioSchema>;
+
+export const createComercioSchema = z.object({
+  nombre: z.string().min(1, 'El nombre es obligatorio'),
+  direccion: z.string().min(1, 'La dirección es obligatoria'),
+  telefono: z.string().min(1, 'El teléfono es obligatorio'),
+});
+
+export type CreateComercioForm = z.infer<typeof createComercioSchema>;

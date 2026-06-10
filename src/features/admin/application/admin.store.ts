@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import api from '@/core/api/axios.instance';
-import { CreateAdminDTO, CreateDomiciliarioDTO } from '../domain/admin.types';
+import { CreateAdminDTO, CreateDomiciliarioDTO, CreateComercioDTO } from '../domain/admin.types';
+import { AdminRepository } from '@/core/repositories/admin.repository';
 
 interface AdminStore {
   isCreating: boolean;
@@ -11,6 +12,11 @@ interface AdminStore {
   domiciliarioError: string | null;
   createDomiciliario: (data: CreateDomiciliarioDTO) => Promise<boolean>;
   clearDomiciliarioMessages: () => void;
+  isCreatingComercio: boolean;
+  comercioMessage: string | null;
+  comercioError: string | null;
+  createComercio: (data: CreateComercioDTO) => Promise<boolean>;
+  clearComercioMessages: () => void;
 }
 
 export const useAdminStore = create<AdminStore>((set) => ({
@@ -56,6 +62,52 @@ export const useAdminStore = create<AdminStore>((set) => ({
       return false;
     } finally {
       set({ isCreatingDomiciliario: false });
+    }
+  },
+
+  isCreatingComercio: false,
+  comercioMessage: null,
+  comercioError: null,
+
+  clearComercioMessages: () => {
+    set({ comercioMessage: null, comercioError: null });
+  },
+
+  createComercio: async (data) => {
+    set({ isCreatingComercio: true, comercioMessage: null, comercioError: null });
+    try {
+      await AdminRepository.createComercio(data);
+      set({ comercioMessage: 'Comercio creado correctamente.' });
+      return true;
+    } catch (error: any) {
+      const message = error?.response?.data?.message || 'Error al crear el comercio. Intenta de nuevo.';
+      set({ comercioError: message });
+      return false;
+    } finally {
+      set({ isCreatingComercio: false });
+    }
+  },
+
+  isCreatingComercio: false,
+  comercioMessage: null,
+  comercioError: null,
+
+  clearComercioMessages: () => {
+    set({ comercioMessage: null, comercioError: null });
+  },
+
+  createComercio: async (data) => {
+    set({ isCreatingComercio: true, comercioMessage: null, comercioError: null });
+    try {
+      await AdminRepository.createComercio(data);
+      set({ comercioMessage: 'Comercio creado correctamente.' });
+      return true;
+    } catch (error: any) {
+      const message = error?.response?.data?.message || 'Error al crear el comercio. Intenta de nuevo.';
+      set({ comercioError: message });
+      return false;
+    } finally {
+      set({ isCreatingComercio: false });
     }
   },
 }));

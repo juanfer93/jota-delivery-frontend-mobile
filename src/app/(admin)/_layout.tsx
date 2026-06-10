@@ -9,6 +9,7 @@ export default function AdminLayout() {
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="domiciliarios/create" />
+      <Stack.Screen name="comercios/create" />
       <Stack.Screen name="profile/index" />
     </Stack>
   );
