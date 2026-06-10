@@ -30,7 +30,7 @@ export default function LoginClient() {
 
       rol === 'domiciliario'
         ? router.replace('/(app)/delivery')
-        : router.replace('/(app)/');
+        : router.replace('/(admin)/');
     } catch (error: any) {
       setServerError(error?.response?.data?.message || 'Credenciales inválidas.');
     }

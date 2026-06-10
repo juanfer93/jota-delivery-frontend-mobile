@@ -75,8 +75,7 @@ export const useDeliveryStore = create<DeliveryState>((set, get) => ({
     set({ status: 'loading', error: null });
     try {
       await DeliveryRepository.updatePedidoEstado(pedidoId, {
-        pedidoId: Number(pedidoId),
-        nuevoEstado: estado,
+        estado,
       });
       await get().loadData();
       return true;

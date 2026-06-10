@@ -43,17 +43,17 @@ export default function DeliveryHistoryClient() {
                   <Text style={tw`font-bold text-jjBlue`}>ID: {p.id.toString().slice(-6)}</Text>
 
                   <View
-                    style={tw`${p.estado === 'ENTREGADO' ? 'bg-status-hecho/20' : 'bg-status-cancelado/20'} px-3 py-1 rounded-full`}
+                    style={tw`${p.estado === 'HECHO' ? 'bg-status-hecho/20' : 'bg-status-cancelado/20'} px-3 py-1 rounded-full`}
                   >
-                    <Text style={tw`${p.estado === 'ENTREGADO' ? 'text-status-hecho' : 'text-status-cancelado'} text-xs font-bold`}>
+                    <Text style={tw`${p.estado === 'HECHO' ? 'text-status-hecho' : 'text-status-cancelado'} text-xs font-bold`}>
                       {p.estado}
                     </Text>
                   </View>
                 </View>
 
-                <Text style={tw`text-sm text-jjBlueDark/80`}>Dirección: {p.direccionEntrega}</Text>
+                <Text style={tw`text-sm text-jjBlueDark/80`}>Dirección: {p.direccionDestino}</Text>
 
-                <Text style={tw`text-sm font-bold mt-2 text-jjBlueDark`}>Valor: {Number(p.valorPedido ?? 0).toLocaleString()}</Text>
+                <Text style={tw`text-sm font-bold mt-2 text-jjBlueDark`}>Valor: {Number(p.valorFinal ?? 0).toLocaleString()}</Text>
               </View>
             ))}
           </View>

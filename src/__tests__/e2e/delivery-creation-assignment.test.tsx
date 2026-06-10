@@ -18,10 +18,10 @@ jest.mock('@/features/delivery/application/delivery.store', () => ({
     assignPedido: mockAssignPedido,
     status: 'idle',
     domiciliarios: [
-      { id: '1', nombre: 'Domi Uno', email: 'domi1@jota.com', rol: 'DOMICILIARIO' },
+      { id: '5d6517de-c78a-4b99-bdb4-d981c13c27c5', nombre: 'Domi Uno', email: 'domi1@jota.com', rol: 'DOMICILIARIO' },
     ],
     comercios: [
-      { id: 10, nombre: 'Comercio Uno', direccion: 'Calle 1', telefono: '3000000000', estado: true, createdAt: '', updatedAt: '' }],
+      { id: '1beb752b-8590-4c69-9cbe-bc7714a9ee94', nombre: 'Comercio Uno', direccion: 'Calle 1', telefono: '3000000000', estado: true, createdAt: '', updatedAt: '' }],
     loadData: mockLoadData,
   }),
 }));
@@ -46,28 +46,25 @@ test('E2E: Crear pedido asignado a domiciliario y comercio existente', async () 
 
   render(<CreatePedido />);
 
-  const domicilioOption = await screen.findByTestId('domiciliario-option-1');
+  const domicilioOption = await screen.findByTestId('domiciliario-option-5d6517de-c78a-4b99-bdb4-d981c13c27c5');
   fireEvent.press(domicilioOption);
 
-  const comercioOption = await screen.findByTestId('comercio-option-10');
+  const comercioOption = await screen.findByTestId('comercio-option-1beb752b-8590-4c69-9cbe-bc7714a9ee94');
   fireEvent.press(comercioOption);
 
-  fireEvent.changeText(screen.getByTestId('direccionEntrega-input'), 'Carrera 10 #20-30');
-  fireEvent.changeText(screen.getByTestId('valorPedido-input'), '25000');
+  fireEvent.changeText(screen.getByTestId('direccionDestino-input'), 'Carrera 10 #20-30');
+  fireEvent.changeText(screen.getByTestId('valorFinal-input'), '25000');
   fireEvent.changeText(screen.getByTestId('detalles-input'), 'Entrega con precaución.');
 
   fireEvent.press(screen.getByTestId('create-pedido-button'));
 
   await waitFor(() => {
     expect(mockAssignPedido).toHaveBeenCalledWith({
-      domiciliarioId: 1,
-      comercioId: 10,
-      valorPedido: 25000,
+      usuarioId: '5d6517de-c78a-4b99-bdb4-d981c13c27c5',
+      comercioId: '1beb752b-8590-4c69-9cbe-bc7714a9ee94',
+      valorFinal: 25000,
       valorDomicilio: 0,
-      clienteNombre: 'Cliente',
-      clienteTelefono: '0000000000',
-      direccionRecogida: 'No aplica',
-      direccionEntrega: 'Carrera 10 #20-30',
+      direccionDestino: 'Carrera 10 #20-30',
       detallesAdicionales: 'Entrega con precaución.',
     });
   }, { timeout: 5000 });

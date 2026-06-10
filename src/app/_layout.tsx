@@ -51,11 +51,6 @@ export default function RootLayout() {
       return;
     }
     
-    if (isProtectedRoute(pathname)) {
-      console.log("✅ Ya estamos en una ruta protegida:", pathname);
-      return;
-    }
-
     console.log("🔍 Decisión de ruta:", { hasAdmin, isAuthenticated, pathname, user: user ? (user.email || (user as any).nombre) : null });
 
     if (!hasAdmin) {
@@ -67,6 +62,11 @@ export default function RootLayout() {
     if (!isAuthenticated) {
       console.log("👉 Usuario no autenticado, redirigiendo a /login");
       router.replace('/login' as any);
+      return;
+    }
+
+    if (isProtectedRoute(pathname)) {
+      console.log("✅ Ruta protegida con sesión válida:", pathname);
       return;
     }
 

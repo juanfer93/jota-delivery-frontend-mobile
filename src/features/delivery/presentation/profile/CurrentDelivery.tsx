@@ -7,7 +7,7 @@ export function CurrentDelivery() {
   const { pedidosHoy, updateEstado } = useDeliveryStore();
 
   const activePedido = pedidosHoy.find(p =>
-    p.estado === PedidoEstado.EN_CAMINO || p.estado === PedidoEstado.ASIGNADO
+    p.estado === PedidoEstado.EN_PROCESO
   );
 
   if (!activePedido) {
@@ -24,15 +24,15 @@ export function CurrentDelivery() {
 
         <View style={tw`bg-white p-6 rounded-3xl shadow-sm border border-jj-blueDark/5`}>
           <Text style={tw`text-xs font-bold text-jj-blue uppercase mb-1`}>Pedido Activo</Text>
-          <Text style={tw`text-2xl font-bold text-jj-blueDark mb-6`}>{activePedido.direccionEntrega}</Text>
+          <Text style={tw`text-2xl font-bold text-jj-blueDark mb-6`}>{activePedido.direccionDestino}</Text>
 
           <View style={tw`border-t border-jj-beige py-4 mb-4`}>
             <Text style={tw`text-sm text-jj-blueDark/60`}>Valor a cobrar:</Text>
-            <Text style={tw`text-lg font-bold text-jj-blueDark`}>{Number(activePedido.valorPedido).toLocaleString()}</Text>
+            <Text style={tw`text-lg font-bold text-jj-blueDark`}>{Number(activePedido.valorFinal).toLocaleString()}</Text>
           </View>
 
           <TouchableOpacity
-            onPress={() => updateEstado(activePedido.id.toString(), PedidoEstado.ENTREGADO)}
+            onPress={() => updateEstado(activePedido.id, PedidoEstado.HECHO)}
             style={tw`bg-jj-blue p-4 rounded-2xl items-center`}
           >
             <Text style={tw`text-white font-bold`}>Marcar como Entregado</Text>

@@ -78,7 +78,7 @@ export default function Dashboard() {
               style={tw`p-4 mb-2 bg-white rounded-3xl border border-jjBeige`}
               onPress={() => router.push(`/delivery/${item.id}` as any)}
             >
-              <Text style={tw`text-jjBlueDark font-medium`}>Dirección: {item.direccionEntrega}</Text>
+              <Text style={tw`text-jjBlueDark font-medium`}>Dirección: {item.direccionDestino}</Text>
               <Text style={tw`text-jjBlueDark/70 text-sm`}>Estado: {item.estado}</Text>
             </TouchableOpacity>
           )}

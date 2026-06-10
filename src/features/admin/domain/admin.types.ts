@@ -1,7 +1,7 @@
 import { User } from '@/features/auth/domain/auth.types';
 
 export interface Comercio {
-  id: number;
+  id: string;
   nombre: string;
   direccion: string;
   telefono: string;

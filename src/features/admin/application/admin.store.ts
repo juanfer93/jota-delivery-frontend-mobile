@@ -25,7 +25,7 @@ export const useAdminStore = create<AdminStore>((set) => ({
     set({ isCreating: true });
     try {
       if (process.env.NODE_ENV === 'test') {
-        // En entorno de tests, evitamos llamadas reales y simulamos éxito
+        // En entorno de tests, evitamos llamadas reales y simulamos exito
         console.log('[TEST MODE] Simulando createFirstAdmin');
         return;
       }
@@ -54,7 +54,7 @@ export const useAdminStore = create<AdminStore>((set) => ({
     
     try {
       await api.post('/usuarios/domiciliarios', data);
-      set({ domiciliarioMessage: 'Domiciliario creado. Se ha enviado un correo de confirmación.' });
+      set({ domiciliarioMessage: 'Domiciliario creado. Se ha enviado un correo de confirmacion.' });
       return true;
     } catch (error: any) {
       const message = error?.response?.data?.message || 'Error al crear el domiciliario. Intenta de nuevo.';

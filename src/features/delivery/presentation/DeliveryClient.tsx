@@ -10,10 +10,8 @@ interface DeliveryClientProps {
 }
 
 const EstadoOpciones = [
-  { label: 'Pendiente', value: PedidoEstado.PENDIENTE },
-  { label: 'Asignado', value: PedidoEstado.ASIGNADO },
-  { label: 'En camino', value: PedidoEstado.EN_CAMINO },
-  { label: 'Entregado', value: PedidoEstado.ENTREGADO },
+  { label: 'En proceso', value: PedidoEstado.EN_PROCESO },
+  { label: 'Hecho', value: PedidoEstado.HECHO },
   { label: 'Cancelado', value: PedidoEstado.CANCELADO },
 ];
 
@@ -28,7 +26,7 @@ export function DeliveryClient({ adminName }: DeliveryClientProps) {
   const pedidosPorDomiciliario = useMemo(() => {
     const map = new Map<string, typeof pedidosHoy>();
     pedidosHoy.forEach((pedido) => {
-      const key = pedido.domiciliario?.nombre ?? 'Sin domiciliario';
+      const key = pedido.usuario?.nombre ?? 'Sin domiciliario';
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(pedido);
     });
@@ -82,8 +80,8 @@ export function DeliveryClient({ adminName }: DeliveryClientProps) {
             {items.map((pedido) => (
               <View key={pedido.id} style={tw`mb-4 rounded-3xl border border-jjBeige bg-jjBeigeSoft p-4`}>
                 <Text style={tw`text-sm font-bold text-jjBlueDark`}>{pedido.comercio?.nombre ?? `Comercio ${pedido.comercioId}`}</Text>
-                <Text style={tw`mt-2 text-sm text-jjBlueDark/70`}>Entrega: {pedido.direccionEntrega}</Text>
-                <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>Valor: ${Number(pedido.valorPedido).toLocaleString()}</Text>
+                <Text style={tw`mt-2 text-sm text-jjBlueDark/70`}>Entrega: {pedido.direccionDestino}</Text>
+                <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>Valor: ${Number(pedido.valorFinal).toLocaleString()}</Text>
                 <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>Estado actual: {pedido.estado}</Text>
 
                 <View style={tw`mt-4 flex-row flex-wrap gap-2`}>

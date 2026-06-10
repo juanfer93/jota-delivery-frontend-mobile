@@ -20,12 +20,12 @@ export default function CreatePedido() {
   const { assignPedido, loadData, status, domiciliarios, comercios } = useDeliveryStore();
 
   const [form, setForm] = useState({
-    direccionEntrega: '',
-    valorPedido: '',
+    direccionDestino: '',
+    valorFinal: '',
     detalles: '',
   });
-  const [selectedDomiciliarioId, setSelectedDomiciliarioId] = useState<number | null>(null);
-  const [selectedComercioId, setSelectedComercioId] = useState<number | null>(null);
+  const [selectedDomiciliarioId, setSelectedDomiciliarioId] = useState<string | null>(null);
+  const [selectedComercioId, setSelectedComercioId] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -39,20 +39,24 @@ export default function CreatePedido() {
     setSuccessMsg('');
     setErrorMsg('');
 
-    if (!selectedDomiciliarioId || !selectedComercioId || !form.valorPedido || !form.direccionEntrega) {
+    const valorFinal = Number(form.valorFinal);
+
+    if (!selectedDomiciliarioId || !selectedComercioId || !form.valorFinal || !form.direccionDestino.trim()) {
       setErrorMsg('Todos los campos marcados son obligatorios.');
       return;
     }
 
+    if (!Number.isFinite(valorFinal) || valorFinal <= 0) {
+      setErrorMsg('El valor del pedido debe ser un numero positivo.');
+      return;
+    }
+
     const created = await assignPedido({
-      domiciliarioId: selectedDomiciliarioId,
+      usuarioId: selectedDomiciliarioId,
       comercioId: selectedComercioId,
-      valorPedido: Number(form.valorPedido),
+      valorFinal,
       valorDomicilio: 0,
-      clienteNombre: 'Cliente',
-      clienteTelefono: '0000000000',
-      direccionRecogida: 'No aplica',
-      direccionEntrega: form.direccionEntrega,
+      direccionDestino: form.direccionDestino.trim(),
       detallesAdicionales: form.detalles || undefined,
     });
 
@@ -62,16 +66,16 @@ export default function CreatePedido() {
     }
 
     setSuccessMsg('Pedido creado exitosamente.');
-    setForm({ direccionEntrega: '', valorPedido: '', detalles: '' });
+    setForm({ direccionDestino: '', valorFinal: '', detalles: '' });
     setSelectedDomiciliarioId(null);
     setSelectedComercioId(null);
     setTimeout(() => back(), 1200);
   };
 
   const renderSelectionList = (
-    items: { id: number; label: string; sublabel?: string }[],
-    selectedId: number | null,
-    onSelect: (id: number) => void,
+    items: { id: string; label: string; sublabel?: string }[],
+    selectedId: string | null,
+    onSelect: (id: string) => void,
     emptyMessage: string,
     prefix: string,
   ) => (
@@ -94,23 +98,17 @@ export default function CreatePedido() {
     </View>
   );
 
-  const comercioOptions: { id: number; label: string; sublabel?: string }[] = comercios.map((comercio: Comercio) => ({
+  const comercioOptions: { id: string; label: string; sublabel?: string }[] = comercios.map((comercio: Comercio) => ({
     id: comercio.id,
     label: comercio.nombre,
     sublabel: comercio.direccion,
   }));
 
-  const domiciliarioOptions = domiciliarios.map((domi, idx) => {
-    const rawId = (domi as any).id ?? (domi as any)._id ?? (domi as any).userId;
-    const numericId = rawId != null && rawId !== '' ? Number(rawId) : NaN;
-    const id = Number.isFinite(numericId) ? numericId : idx + 1; // fallback to 1-based index to keep testIDs stable
-
-    return {
-      id,
-      label: domi.nombre ?? (domi as any).name ?? 'Domiciliario',
-      sublabel: domi.email ?? '',
-    };
-  });
+  const domiciliarioOptions = domiciliarios.map((domi) => ({
+    id: domi.id,
+    label: domi.nombre,
+    sublabel: domi.email,
+  }));
 
   return (
     <SafeAreaView style={tw`flex-1 bg-jjBeigeSoft`}>
@@ -134,22 +132,22 @@ export default function CreatePedido() {
             <View style={tw`mb-5`}>
               <Text style={tw`text-sm font-medium text-jj-blueDark mb-2`}>Dirección Entrega</Text>
               <TextInput
-                testID="direccionEntrega-input"
+                testID="direccionDestino-input"
                 style={tw`w-full rounded-xl border border-jj-beige px-4 py-3 text-sm text-jj-blueDark bg-white`}
                 placeholder="Carrera 00 #00-00"
-                value={form.direccionEntrega}
-                onChangeText={(text) => setForm({ ...form, direccionEntrega: text })}
+                value={form.direccionDestino}
+                onChangeText={(text) => setForm({ ...form, direccionDestino: text })}
               />
             </View>
 
             <View style={tw`mb-5`}>
               <Text style={tw`text-sm font-medium text-jj-blueDark mb-2`}>Valor Pedido</Text>
               <TextInput
-                testID="valorPedido-input"
+                testID="valorFinal-input"
                 style={tw`w-full rounded-xl border border-jj-beige px-4 py-3 text-sm text-jj-blueDark bg-white`}
                 placeholder="0"
-                value={form.valorPedido}
-                onChangeText={(text) => setForm({ ...form, valorPedido: text })}
+                value={form.valorFinal}
+                onChangeText={(text) => setForm({ ...form, valorFinal: text })}
                 keyboardType="numeric"
               />
             </View>

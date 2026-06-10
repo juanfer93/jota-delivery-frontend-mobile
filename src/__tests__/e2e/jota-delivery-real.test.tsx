@@ -92,10 +92,10 @@ describe('E2E REAL: Flujo completo Backend', () => {
 
     // Esperar navegación al dashboard
     await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith('/(app)/');
+      expect(mockReplace).toHaveBeenCalledWith('/(admin)/');
     }, { timeout: 20000 });
 
-    console.log("✅ Navegación a /(app)/ confirmada por mock");
+    console.log("✅ Navegación a /(admin)/ confirmada por mock");
 
     // ─────────────────────────────────────────────
     // PASO 3: Dashboard (render manual, SIN cleanup intermedio)
