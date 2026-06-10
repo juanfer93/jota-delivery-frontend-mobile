@@ -54,18 +54,32 @@ export default function RootLayout() {
       return;
     }
     
-    console.log("🔍 Decisión de ruta:", { hasAdmin, isAuthenticated, pathname });
-    
+  const { user } = useAuthStore();
+
+    console.log("🔍 Decisión de ruta:", { hasAdmin, isAuthenticated, pathname, user: user ? (user.email || (user as any).nombre) : null });
+
     if (!hasAdmin) {
       console.log("👉 Redirigiendo a /create-admin");
       router.replace('/create-admin' as any);
-    } else if (isAuthenticated) {
-      console.log("👉 Redirigiendo a /(app)/");
-      router.replace('/(app)/' as any);
-    } else {
-      console.log("👉 Redirigiendo a /login");
-      router.replace('/login' as any);
+      return;
     }
+
+    if (!isAuthenticated) {
+      console.log("👉 Usuario no autenticado, redirigiendo a /login");
+      router.replace('/login' as any);
+      return;
+    }
+
+    // Si tenemos información del usuario, redirigimos según su rol
+    if (user && (user as any).rol === 'ADMIN') {
+      console.log('👉 Usuario admin detectado, redirigiendo a /(admin)/');
+      router.replace('/(admin)/' as any);
+      return;
+    }
+
+    // Por defecto, asumimos que es un domiciliario o usuario estándar
+    console.log("👉 Redirigiendo a /(app)/ por defecto");
+    router.replace('/(app)/' as any);
   }, [isReady, hasAdmin, isAuthenticated, pathname]);
 
   if (!isReady) {

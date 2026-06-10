@@ -1,11 +1,11 @@
 import { View } from 'react-native';
 import tw from '@/lib/tailwind';
-import DashboardClient from '@/features/dashboard/presentation/Dashboard';
+import DeliveryClient from '@/features/delivery/presentation/DeliveryClient';
 
-export default function DashboardPage() {
+export default function DeliveryDashboardPage() {
   return (
     <View style={tw`flex-1 bg-gray-50`}>
-      <DashboardClient />
+      <DeliveryClient />
     </View>
   );
 }

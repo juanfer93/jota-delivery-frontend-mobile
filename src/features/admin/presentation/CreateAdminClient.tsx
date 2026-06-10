@@ -43,7 +43,6 @@ export default function CreateAdminClient() {
       await createFirstAdmin(payload);
       console.log("Creación exitosa, intentando navegar...");
       console.log("DEBUG ROUTER:", typeof router.replace);
-      await new Promise(resolve => setTimeout(resolve, 100));
       router.replace('/login');
     } catch (err: unknown) {
       if (isAxiosError(err)) {
