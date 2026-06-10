@@ -1,13 +1,21 @@
-import { useEffect, useMemo } from "react";
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, SafeAreaView } from "react-native";
-import { useRouter } from "expo-router";
+﻿import { useEffect, useMemo } from 'react';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import tw from '@/lib/tailwind';
-import { useDeliveryStore } from "@/features/delivery/application/delivery.store";
-import { Pedido, PedidoEstado } from "@/features/delivery/domain/delivery.types";
+import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
+import { PedidoEstado } from '@/features/delivery/domain/delivery.types';
 
 interface DeliveryClientProps {
   adminName: string;
 }
+
+const EstadoOpciones = [
+  { label: 'Pendiente', value: PedidoEstado.PENDIENTE },
+  { label: 'Asignado', value: PedidoEstado.ASIGNADO },
+  { label: 'En camino', value: PedidoEstado.EN_CAMINO },
+  { label: 'Entregado', value: PedidoEstado.ENTREGADO },
+  { label: 'Cancelado', value: PedidoEstado.CANCELADO },
+];
 
 export function DeliveryClient({ adminName }: DeliveryClientProps) {
   const router = useRouter();
@@ -18,99 +26,92 @@ export function DeliveryClient({ adminName }: DeliveryClientProps) {
   }, [loadData]);
 
   const pedidosPorDomiciliario = useMemo(() => {
-    const map = new Map<string, Pedido[]>();
-    for (const p of pedidosHoy) {
-      const key = p.domiciliarioId ? p.domiciliarioId.toString() : "Sin domiciliario";
+    const map = new Map<string, typeof pedidosHoy>();
+    pedidosHoy.forEach((pedido) => {
+      const key = pedido.domiciliario?.nombre ?? 'Sin domiciliario';
       if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(p);
-    }
+      map.get(key)!.push(pedido);
+    });
     return Array.from(map.entries());
   }, [pedidosHoy]);
 
-  const renderEstadoBotones = (pedidoId: string, estadoActual: PedidoEstado) => {
-    return (
-      <View style={tw`flex-row flex-wrap gap-2 mt-2`}>
-        {Object.values(PedidoEstado).map((estado) => (
-          <TouchableOpacity
-            key={estado}
-            onPress={() => updateEstado(pedidoId, estado)}
-            style={tw`px-3 py-1.5 rounded-lg border ${estadoActual === estado
-                ? "bg-jj-blue border-jj-blue"
-                : "bg-white border-jj-beige"
-              }`}
-          >
-            <Text
-              style={tw`text-xs font-bold ${estadoActual === estado ? "text-jj-beige" : "text-jj-blueDark"
-                }`}
-            >
-              {estado}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    );
+  const handleChangeEstado = async (pedidoId: string, nuevoEstado: PedidoEstado) => {
+    await updateEstado(pedidoId, nuevoEstado);
   };
 
   return (
-    <SafeAreaView style={tw`flex-1 bg-jj-beigeSoft`}>
-      <ScrollView contentContainerStyle={tw`p-6 max-w-[800px] w-full self-center`}>
+    <ScrollView style={tw`flex-1 bg-jjBeigeSoft`} contentContainerStyle={tw`p-6`}>
+      <View style={tw`mb-6`}>
+        <Text style={tw`text-3xl font-bold text-jjBlueDark`}>Pedidos</Text>
+        <Text style={tw`text-sm text-jjBlueDark/60 mt-2`}>Administra las órdenes y asignaciones por domiciliario.</Text>
+      </View>
 
-        <View style={tw`mb-8`}>
-          <Text style={tw`text-2xl font-bold text-jj-blueDark`}>
-            Delivery
-          </Text>
-          <Text style={tw`text-sm text-jj-blueDark/60 uppercase tracking-widest`}>
-            Bienvenido, {adminName}
-          </Text>
+      <View style={tw`flex-row flex-wrap gap-3 mb-5`}>
+        <TouchableOpacity
+          onPress={() => router.push('/delivery/create')}
+          style={tw`flex-1 min-w-[140px] rounded-3xl bg-jjBlueDark px-4 py-3`}
+        >
+          <Text style={tw`text-center text-sm font-bold text-jjBeige`}>Nuevo Pedido</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => router.push('/delivery/history')}
+          style={tw`flex-1 min-w-[140px] rounded-3xl border border-jjBlueDark bg-white px-4 py-3`}
+        >
+          <Text style={tw`text-center text-sm font-bold text-jjBlueDark`}>Historial</Text>
+        </TouchableOpacity>
+      </View>
+
+      {status === 'loading' ? (
+        <View style={tw`items-center justify-center py-16`}>
+          <ActivityIndicator size="large" color={tw.color('jj-blue')} />
+          <Text style={tw`mt-3 text-jjBlueDark/70`}>Cargando pedidos...</Text>
         </View>
-
-        <View style={tw`flex-row gap-2 mb-6`}>
-          <TouchableOpacity
-            onPress={() => router.push("/delivery/create")}
-            style={tw`bg-jj-blue px-6 py-3 rounded-xl shadow-sm`}
-          >
-            <Text style={tw`text-white font-bold`}>Nuevo Pedido</Text>
-          </TouchableOpacity>
+      ) : pedidosHoy.length === 0 ? (
+        <View style={tw`items-center justify-center py-16`}>
+          <Text style={tw`text-jjBlueDark/70`}>No hay pedidos para hoy.</Text>
         </View>
-
-        {error && (
-          <View style={tw`p-4 bg-red-50 border border-red-100 rounded-xl mb-6`}>
-            <Text style={tw`text-red-600 font-semibold text-sm`}>Error: {error}</Text>
-          </View>
-        )}
-
-        <View style={tw`gap-6`}>
-          {status === "loading" ? (
-            <ActivityIndicator size="large" color="#174A8B" />
-          ) : pedidosHoy.length === 0 ? (
-            <View style={tw`p-8 items-center bg-white rounded-3xl border border-jj-blueDark/5`}>
-              <Text style={tw`text-jj-blueDark/60`}>No hay pedidos hoy.</Text>
+      ) : (
+        pedidosPorDomiciliario.map(([domiciliario, items]) => (
+          <View key={domiciliario} style={tw`mb-4 rounded-3xl border border-jjBeige bg-white p-4 shadow-sm`}>
+            <View style={tw`mb-4 flex-row items-center justify-between`}>
+              <Text style={tw`text-base font-bold text-jjBlueDark`}>{domiciliario}</Text>
+              <Text style={tw`text-xs text-jjBlueDark/60`}>{items.length} pedido(s)</Text>
             </View>
-          ) : (
-            pedidosPorDomiciliario.map(([domId, items]) => (
-              <View key={domId} style={tw`rounded-3xl border border-jj-blueDark/10 bg-white p-5 shadow-sm`}>
-                <Text style={tw`text-base font-bold text-jj-blueDark mb-4`}>{domId}</Text>
 
-                {items.map((p) => (
-                  <View key={p.id} style={tw`rounded-2xl border border-jj-beige bg-jj-beigeSoft p-4 mb-3`}>
-                    <Text style={tw`font-bold text-jj-blue text-sm`}>
-                      Comercio: {p.comercioId}
-                    </Text>
-                    <Text style={tw`text-sm text-jj-blueDark/80 mt-1`}>
-                      Valor: {Number(p.valorPedido ?? 0).toLocaleString()}
-                    </Text>
+            {items.map((pedido) => (
+              <View key={pedido.id} style={tw`mb-4 rounded-3xl border border-jjBeige bg-jjBeigeSoft p-4`}>
+                <Text style={tw`text-sm font-bold text-jjBlueDark`}>{pedido.comercio?.nombre ?? `Comercio ${pedido.comercioId}`}</Text>
+                <Text style={tw`mt-2 text-sm text-jjBlueDark/70`}>Entrega: {pedido.direccionEntrega}</Text>
+                <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>Valor: ${Number(pedido.valorPedido).toLocaleString()}</Text>
+                <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>Estado actual: {pedido.estado}</Text>
 
-                    <View style={tw`mt-3`}>
-                      <Text style={tw`text-xs font-bold text-jj-blueDark/50 uppercase`}>Cambiar estado:</Text>
-                      {renderEstadoBotones(p.id.toString(), p.estado)}
-                    </View>
-                  </View>
-                ))}
+                <View style={tw`mt-4 flex-row flex-wrap gap-2`}>
+                  {EstadoOpciones.map((option) => {
+                    const active = option.value === pedido.estado;
+                    return (
+                      <TouchableOpacity
+                        key={option.value}
+                        onPress={() => handleChangeEstado(pedido.id.toString(), option.value)}
+                        disabled={active}
+                        style={tw`rounded-full px-3 py-2 ${active ? 'bg-jjBlueDark/20' : 'bg-jjBlueDark'}`}
+                      >
+                        <Text style={tw`text-xs font-semibold text-jjBeige`}>{option.label}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
               </View>
-            ))
-          )}
+            ))}
+          </View>
+        ))
+      )}
+
+      {error && (
+        <View style={tw`mt-4 rounded-3xl bg-red-100 border border-red-300 p-4`}>
+          <Text style={tw`text-sm text-red-700`}>{error}</Text>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      )}
+    </ScrollView>
   );
 }
