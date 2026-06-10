@@ -12,7 +12,7 @@ const COLORS = {
 };
 
 export const CreateComercioScreen = () => {
-  const { back } = useRouter();
+  const router = useRouter();
   const {
     isCreatingComercio,
     comercioMessage,
@@ -61,7 +61,7 @@ export const CreateComercioScreen = () => {
       // show success message, then spinner, then navigate back
       setPostSuccessShown(true);
       setTimeout(() => setNavigating(true), 700);
-      setTimeout(() => back(), 1400);
+      setTimeout(() => router.replace('/'), 1400);
     }
   };
 
@@ -82,7 +82,7 @@ export const CreateComercioScreen = () => {
     >
       <View style={tw`w-full max-w-md bg-white shadow-lg rounded-xl p-6`}> 
         <View style={tw`flex-row items-center justify-between mb-3`}> 
-          <TouchableOpacity testID="back-button" onPress={() => back()} style={tw`p-2`}> 
+          <TouchableOpacity testID="back-button" onPress={() => router.replace('/')} style={tw`p-2`}> 
             <Text style={tw`text-jjBlueDark`}>← Volver</Text>
           </TouchableOpacity>
           <Text testID="screen-title" style={tw`text-xl font-semibold text-jjBlue mb-2`}>Crear comercio</Text>
