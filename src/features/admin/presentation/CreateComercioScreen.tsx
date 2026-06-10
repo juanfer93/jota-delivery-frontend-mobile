@@ -4,6 +4,7 @@ import tw from '@/lib/tailwind';
 import { useAdminStore } from '@/features/admin/application/admin.store';
 import { createComercioSchema } from '@/features/admin/domain/admin.schema';
 import { CreateComercioDTO } from '@/features/admin/domain/admin.types';
+import { useRouter } from 'expo-router';
 
 const COLORS = {
   neutralGray: '#6b7280',
@@ -11,6 +12,7 @@ const COLORS = {
 };
 
 export const CreateComercioScreen = () => {
+  const { back } = useRouter();
   const {
     isCreatingComercio,
     comercioMessage,
@@ -25,6 +27,8 @@ export const CreateComercioScreen = () => {
     telefono: '',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof CreateComercioDTO, string>>>({});
+  const [postSuccessShown, setPostSuccessShown] = useState(false);
+  const [navigating, setNavigating] = useState(false);
 
   const validateForm = () => {
     const newErrors: Partial<Record<keyof CreateComercioDTO, string>> = {};
@@ -54,6 +58,10 @@ export const CreateComercioScreen = () => {
     if (success) {
       setForm({ nombre: '', direccion: '', telefono: '' });
       setErrors({});
+      // show success message, then spinner, then navigate back
+      setPostSuccessShown(true);
+      setTimeout(() => setNavigating(true), 700);
+      setTimeout(() => back(), 1400);
     }
   };
 
@@ -73,9 +81,13 @@ export const CreateComercioScreen = () => {
       contentContainerStyle={tw`flex-grow justify-center items-center p-4`}
     >
       <View style={tw`w-full max-w-md bg-white shadow-lg rounded-xl p-6`}> 
-        <Text testID="screen-title" style={tw`text-xl font-semibold text-jjBlue mb-2`}>
-          Crear comercio
-        </Text>
+        <View style={tw`flex-row items-center justify-between mb-3`}> 
+          <TouchableOpacity testID="back-button" onPress={() => back()} style={tw`p-2`}> 
+            <Text style={tw`text-jjBlueDark`}>← Volver</Text>
+          </TouchableOpacity>
+          <Text testID="screen-title" style={tw`text-xl font-semibold text-jjBlue mb-2`}>Crear comercio</Text>
+          <View style={tw`w-12`} />
+        </View>
 
         <Text style={tw`text-sm text-jjBlueDark/70 mb-6`}>
           Registra un comercio para poder asignarle pedidos desde el tablero.
@@ -134,10 +146,10 @@ export const CreateComercioScreen = () => {
           <TouchableOpacity
             testID="submit-button"
             onPress={handleSubmit}
-            disabled={isCreatingComercio}
-            style={tw`mt-2 py-3 rounded-lg ${isCreatingComercio ? 'bg-jjBeige' : 'bg-jjBlue'}`}
+            disabled={isCreatingComercio || navigating}
+            style={tw`mt-2 py-3 rounded-lg ${isCreatingComercio || navigating ? 'bg-jjBeige' : 'bg-jjBlue'}`}
           >
-            {isCreatingComercio ? (
+            {(isCreatingComercio || navigating) ? (
               <ActivityIndicator color="#ffffff" />
             ) : (
               <Text style={tw`text-jjBeige text-center font-medium`}>Crear comercio</Text>
@@ -149,6 +161,10 @@ export const CreateComercioScreen = () => {
           <Text testID="success-message" style={tw`mt-4 text-status-hecho text-sm text-center`}> 
             {comercioMessage}
           </Text>
+        )}
+
+        {postSuccessShown && !navigating && (
+          <Text testID="post-success-wait" style={tw`mt-2 text-sm text-center text-jjBlueDark`}>Redirigiendo al tablero...</Text>
         )}
 
         {comercioError && (
