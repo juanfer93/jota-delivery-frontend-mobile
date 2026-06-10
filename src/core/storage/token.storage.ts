@@ -1,11 +1,11 @@
 import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
+import { isWeb } from '@/core/platform';
 
 const TOKEN_KEY = 'auth_token';
 
 export const TokenStorage = {
   async setToken(token: string): Promise<void> {
-    if (Platform.OS === 'web') {
+    if (isWeb) {
       localStorage.setItem(TOKEN_KEY, token);
       sessionStorage.setItem(TOKEN_KEY, token);
     } else {
@@ -14,14 +14,14 @@ export const TokenStorage = {
   },
 
   async getToken(): Promise<string | null> {
-    if (Platform.OS === 'web') {
+    if (isWeb) {
       return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
     }
     return await SecureStore.getItemAsync(TOKEN_KEY);
   },
 
   async removeToken(): Promise<void> {
-    if (Platform.OS === 'web') {
+    if (isWeb) {
       localStorage.removeItem(TOKEN_KEY);
       sessionStorage.removeItem(TOKEN_KEY);
     } else {

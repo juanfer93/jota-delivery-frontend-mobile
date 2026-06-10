@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Slot, useRouter, usePathname } from 'expo-router';
 import { useAuthStore } from '@/features/auth/application/auth.store';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, LogBox, View } from 'react-native';
 import tw from '@/lib/tailwind';
 
 // Rutas que NO requieren autenticación (públicas especiales)
@@ -27,6 +27,8 @@ export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
+    LogBox.ignoreLogs(['Cannot find single active touch']);
+
     const initializeApp = async () => {
       console.log("🚀 Iniciando app...");
       
