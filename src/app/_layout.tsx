@@ -21,7 +21,7 @@ function isProtectedRoute(pathname: string): boolean {
 }
 
 export default function RootLayout() {
-  const { hasAdmin, isAuthenticated, checkAdminStatus, checkAuth } = useAuthStore();
+  const { hasAdmin, isAuthenticated, user, checkAdminStatus, checkAuth } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
   const [isReady, setIsReady] = useState(false);
@@ -53,8 +53,6 @@ export default function RootLayout() {
       console.log("✅ Ya estamos en una ruta protegida:", pathname);
       return;
     }
-    
-  const { user } = useAuthStore();
 
     console.log("🔍 Decisión de ruta:", { hasAdmin, isAuthenticated, pathname, user: user ? (user.email || (user as any).nombre) : null });
 
@@ -80,7 +78,7 @@ export default function RootLayout() {
     // Por defecto, asumimos que es un domiciliario o usuario estándar
     console.log("👉 Redirigiendo a /(app)/ por defecto");
     router.replace('/(app)/' as any);
-  }, [isReady, hasAdmin, isAuthenticated, pathname]);
+  }, [isReady, hasAdmin, isAuthenticated, pathname, user]);
 
   if (!isReady) {
     return (
