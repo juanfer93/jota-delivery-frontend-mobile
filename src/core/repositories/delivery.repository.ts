@@ -2,7 +2,8 @@ import { apiRequest, apiListRequest } from '@/core/api/axios.instance';
 import { 
   Pedido, 
   CreatePedidoDTO, 
-  UpdatePedidoEstadoDTO 
+  UpdatePedidoEstadoDTO,
+  CurrentDeliveryItem
 } from '@/features/delivery/domain/delivery.types';
 import { DomiciliarioItem, Comercio } from '@/features/admin/domain/admin.types';
 
@@ -10,7 +11,7 @@ export const DeliveryRepository = {
   getPedidosHoy: async (): Promise<Pedido[]> => {
     return await apiListRequest<Pedido>({ 
       method: 'GET', 
-      url: '/pedidos/admin/hoy'  // ← Cambiado: /pedidos/hoy → /pedidos/admin/hoy
+      url: '/pedidos/admin/hoy'
     });
   },
 
@@ -49,5 +50,18 @@ export const DeliveryRepository = {
       method: 'GET', 
       url: '/comercios'  
     });
+  },
+
+  getCurrentDelivery: async (): Promise<CurrentDeliveryItem | null> => {
+    try {
+      const response = await apiRequest<CurrentDeliveryItem | null>({
+        method: 'GET',
+        url: '/pedidos/admin/domiciliarios/current'
+      });
+      return response;
+    } catch (e: any) {
+      if (e?.response?.status === 404) return null;
+      throw e;
+    }
   }
 };

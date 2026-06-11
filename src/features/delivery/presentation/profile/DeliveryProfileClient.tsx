@@ -4,16 +4,17 @@ import { router } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useAuthStore } from '@/features/auth/application/auth.store';
 
-export default function AdminProfileClient() {
+export function DeliveryProfileClient() {
   const { user, logout } = useAuthStore();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const name = user?.nombre || user?.email || 'Administrador';
+  const name = user?.nombre || user?.email || 'Domiciliario';
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 800));
       await logout();
+      // @ts-ignore
       router.replace('/login');
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : error;
@@ -28,7 +29,7 @@ export default function AdminProfileClient() {
       <ScrollView contentContainerStyle={tw`p-6 max-w-[800px] w-full self-center`}>
         <View style={tw`mb-8`}>
           <Text style={tw`text-2xl font-bold text-jj-blueDark`}>Hola, {name}</Text>
-          <Text style={tw`text-sm text-jj-blueDark/60`}>Panel de administración</Text>
+          <Text style={tw`text-sm text-jj-blueDark/60`}>Panel de perfil del domiciliario</Text>
         </View>
 
         <View style={tw`mb-6 rounded-3xl border border-jj-blueDark/10 bg-white p-5`}>

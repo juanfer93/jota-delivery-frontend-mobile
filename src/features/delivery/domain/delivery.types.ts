@@ -41,3 +41,15 @@ export interface CreatePedidoDTO {
 export interface UpdatePedidoEstadoDTO {
   estado: PedidoEstado;
 }
+
+export interface CurrentDeliveryItem {
+  id: string;
+  valorFinal: number;
+  valorDomicilio: number;
+  direccionDestino: string;
+  comercio?: {
+    id: string;
+    nombre: string;
+    direccion: string;
+  };
+}
