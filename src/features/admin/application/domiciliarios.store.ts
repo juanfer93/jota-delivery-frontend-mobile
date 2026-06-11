@@ -15,6 +15,6 @@ export const useDomiciliariosStore = create<DomiciliariosState>((set) => ({
     set({ list: data });
   },
   deleteDomiciliario: async (id) => {
-    set(state => ({ list: state.list.filter(d => d.id !== Number(id)) }));
+    set(state => ({ list: state.list.filter(d => d.id !== id) }));
   }
 }));

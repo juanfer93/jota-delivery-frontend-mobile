@@ -1,100 +1,80 @@
-﻿import { useEffect, useState } from 'react';
-import { FlatList, TouchableOpacity, View, Text } from 'react-native';
-import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
+import { useEffect } from 'react';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { router } from 'expo-router';
-import { DomiciliariosModal } from './components/DomiciliariosModal';
 import tw from '@/lib/tailwind';
+import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
+import { EntityPreviewCard } from './components/EntityPreviewCard';
 
 export default function Dashboard() {
-  const { pedidosHoy, domiciliarios, comercios, loadData, status } = useDeliveryStore();
-  const [isDomiModalVisible, setIsDomiModalVisible] = useState(false);
+  const { domiciliarios = [], comercios = [], loadData, status, error } = useDeliveryStore();
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  const handleCreateDomi = () => {
-    setIsDomiModalVisible(false);
-    router.push('/domiciliarios/create');
-  };
-
   return (
-    <View style={tw`flex-1 p-4 bg-jjBeigeSoft`}>
-      <View style={tw`flex-row justify-between mb-6`}>
+    <ScrollView style={tw`flex-1 bg-jjBeigeSoft`} contentContainerStyle={tw`p-6 pb-10`}>
+      <View style={tw`mb-7`}>
+        <Text style={tw`text-3xl font-bold text-jjBlueDark`}>Inicio</Text>
+        <Text style={tw`mt-2 text-sm text-jjBlueDark/60`}>
+          Gestiona tu operación desde un solo lugar.
+        </Text>
+      </View>
+
+      <TouchableOpacity
+        testID="btn-nav-crear-pedido"
+        style={tw`mb-4 rounded-3xl bg-jjBlueDark px-5 py-5 shadow-lg`}
+        onPress={() => router.push('/delivery/create')}
+      >
+        <Text style={tw`text-xs font-bold uppercase tracking-widest text-jjBeige`}>Pedidos</Text>
+        <Text style={tw`mt-1 text-xl font-bold text-white`}>Nuevo Pedido</Text>
+      </TouchableOpacity>
+
+      <View style={tw`mb-7 flex-row gap-3`}>
         <TouchableOpacity
           testID="btn-nav-crear-domiciliario"
-          style={tw`bg-jjBlue p-3 rounded-lg flex-1 mr-2`}
-          onPress={() => setIsDomiModalVisible(true)}
+          style={tw`flex-1 rounded-3xl border border-jjBlueDark bg-white px-3 py-4`}
+          onPress={() => router.push('/domiciliarios/create')}
         >
-          <Text style={tw`text-jjBeige text-center font-bold`}>Domiciliarios</Text>
+          <Text style={tw`text-center text-sm font-bold text-jjBlueDark`}>Crear domiciliario</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           testID="btn-nav-crear-comercio"
-          style={tw`bg-jjBlue p-3 rounded-lg flex-1 mr-2`}
+          style={tw`flex-1 rounded-3xl border border-jjBlueDark bg-white px-3 py-4`}
           onPress={() => router.push('/comercios/create')}
         >
-          <Text style={tw`text-jjBeige text-center font-bold`}>Comercios</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={tw`bg-jjBeige p-3 rounded-lg flex-1`}
-          onPress={() => router.push('/delivery/create')}
-        >
-          <Text style={tw`text-jjBlueDark text-center font-bold`}>Crear Pedido</Text>
+          <Text style={tw`text-center text-sm font-bold text-jjBlueDark`}>Crear comercio</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={tw`mb-6 rounded-3xl border border-jjBeige bg-white p-5`}>
-        <Text style={tw`text-2xl font-bold mb-4 text-jjBlueDark`}>Resumen</Text>
-        <View style={tw`flex-row gap-3`}>
-          <View style={tw`flex-1 rounded-3xl bg-jjBeigeSoft p-4`}>
-            <Text style={tw`text-sm text-jjBlueDark/70`}>Pedidos Hoy</Text>
-            <Text style={tw`text-3xl font-bold text-jjBlueDark`}>{pedidosHoy.length}</Text>
-          </View>
-          <View style={tw`flex-1 rounded-3xl bg-jjBeigeSoft p-4`}>
-            <Text style={tw`text-sm text-jjBlueDark/70`}>Domiciliarios</Text>
-            <Text style={tw`text-3xl font-bold text-jjBlueDark`}>{domiciliarios.length}</Text>
-          </View>
-          <View style={tw`flex-1 rounded-3xl bg-jjBeigeSoft p-4`}>
-            <Text style={tw`text-sm text-jjBlueDark/70`}>Comercios</Text>
-            <Text style={tw`text-3xl font-bold text-jjBlueDark`}>{comercios.length}</Text>
-          </View>
-        </View>
-      </View>
-
-      <Text style={tw`text-2xl font-bold mb-4 text-jjBlueDark`}>Pedidos de Hoy</Text>
+      <Text style={tw`mb-4 text-xl font-bold text-jjBlueDark`}>Directorio</Text>
 
       {status === 'loading' ? (
-        <Text style={tw`text-jjBlueDark/70`}>Cargando...</Text>
-      ) : pedidosHoy.length === 0 ? (
-        <Text style={tw`text-jjBlueDark/70`}>No hay pedidos registrados.</Text>
+        <View style={tw`items-center rounded-3xl bg-white py-10`}>
+          <ActivityIndicator size="large" color={tw.color('jj-blue')} />
+          <Text style={tw`mt-3 text-sm text-jjBlueDark/60`}>Cargando directorio...</Text>
+        </View>
       ) : (
-        <FlatList
-          data={pedidosHoy}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={tw`p-4 mb-2 bg-white rounded-3xl border border-jjBeige`}
-              onPress={() => router.push(`/delivery/${item.id}` as any)}
-            >
-              <Text style={tw`text-jjBlueDark font-medium`}>Dirección: {item.direccionDestino}</Text>
-              <Text style={tw`text-jjBlueDark/70 text-sm`}>Estado: {item.estado}</Text>
-            </TouchableOpacity>
-          )}
-        />
+        <>
+          <EntityPreviewCard
+            title="Domiciliarios"
+            emptyMessage="Aún no hay domiciliarios registrados."
+            items={domiciliarios.map((item) => ({ id: item.id, name: item.nombre, detail: item.email }))}
+          />
+          <EntityPreviewCard
+            title="Comercios"
+            emptyMessage="Aún no hay comercios registrados."
+            items={comercios.map((item) => ({ id: item.id, name: item.nombre, detail: item.direccion }))}
+          />
+        </>
       )}
 
-      <DomiciliariosModal
-        isOpen={isDomiModalVisible}
-        onClose={() => setIsDomiModalVisible(false)}
-        domiciliarios={domiciliarios}
-        loadingList={status === 'loading'}
-        errorList={null}
-        onSelectDomiToDelete={(domi) => console.log(domi)}
-        createDomi={false}
-        handleCreateDomi={handleCreateDomi}
-      />
-    </View>
+      {error ? (
+        <View style={tw`rounded-3xl border border-red-300 bg-red-100 p-4`}>
+          <Text style={tw`text-sm text-red-700`}>{error}</Text>
+        </View>
+      ) : null}
+    </ScrollView>
   );
 }

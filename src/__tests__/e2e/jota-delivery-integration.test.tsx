@@ -22,8 +22,15 @@ jest.mock('@/features/admin/application/admin.store', () => ({
 jest.mock('@/features/delivery/application/delivery.store', () => ({
   useDeliveryStore: jest.fn().mockReturnValue({
     pedidosHoy: [],
+    domiciliarios: [
+      { id: 'dom-1', nombre: 'Domiciliario Prueba', email: 'dom@jota.com' },
+    ],
+    comercios: [
+      { id: 'com-1', nombre: 'Comercio Prueba', direccion: 'Calle 1' },
+    ],
     loadData: jest.fn(),
     status: 'idle',
+    error: null,
   }),
 }));
 
@@ -92,5 +99,10 @@ describe('E2E Modular: Flujo de Administrador', () => {
     // Ahora que agregaste el testID en Dashboard.tsx, esto debería funcionar
     const btnCrear = await screen.findByTestId('btn-nav-crear-domiciliario', {}, { timeout: 15000 });
     expect(btnCrear).toBeTruthy();
+    expect(screen.getByTestId('btn-nav-crear-comercio')).toBeTruthy();
+    expect(screen.getByTestId('btn-nav-crear-pedido')).toBeTruthy();
+    expect(screen.getByText('Domiciliario Prueba')).toBeTruthy();
+    expect(screen.getByText('Comercio Prueba')).toBeTruthy();
+    expect(screen.queryByText('Pedidos de Hoy')).toBeNull();
   }, 60000);
 });

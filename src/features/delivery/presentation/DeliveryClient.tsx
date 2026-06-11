@@ -5,17 +5,13 @@ import tw from '@/lib/tailwind';
 import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
 import { PedidoEstado } from '@/features/delivery/domain/delivery.types';
 
-interface DeliveryClientProps {
-  adminName: string;
-}
-
 const EstadoOpciones = [
   { label: 'En proceso', value: PedidoEstado.EN_PROCESO },
   { label: 'Hecho', value: PedidoEstado.HECHO },
   { label: 'Cancelado', value: PedidoEstado.CANCELADO },
 ];
 
-export function DeliveryClient({ adminName }: DeliveryClientProps) {
+export function DeliveryClient() {
   const router = useRouter();
   const { pedidosHoy, status, error, loadData, updateEstado } = useDeliveryStore();
 
@@ -44,17 +40,10 @@ export function DeliveryClient({ adminName }: DeliveryClientProps) {
         <Text style={tw`text-sm text-jjBlueDark/60 mt-2`}>Administra las órdenes y asignaciones por domiciliario.</Text>
       </View>
 
-      <View style={tw`flex-row flex-wrap gap-3 mb-5`}>
-        <TouchableOpacity
-          onPress={() => router.push('/delivery/create')}
-          style={tw`flex-1 min-w-[140px] rounded-3xl bg-jjBlueDark px-4 py-3`}
-        >
-          <Text style={tw`text-center text-sm font-bold text-jjBeige`}>Nuevo Pedido</Text>
-        </TouchableOpacity>
-
+      <View style={tw`mb-5`}>
         <TouchableOpacity
           onPress={() => router.push('/delivery/history')}
-          style={tw`flex-1 min-w-[140px] rounded-3xl border border-jjBlueDark bg-white px-4 py-3`}
+          style={tw`w-full rounded-3xl border border-jjBlueDark bg-white px-4 py-3`}
         >
           <Text style={tw`text-center text-sm font-bold text-jjBlueDark`}>Historial</Text>
         </TouchableOpacity>

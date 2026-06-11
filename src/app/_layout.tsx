@@ -11,13 +11,13 @@ const PUBLIC_ROUTES = [
   '/auth/domiciliario/set-password',
 ];
 
-function isPublicRoute(pathname: string): boolean {
-  return PUBLIC_ROUTES.some(route => pathname.startsWith(route));
+function isPublicRoute(pathname: string | null | undefined): boolean {
+  if (!pathname) return false;
+  return PUBLIC_ROUTES.some(route => pathname === route || pathname.startsWith(`${route}/`));
 }
 
-function isProtectedRoute(pathname: string): boolean {
-  if (!pathname || pathname === '/') return false;
-  return !isPublicRoute(pathname);
+function isProtectedRoute(pathname: string | null | undefined): boolean {
+  return !!pathname && !isPublicRoute(pathname);
 }
 
 export default function RootLayout() {
@@ -45,13 +45,30 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (!isReady) return;
-    
+
+    console.log("🔍 Decisión de ruta:", { hasAdmin, isAuthenticated, pathname, user: user ? (user.email || (user as any).nombre) : null });
+
+    if (pathname === '/') {
+      if (!hasAdmin) {
+        router.replace('/create-admin' as any);
+        return;
+      }
+      if (!isAuthenticated) {
+        router.replace('/login' as any);
+        return;
+      }
+      if (user && (user as any).rol === 'ADMIN') {
+        router.replace('/(app)/' as any);
+      } else {
+        router.replace('/(app)/' as any);
+      }
+      return;
+    }
+
     if (isPublicRoute(pathname)) {
       console.log("🔓 Ruta pública detectada, permitiendo acceso:", pathname);
       return;
     }
-    
-    console.log("🔍 Decisión de ruta:", { hasAdmin, isAuthenticated, pathname, user: user ? (user.email || (user as any).nombre) : null });
 
     if (!hasAdmin) {
       console.log("👉 Redirigiendo a /create-admin");
@@ -70,14 +87,6 @@ export default function RootLayout() {
       return;
     }
 
-    // Si tenemos información del usuario, redirigimos según su rol
-    if (user && (user as any).rol === 'ADMIN') {
-      console.log('👉 Usuario admin detectado, redirigiendo a /(admin)/');
-      router.replace('/(admin)/' as any);
-      return;
-    }
-
-    // Por defecto, asumimos que es un domiciliario o usuario estándar
     console.log("👉 Redirigiendo a /(app)/ por defecto");
     router.replace('/(app)/' as any);
   }, [isReady, hasAdmin, isAuthenticated, pathname, user]);

@@ -1,11 +1,16 @@
 import { View } from 'react-native';
 import tw from '@/lib/tailwind';
-import { ProfileAdminClient } from '@/features/delivery/presentation/profile/ProfileDeliveryClient';
+import AdminProfileClient from '@/features/admin/presentation/AdminProfileClient';
+import { useAuthStore } from '@/features/auth/application/auth.store';
+import { ProfileDeliveryClient } from '@/features/delivery/presentation/profile/ProfileDeliveryClient';
 
-export default function ProfileAdminPage() {
+export default function ProfilePage() {
+  const user = useAuthStore((state) => state.user);
+  const isDomiciliario = user?.rol?.toLowerCase() === 'domiciliario';
+
   return (
     <View style={tw`flex-1 bg-gray-50`}>
-      <ProfileAdminClient />
+      {isDomiciliario ? <ProfileDeliveryClient /> : <AdminProfileClient />}
     </View>
   );
 }

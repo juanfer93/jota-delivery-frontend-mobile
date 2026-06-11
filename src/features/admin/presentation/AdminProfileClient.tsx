@@ -1,11 +1,26 @@
-import { View, Text, SafeAreaView, ScrollView } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { router } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useAuthStore } from '@/features/auth/application/auth.store';
 
 export default function AdminProfileClient() {
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const name = user?.nombre || user?.email || 'Administrador';
 
-  const name = (user as any)?.nombre || (user as any)?.name || (user as any)?.email || 'Administrador';
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      router.replace('/login');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : error;
+      console.error('[PROFILE] Error durante logout:', message);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <SafeAreaView style={tw`flex-1 bg-jj-beigeSoft`}>
@@ -15,11 +30,27 @@ export default function AdminProfileClient() {
           <Text style={tw`text-sm text-jj-blueDark/60`}>Panel de administración</Text>
         </View>
 
-        <View style={tw`bg-white p-5 rounded-2xl border border-jj-blueDark/10`}> 
-          <Text style={tw`font-bold text-jj-blueDark mb-2`}>Información de cuenta</Text>
-          <Text style={tw`text-jj-blueDark/80`}>Email: {(user as any)?.email || '—'}</Text>
-          <Text style={tw`text-jj-blueDark/80`}>Rol: {(user as any)?.rol || '—'}</Text>
+        <View style={tw`mb-6 rounded-3xl border border-jj-blueDark/10 bg-white p-5`}>
+          <Text style={tw`mb-3 font-bold text-jj-blueDark`}>Información de cuenta</Text>
+          <Text style={tw`mb-1 text-jj-blueDark/80`}>Nombre: {name}</Text>
+          <Text style={tw`mb-1 text-jj-blueDark/80`}>Email: {user?.email || '-'}</Text>
+          <Text style={tw`text-jj-blueDark/80`}>Rol: {user?.rol || '-'}</Text>
         </View>
+
+        <TouchableOpacity
+          onPress={handleLogout}
+          disabled={isLoggingOut}
+          style={tw`rounded-2xl bg-red-500 p-4 shadow-lg ${isLoggingOut ? 'opacity-70' : ''}`}
+        >
+          {isLoggingOut ? (
+            <View style={tw`flex-row items-center justify-center`}>
+              <ActivityIndicator color="#ffffff" />
+              <Text style={tw`ml-3 text-center text-base font-bold text-white`}>Cerrando sesión...</Text>
+            </View>
+          ) : (
+            <Text style={tw`text-center text-base font-bold text-white`}>Cerrar Sesión</Text>
+          )}
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );

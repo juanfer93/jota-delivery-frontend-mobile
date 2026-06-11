@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import tw from '@/lib/tailwind';
 import { useAdminStore } from '@/features/admin/application/admin.store';
@@ -29,6 +29,8 @@ export const CreateComercioScreen = () => {
   const [errors, setErrors] = useState<Partial<Record<keyof CreateComercioDTO, string>>>({});
   const [postSuccessShown, setPostSuccessShown] = useState(false);
   const [navigating, setNavigating] = useState(false);
+  const successTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const navigationTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const validateForm = () => {
     const newErrors: Partial<Record<keyof CreateComercioDTO, string>> = {};
@@ -60,8 +62,8 @@ export const CreateComercioScreen = () => {
       setErrors({});
       // show success message, then spinner, then navigate back
       setPostSuccessShown(true);
-      setTimeout(() => setNavigating(true), 700);
-      setTimeout(() => router.replace('/'), 1400);
+      successTimerRef.current = setTimeout(() => setNavigating(true), 700);
+      navigationTimerRef.current = setTimeout(() => router.replace('/'), 1400);
     }
   };
 
@@ -74,6 +76,19 @@ export const CreateComercioScreen = () => {
 
     return () => clearTimeout(timer);
   }, [comercioMessage, comercioError, clearComercioMessages]);
+
+  useEffect(() => {
+    return () => {
+      if (successTimerRef.current) {
+        clearTimeout(successTimerRef.current);
+        successTimerRef.current = null;
+      }
+      if (navigationTimerRef.current) {
+        clearTimeout(navigationTimerRef.current);
+        navigationTimerRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <ScrollView

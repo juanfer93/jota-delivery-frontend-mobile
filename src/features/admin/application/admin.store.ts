@@ -3,6 +3,10 @@ import api from '@/core/api/axios.instance';
 import { CreateAdminDTO, CreateDomiciliarioDTO, CreateComercioDTO } from '../domain/admin.types';
 import { AdminRepository } from '@/core/repositories/admin.repository';
 
+const USE_FAKE_API = process.env.JOTA_USE_FAKE_API === 'true';
+const FORCE_REAL_BACKEND = process.env.JOTA_REAL_BACKEND === 'true';
+const shouldMockBackend = USE_FAKE_API || (process.env.NODE_ENV === 'test' && !FORCE_REAL_BACKEND);
+
 interface AdminStore {
   isCreating: boolean;
   createFirstAdmin: (data: CreateAdminDTO) => Promise<void>;
@@ -24,8 +28,8 @@ export const useAdminStore = create<AdminStore>((set) => ({
   createFirstAdmin: async (data) => {
     set({ isCreating: true });
     try {
-      if (process.env.NODE_ENV === 'test') {
-        // En entorno de tests, evitamos llamadas reales y simulamos exito
+      if (shouldMockBackend) {
+        // En entorno de tests controlado, evitamos llamadas reales y simulamos éxito.
         console.log('[TEST MODE] Simulando createFirstAdmin');
         return;
       }
@@ -62,29 +66,6 @@ export const useAdminStore = create<AdminStore>((set) => ({
       return false;
     } finally {
       set({ isCreatingDomiciliario: false });
-    }
-  },
-
-  isCreatingComercio: false,
-  comercioMessage: null,
-  comercioError: null,
-
-  clearComercioMessages: () => {
-    set({ comercioMessage: null, comercioError: null });
-  },
-
-  createComercio: async (data) => {
-    set({ isCreatingComercio: true, comercioMessage: null, comercioError: null });
-    try {
-      await AdminRepository.createComercio(data);
-      set({ comercioMessage: 'Comercio creado correctamente.' });
-      return true;
-    } catch (error: any) {
-      const message = error?.response?.data?.message || 'Error al crear el comercio. Intenta de nuevo.';
-      set({ comercioError: message });
-      return false;
-    } finally {
-      set({ isCreatingComercio: false });
     }
   },
 
