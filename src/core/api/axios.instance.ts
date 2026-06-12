@@ -2,7 +2,10 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { TokenStorage } from '@/core/storage/token.storage';
 import { ApiResponse, ApiListResponse } from '@/core/domain/api.types';
 
-const baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.26:3000/api/v1';
+if (!process.env.EXPO_PUBLIC_API_URL) {
+  throw new Error("¡NO SE CARGÓ LA VARIABLE DE ENTORNO!");
+}
+const baseUrl = process.env.EXPO_PUBLIC_API_URL;
 
 const api = axios.create({
   baseURL: baseUrl,
