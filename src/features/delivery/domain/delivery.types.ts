@@ -16,6 +16,7 @@ export interface Pedido {
   estado: PedidoEstado;
   direccionDestino: string;
   createdAt: string;
+  updatedAt?: string;
   assignedBy?: string | null;
   assignedAt?: string | null;
   usuario?: User;
@@ -31,6 +32,7 @@ export interface Pedido {
 
 export interface CreatePedidoDTO {
   usuarioId: string;
+  domiciliarioId: string;
   comercioId: string;
   valorFinal: number;
   valorDomicilio?: number;
@@ -47,6 +49,13 @@ export interface CurrentDeliveryItem {
   valorFinal: number;
   valorDomicilio: number;
   direccionDestino: string;
+  estado: PedidoEstado;
+  createdAt: string;
+  updatedAt?: string;
+  assignedAt?: string | null;
+  clienteNombre?: string;
+  clienteTelefono?: string;
+  detallesAdicionales?: string;
   comercio?: {
     id: string;
     nombre: string;

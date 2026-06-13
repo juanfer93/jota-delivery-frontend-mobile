@@ -1,14 +1,8 @@
-import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import tw from '@/lib/tailwind';
-import { registerForPushNotificationsAsync } from '@/features/notifications/notification.service';
 
 export default function AppLayout() {
-
-  useEffect(() => {
-    registerForPushNotificationsAsync();
-  }, []);
 
   return (
     <Tabs

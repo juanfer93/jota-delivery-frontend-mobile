@@ -53,6 +53,7 @@ export default function CreatePedido() {
 
     const created = await assignPedido({
       usuarioId: selectedDomiciliarioId,
+      domiciliarioId: selectedDomiciliarioId,
       comercioId: selectedComercioId,
       valorFinal,
       valorDomicilio: 0,
@@ -104,7 +105,7 @@ export default function CreatePedido() {
     sublabel: comercio.direccion,
   }));
 
-  const domiciliarioOptions = domiciliarios.map((domi) => ({
+  const domiciliarioOptions = domiciliarios.filter((domi) => !domi.bloqueado).map((domi) => ({
     id: domi.id,
     label: domi.nombre,
     sublabel: domi.email,

@@ -1,10 +1,15 @@
-import { Text, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import tw from '@/lib/tailwind';
 
 interface PreviewItem {
   id: string;
   name: string;
   detail?: string;
+  meta?: string;
+  badge?: string;
+  actionLabel?: string;
+  actionDisabled?: boolean;
+  onAction?: () => void;
 }
 
 interface EntityPreviewCardProps {
@@ -44,7 +49,24 @@ export function EntityPreviewCard({ title, emptyMessage, items }: EntityPreviewC
                   {item.detail}
                 </Text>
               ) : null}
+              {item.meta ? (
+                <Text numberOfLines={1} style={tw`mt-0.5 text-xs text-jjBlueDark/60`}>
+                  {item.meta}
+                </Text>
+              ) : null}
+              {item.badge ? (
+                <Text style={tw`mt-1 text-xs font-bold text-jjBlue`}>{item.badge}</Text>
+              ) : null}
             </View>
+            {item.onAction && item.actionLabel ? (
+              <TouchableOpacity
+                disabled={item.actionDisabled}
+                onPress={item.onAction}
+                style={tw`ml-2 rounded-full bg-jjBlueDark px-3 py-2 ${item.actionDisabled ? 'opacity-50' : ''}`}
+              >
+                <Text style={tw`text-xs font-bold text-white`}>{item.actionLabel}</Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         ))
       )}

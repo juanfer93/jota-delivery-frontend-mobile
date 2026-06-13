@@ -63,5 +63,13 @@ export const DeliveryRepository = {
       if (e?.response?.status === 404) return null;
       throw e;
     }
-  }
+  },
+
+  setDomiciliarioBlocked: async (id: string, bloqueado: boolean): Promise<DomiciliarioItem> => {
+    return await apiRequest<DomiciliarioItem>({
+      method: 'PATCH',
+      url: `/usuarios/domiciliarios/${id}/bloqueo`,
+      data: { bloqueado },
+    });
+  },
 };

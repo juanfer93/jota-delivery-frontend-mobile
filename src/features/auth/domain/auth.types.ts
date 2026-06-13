@@ -10,6 +10,8 @@ export interface User {
   rol: UserRole;
   codigo?: string;
   saldo?: number;
+  bloqueado?: boolean;
+  createdAt?: string;
 }
 
 export interface AuthState {

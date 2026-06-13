@@ -3,6 +3,7 @@ import { Slot, useRouter, usePathname } from 'expo-router';
 import { useAuthStore } from '@/features/auth/application/auth.store';
 import { ActivityIndicator, LogBox, View } from 'react-native';
 import tw from '@/lib/tailwind';
+import { NotificationCoordinator } from '@/features/notifications/presentation/NotificationCoordinator';
 
 // Rutas que NO requieren autenticación (públicas especiales)
 const PUBLIC_ROUTES = [
@@ -99,5 +100,9 @@ export default function RootLayout() {
     );
   }
 
-  return <Slot />;
+  return (
+    <NotificationCoordinator>
+      <Slot />
+    </NotificationCoordinator>
+  );
 }

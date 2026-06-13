@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { DeliveryRepository } from "@/core/repositories/delivery.repository";
 import { Pedido, PedidoEstado, CreatePedidoDTO, CurrentDeliveryItem } from "@/features/delivery/domain/delivery.types";
 import { DomiciliarioItem, Comercio } from "@/features/admin/domain/admin.types";
+import { getColombiaDateKey } from '@/core/time/colombia-time';
 
 interface DeliveryState {
   pedidosHoy: Pedido[];
@@ -15,12 +16,14 @@ interface DeliveryState {
   historyError: string | null;
   currentDeliveryError: string | null;
   currentDelivery: CurrentDeliveryItem | null;
+  blockingDomiciliarioId: string | null;
 
   loadData: () => Promise<void>;
   loadHistory: (fecha?: string) => Promise<void>;
   loadCurrentDelivery: () => Promise<void>;
   assignPedido: (payload: CreatePedidoDTO) => Promise<boolean>;
   updateEstado: (pedidoId: string, estado: PedidoEstado) => Promise<boolean>;
+  toggleDomiciliarioBloqueo: (domiciliarioId: string, bloqueado: boolean) => Promise<boolean>;
 }
 
 export const useDeliveryStore = create<DeliveryState>((set, get) => ({
@@ -35,6 +38,7 @@ export const useDeliveryStore = create<DeliveryState>((set, get) => ({
   historyError: null,
   currentDeliveryError: null,
   currentDelivery: null,
+  blockingDomiciliarioId: null,
 
   loadData: async () => {
     set({ status: 'loading', error: null });
@@ -52,7 +56,7 @@ export const useDeliveryStore = create<DeliveryState>((set, get) => ({
 
   loadHistory: async (fecha) => {
     set({ historyStatus: 'loading', historyError: null });
-    const today = fecha ?? new Date().toISOString().slice(0, 10);
+    const today = fecha ?? getColombiaDateKey();
     try {
       const history = await DeliveryRepository.getPedidosHistorial(today);
       set({ pedidosHistorial: history, historyStatus: 'success' });
@@ -87,10 +91,28 @@ export const useDeliveryStore = create<DeliveryState>((set, get) => ({
     set({ status: 'loading', error: null });
     try {
       await DeliveryRepository.updatePedidoEstado(pedidoId, { estado });
-      await get().loadData();
+      await Promise.all([get().loadData(), get().loadCurrentDelivery()]);
       return true;
-    } catch (e: any) {
+    } catch (e: unknown) {
       set({ status: 'error', error: 'Error actualizando estado' });
+      return false;
+    }
+  },
+
+  toggleDomiciliarioBloqueo: async (domiciliarioId, bloqueado) => {
+    set({ blockingDomiciliarioId: domiciliarioId, error: null });
+    try {
+      const updated = await DeliveryRepository.setDomiciliarioBlocked(domiciliarioId, bloqueado);
+      set((state) => ({
+        domiciliarios: state.domiciliarios.map((item) =>
+          item.id === updated.id ? { ...item, ...updated } : item,
+        ),
+        blockingDomiciliarioId: null,
+      }));
+      return true;
+    } catch (error: unknown) {
+      console.error('[DOMICILIARIOS] No se pudo cambiar el bloqueo.', error);
+      set({ error: 'No se pudo cambiar el estado del domiciliario', blockingDomiciliarioId: null });
       return false;
     }
   },

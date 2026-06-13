@@ -4,9 +4,13 @@ import { router } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
 import { EntityPreviewCard } from './components/EntityPreviewCard';
+import { formatColombiaDateTime } from '@/core/time/colombia-time';
 
 export default function Dashboard() {
-  const { domiciliarios = [], comercios = [], loadData, status, error } = useDeliveryStore();
+  const {
+    domiciliarios = [], comercios = [], loadData, status, error,
+    blockingDomiciliarioId, toggleDomiciliarioBloqueo,
+  } = useDeliveryStore();
 
   useEffect(() => {
     loadData();
@@ -60,7 +64,18 @@ export default function Dashboard() {
           <EntityPreviewCard
             title="Domiciliarios"
             emptyMessage="Aún no hay domiciliarios registrados."
-            items={domiciliarios.map((item) => ({ id: item.id, name: item.nombre, detail: item.email }))}
+            items={domiciliarios.map((item) => ({
+              id: item.id,
+              name: item.nombre,
+              detail: item.email,
+              meta: item.createdAt
+                ? `Creado: ${formatColombiaDateTime(item.createdAt)}`
+                : undefined,
+              badge: item.bloqueado ? 'Bloqueado' : 'Activo',
+              actionLabel: item.bloqueado ? 'Desbloquear' : 'Bloquear',
+              actionDisabled: blockingDomiciliarioId === item.id,
+              onAction: () => void toggleDomiciliarioBloqueo(item.id, !item.bloqueado),
+            }))}
           />
           <EntityPreviewCard
             title="Comercios"

@@ -3,6 +3,7 @@ import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, SafeAreaVi
 import { useDeliveryStore } from "@/features/delivery/application/delivery.store";
 import { useRouter } from "expo-router";
 import tw from '@/lib/tailwind';
+import { formatColombiaDateTime } from '@/core/time/colombia-time';
 
 export default function DeliveryHistoryClient() {
   const router = useRouter();
@@ -58,6 +59,9 @@ export default function DeliveryHistoryClient() {
                 <Text style={tw`text-sm text-jj-blueDark/80`}>Dirección: {p.direccionDestino}</Text>
 
                 <Text style={tw`text-sm font-bold mt-2 text-jj-blueDark`}>Valor: {Number(p.valorFinal ?? 0).toLocaleString()}</Text>
+                <Text style={tw`mt-2 text-xs text-jj-blueDark/60`}>
+                  Creado: {formatColombiaDateTime(p.createdAt)}
+                </Text>
               </View>
             ))}
           </View>

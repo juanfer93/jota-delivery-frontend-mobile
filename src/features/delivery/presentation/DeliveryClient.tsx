@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
 import { PedidoEstado } from '@/features/delivery/domain/delivery.types';
+import { formatColombiaDateTime } from '@/core/time/colombia-time';
 
 const EstadoOpciones = [
   { label: 'En proceso', value: PedidoEstado.EN_PROCESO },
@@ -72,6 +73,14 @@ export function DeliveryClient() {
                 <Text style={tw`mt-2 text-sm text-jjBlueDark/70`}>Entrega: {pedido.direccionDestino}</Text>
                 <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>Valor: ${Number(pedido.valorFinal).toLocaleString()}</Text>
                 <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>Estado actual: {pedido.estado}</Text>
+                <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>
+                  Creado: {formatColombiaDateTime(pedido.createdAt)}
+                </Text>
+                {pedido.assignedAt ? (
+                  <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>
+                    Asignado: {formatColombiaDateTime(pedido.assignedAt)}
+                  </Text>
+                ) : null}
 
                 <View style={tw`mt-4 flex-row flex-wrap gap-2`}>
                   {EstadoOpciones.map((option) => {
