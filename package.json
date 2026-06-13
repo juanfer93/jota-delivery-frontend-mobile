@@ -53,10 +53,13 @@
     "xhr2": "^0.2.1"
   },
   "scripts": {
-    "start": "expo start",
-    "test": "jest",
-    "lint": "eslint . --ext .ts,.tsx",
-    "clean": "rimraf .expo web-build node_modules/.cache"
-  },
+  "start": "expo start",
+  "web": "expo start --web",
+  "android": "expo start --android",
+  "ios": "expo start --ios",
+  "test": "jest",
+  "lint": "eslint . --ext .ts,.tsx",
+  "clean": "rimraf .expo web-build node_modules/.cache"
+},
   "private": true
 }
