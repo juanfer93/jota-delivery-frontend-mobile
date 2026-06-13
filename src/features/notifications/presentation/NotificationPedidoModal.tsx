@@ -4,7 +4,7 @@ import { useAuthStore } from '@/features/auth/application/auth.store';
 import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
 import { PedidoEstado } from '@/features/delivery/domain/delivery.types';
 import tw from '@/lib/tailwind';
-import { NotificationRepository } from '../infrastructure/notification.repository';
+import { NotificationReadRepository } from '../infrastructure/notification-read.repository';
 import { useNotificationStore } from '../application/notification.store';
 import { formatColombiaDateTime } from '@/core/time/colombia-time';
 
@@ -31,7 +31,7 @@ export function NotificationPedidoModal() {
     setActionError(null);
 
     if (notification.notificationId) {
-      void NotificationRepository.markAsRead(notification.notificationId).catch((error: unknown) => {
+      void NotificationReadRepository.markAsRead(notification.notificationId).catch((error: unknown) => {
         console.error('[NOTIFICATIONS] No se pudo marcar como leida.', error);
       });
     }

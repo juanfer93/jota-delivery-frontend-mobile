@@ -2,7 +2,7 @@ import { NotificationPayload, parseNotificationPayload } from './domain/notifica
 import {
   NotificationRepository,
   WebPushSubscriptionInput,
-} from './infrastructure/notification.repository';
+} from './infrastructure/notification.repository.web';
 
 export type NotificationOpenedHandler = (payload: NotificationPayload) => void;
 

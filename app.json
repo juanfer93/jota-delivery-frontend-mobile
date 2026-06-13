@@ -3,6 +3,10 @@
     "name": "jota-delivery-mobile",
     "slug": "jota-delivery-mobile",
     "version": "1.0.0",
+    "platforms": [
+      "android",
+      "web"
+    ],
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "jotadeliverymobile",
@@ -11,9 +15,6 @@
       "eas": {
         "projectId": "57d42d38-7913-4395-926e-44c211246990"
       }
-    },
-    "ios": {
-      "icon": "./assets/expo.icon"
     },
     "android": {
       "adaptiveIcon": {
@@ -45,7 +46,13 @@
       "expo-status-bar",
       "expo-secure-store",
       "expo-image",
-      "expo-notifications"
+      [
+        "expo-notifications",
+        {
+          "color": "#174A8B",
+          "defaultChannel": "orders"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

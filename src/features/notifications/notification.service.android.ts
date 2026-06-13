@@ -1,11 +1,12 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
-import { NotificationRepository } from './infrastructure/notification.repository';
+import { NotificationRepository } from './infrastructure/notification.repository.android';
 import { NotificationPayload, parseNotificationPayload } from './domain/notification.types';
 
 export type NotificationOpenedHandler = (payload: NotificationPayload) => void;
+
+const ORDERS_CHANNEL_ID = 'orders';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -24,18 +25,16 @@ function forwardResponse(
   if (payload) onOpened(payload);
 }
 
-async function registerDeviceToken(): Promise<void> {
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('orders', {
-      name: 'Pedidos',
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#174A8B',
-    });
-  }
+async function registerAndroidToken(): Promise<void> {
+  await Notifications.setNotificationChannelAsync(ORDERS_CHANNEL_ID, {
+    name: 'Pedidos',
+    importance: Notifications.AndroidImportance.MAX,
+    vibrationPattern: [0, 250, 250, 250],
+    lightColor: '#174A8B',
+  });
 
   if (!Device.isDevice) {
-    console.info('[NOTIFICATIONS] El Push movil requiere un dispositivo fisico.');
+    console.info('[NOTIFICATIONS] Expo Push requiere un dispositivo Android fisico.');
     return;
   }
 
@@ -63,9 +62,9 @@ export async function initializeNotifications(
   onOpened: NotificationOpenedHandler,
 ): Promise<() => void> {
   try {
-    await registerDeviceToken();
+    await registerAndroidToken();
   } catch (error: unknown) {
-    console.error('[NOTIFICATIONS] No se pudo registrar el dispositivo movil.', error);
+    console.error('[NOTIFICATIONS] No se pudo registrar el dispositivo Android.', error);
   }
 
   const responseSubscription = Notifications.addNotificationResponseReceivedListener((response) => {

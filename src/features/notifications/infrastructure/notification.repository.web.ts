@@ -1,4 +1,3 @@
-import { Platform } from 'react-native';
 import { apiRequest } from '@/core/api/axios.instance';
 
 interface WebPushKeys {
@@ -13,18 +12,6 @@ export interface WebPushSubscriptionInput {
 }
 
 export const NotificationRepository = {
-  registerExpoToken: async (token: string): Promise<void> => {
-    await apiRequest<void>({
-      method: 'POST',
-      url: '/notifications/register-token',
-      data: {
-        token,
-        platform: Platform.OS,
-        provider: 'EXPO',
-      },
-    });
-  },
-
   getWebPushPublicKey: async (): Promise<string> => {
     const response = await apiRequest<{ publicKey: string }>({
       method: 'GET',
@@ -38,13 +25,6 @@ export const NotificationRepository = {
       method: 'POST',
       url: '/notifications/subscribe',
       data: subscription,
-    });
-  },
-
-  markAsRead: async (notificationId: string): Promise<void> => {
-    await apiRequest<void>({
-      method: 'PATCH',
-      url: `/notifications/${notificationId}/read`,
     });
   },
 };
