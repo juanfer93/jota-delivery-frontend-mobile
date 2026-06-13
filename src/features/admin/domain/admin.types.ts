@@ -18,10 +18,6 @@ export interface CreateComercioDTO {
 
 export type DomiciliarioItem = User;
 
-export interface AdminStatusResponse {
-  active: boolean;
-}
-
 export interface CreateAdminDTO {
   nombre: string;
   email: string;   
@@ -32,11 +28,4 @@ export interface CreateAdminDTO {
 export interface CreateDomiciliarioDTO {
   nombre: string;
   email: string;
-}
-
-export interface CreateDomiciliarioResponse {
-  id: string;
-  nombre: string;
-  email: string;
-  rol: string;
 }

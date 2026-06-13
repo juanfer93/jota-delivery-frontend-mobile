@@ -14,13 +14,6 @@ export interface User {
   createdAt?: string;
 }
 
-export interface AuthState {
-  user: User | null;
-  token: string | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-}
-
 export interface LoginResponse {
   accessToken: string;
   usuario: User;
@@ -36,8 +29,4 @@ export interface RawLoginResponse {
 export interface SetPasswordDTO {
   token: string;
   password: string;
-}
-
-export interface SetPasswordResponse {
-  message: string;
 }
