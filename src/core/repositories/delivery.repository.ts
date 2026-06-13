@@ -45,10 +45,24 @@ export const DeliveryRepository = {
     });
   },
 
+  searchDomiciliarios: async (nombre: string): Promise<DomiciliarioItem[]> => {
+    return await apiListRequest<DomiciliarioItem>({
+      method: 'GET',
+      url: `/usuarios/domiciliarios/search?nombre=${encodeURIComponent(nombre)}`,
+    });
+  },
+
   getComercios: async (): Promise<Comercio[]> => {
     return await apiListRequest<Comercio>({ 
       method: 'GET', 
       url: '/comercios'  
+    });
+  },
+
+  searchComercios: async (nombre: string): Promise<Comercio[]> => {
+    return await apiListRequest<Comercio>({
+      method: 'GET',
+      url: `/comercios/search?nombre=${encodeURIComponent(nombre)}`,
     });
   },
 

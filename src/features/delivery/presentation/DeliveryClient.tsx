@@ -14,11 +14,13 @@ const EstadoOpciones = [
 
 export function DeliveryClient() {
   const router = useRouter();
-  const { pedidosHoy, status, error, loadData, updateEstado } = useDeliveryStore();
+  const { pedidosHoy, status, error, refreshPedidosHoy, updateEstado } = useDeliveryStore();
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    void refreshPedidosHoy();
+    const interval = setInterval(() => void refreshPedidosHoy(), 15000);
+    return () => clearInterval(interval);
+  }, [refreshPedidosHoy]);
 
   const pedidosPorDomiciliario = useMemo(() => {
     const map = new Map<string, typeof pedidosHoy>();
@@ -85,12 +87,15 @@ export function DeliveryClient() {
                 <View style={tw`mt-4 flex-row flex-wrap gap-2`}>
                   {EstadoOpciones.map((option) => {
                     const active = option.value === pedido.estado;
+                    const finalizado = pedido.estado === PedidoEstado.HECHO
+                      || pedido.estado === PedidoEstado.CANCELADO;
                     return (
                       <TouchableOpacity
                         key={option.value}
+                        testID={`pedido-${pedido.id}-estado-${option.value}`}
                         onPress={() => handleChangeEstado(pedido.id.toString(), option.value)}
-                        disabled={active}
-                        style={tw`rounded-full px-3 py-2 ${active ? 'bg-jjBlueDark/20' : 'bg-jjBlueDark'}`}
+                        disabled={finalizado || active}
+                        style={tw`rounded-full px-3 py-2 ${finalizado || active ? 'bg-jjBlueDark/20' : 'bg-jjBlueDark'}`}
                       >
                         <Text style={tw`text-xs font-semibold text-jjBeige`}>{option.label}</Text>
                       </TouchableOpacity>

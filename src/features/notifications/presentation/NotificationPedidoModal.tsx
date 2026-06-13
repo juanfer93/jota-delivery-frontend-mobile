@@ -56,6 +56,7 @@ export function NotificationPedidoModal() {
   };
 
   const estado = pedido?.estado ?? notification?.estado;
+  const finalizado = estado === PedidoEstado.HECHO || estado === PedidoEstado.CANCELADO;
 
   return (
     <Modal visible={!!notification} transparent animationType="fade" onRequestClose={closeNotification}>
@@ -95,9 +96,9 @@ export function NotificationPedidoModal() {
                   <TouchableOpacity
                     key={status}
                     testID={`notification-status-${status}`}
-                    disabled={!!updatingStatus || estado === status}
+                    disabled={!!updatingStatus || finalizado || estado === status}
                     onPress={() => handleStatus(status)}
-                    style={tw`items-center rounded-xl px-4 py-3 ${estado === status ? 'bg-jjBlueDark/30' : 'bg-jjBlueDark'} ${updatingStatus ? 'opacity-60' : ''}`}
+                    style={tw`items-center rounded-xl px-4 py-3 ${finalizado || estado === status ? 'bg-jjBlueDark/30' : 'bg-jjBlueDark'} ${updatingStatus ? 'opacity-60' : ''}`}
                   >
                     <Text style={tw`font-bold text-white`}>{updatingStatus === status ? 'Actualizando...' : STATUS_LABELS[status]}</Text>
                   </TouchableOpacity>

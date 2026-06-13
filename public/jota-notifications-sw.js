@@ -11,13 +11,16 @@ self.addEventListener('push', (event) => {
     payload = { ...fallback, body: event.data ? event.data.text() : fallback.body };
   }
 
-  event.waitUntil(
-    self.registration.showNotification(payload.title, {
+  event.waitUntil((async () => {
+    const clientsList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    clientsList.forEach((client) => client.postMessage(payload));
+
+    await self.registration.showNotification(payload.title, {
       body: payload.body,
       data: payload,
       tag: payload.notificationId || payload.pedidoId || 'jota-delivery',
-    }),
-  );
+    });
+  })());
 });
 
 self.addEventListener('notificationclick', (event) => {

@@ -19,6 +19,7 @@ interface DeliveryState {
   blockingDomiciliarioId: string | null;
 
   loadData: () => Promise<void>;
+  refreshPedidosHoy: () => Promise<void>;
   loadHistory: (fecha?: string) => Promise<void>;
   loadCurrentDelivery: () => Promise<void>;
   assignPedido: (payload: CreatePedidoDTO) => Promise<boolean>;
@@ -51,6 +52,16 @@ export const useDeliveryStore = create<DeliveryState>((set, get) => ({
       set({ pedidosHoy: hoy, domiciliarios: doms, comercios: coms, status: 'success' });
     } catch (e: any) {
       set({ status: 'error', error: 'Error al cargar datos de delivery' });
+    }
+  },
+
+  refreshPedidosHoy: async () => {
+    try {
+      const pedidosHoy = await DeliveryRepository.getPedidosHoy();
+      set({ pedidosHoy, error: null });
+    } catch (error: unknown) {
+      console.error('[PEDIDOS] No se pudo sincronizar el listado.', error);
+      set({ error: 'No se pudo sincronizar el estado de los pedidos' });
     }
   },
 

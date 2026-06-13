@@ -5,6 +5,7 @@ import tw from '@/lib/tailwind';
 import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
 import { EntityPreviewCard } from './components/EntityPreviewCard';
 import { formatColombiaDateTime } from '@/core/time/colombia-time';
+import { DeliveryRepository } from '@/core/repositories/delivery.repository';
 
 export default function Dashboard() {
   const {
@@ -64,6 +65,12 @@ export default function Dashboard() {
           <EntityPreviewCard
             title="Domiciliarios"
             emptyMessage="Aún no hay domiciliarios registrados."
+            onSearch={async (query) => (await DeliveryRepository.searchDomiciliarios(query)).map((item) => ({
+              id: item.id,
+              name: item.nombre,
+              detail: item.email,
+              badge: item.bloqueado ? 'Bloqueado' : 'Activo',
+            }))}
             items={domiciliarios.map((item) => ({
               id: item.id,
               name: item.nombre,
@@ -80,6 +87,11 @@ export default function Dashboard() {
           <EntityPreviewCard
             title="Comercios"
             emptyMessage="Aún no hay comercios registrados."
+            onSearch={async (query) => (await DeliveryRepository.searchComercios(query)).map((item) => ({
+              id: item.id,
+              name: item.nombre,
+              detail: item.direccion,
+            }))}
             items={comercios.map((item) => ({ id: item.id, name: item.nombre, detail: item.direccion }))}
           />
         </>
