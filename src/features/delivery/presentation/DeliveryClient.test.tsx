@@ -5,6 +5,7 @@ const mockRefreshPedidosHoy = jest.fn().mockResolvedValue(undefined);
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn() }),
+  useLocalSearchParams: () => ({}),
 }));
 
 jest.mock('../application/delivery.store', () => ({

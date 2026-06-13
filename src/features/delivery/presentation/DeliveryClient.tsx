@@ -1,6 +1,6 @@
 ﻿import { useEffect, useMemo } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
 import { PedidoEstado } from '@/features/delivery/domain/delivery.types';
@@ -14,6 +14,7 @@ const EstadoOpciones = [
 
 export function DeliveryClient() {
   const router = useRouter();
+  const { pedidoId } = useLocalSearchParams<{ pedidoId?: string }>();
   const { pedidosHoy, status, error, refreshPedidosHoy, updateEstado } = useDeliveryStore();
 
   useEffect(() => {
@@ -43,10 +44,18 @@ export function DeliveryClient() {
         <Text style={tw`text-sm text-jjBlueDark/60 mt-2`}>Administra las órdenes y asignaciones por domiciliario.</Text>
       </View>
 
-      <View style={tw`mb-5`}>
+      <View style={tw`mb-5 flex-row gap-3`}>
         <TouchableOpacity
+          testID="btn-crear-pedido"
+          onPress={() => router.push('/delivery/create')}
+          style={tw`flex-1 rounded-3xl bg-jjBlueDark px-4 py-3`}
+        >
+          <Text style={tw`text-center text-sm font-bold text-white`}>Crear pedido</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          testID="btn-historial-pedidos"
           onPress={() => router.push('/delivery/history')}
-          style={tw`w-full rounded-3xl border border-jjBlueDark bg-white px-4 py-3`}
+          style={tw`flex-1 rounded-3xl border border-jjBlueDark bg-white px-4 py-3`}
         >
           <Text style={tw`text-center text-sm font-bold text-jjBlueDark`}>Historial</Text>
         </TouchableOpacity>
@@ -70,7 +79,10 @@ export function DeliveryClient() {
             </View>
 
             {items.map((pedido) => (
-              <View key={pedido.id} style={tw`mb-4 rounded-3xl border border-jjBeige bg-jjBeigeSoft p-4`}>
+              <View
+                key={pedido.id}
+                style={tw`mb-4 rounded-3xl border ${pedidoId === pedido.id ? 'border-jjBlueDark' : 'border-jjBeige'} bg-jjBeigeSoft p-4`}
+              >
                 <Text style={tw`text-sm font-bold text-jjBlueDark`}>{pedido.comercio?.nombre ?? `Comercio ${pedido.comercioId}`}</Text>
                 <Text style={tw`mt-2 text-sm text-jjBlueDark/70`}>Entrega: {pedido.direccionDestino}</Text>
                 <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>Valor: ${Number(pedido.valorFinal).toLocaleString()}</Text>

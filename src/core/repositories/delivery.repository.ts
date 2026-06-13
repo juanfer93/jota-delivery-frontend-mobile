@@ -22,6 +22,14 @@ export const DeliveryRepository = {
     });
   },
 
+  getAllPedidosHistorial: async (search = ''): Promise<Pedido[]> => {
+    const query = search.trim();
+    return await apiListRequest<Pedido>({
+      method: 'GET',
+      url: `/pedidos/admin/history/all${query ? `?search=${encodeURIComponent(query)}` : ''}`,
+    });
+  },
+
   createPedido: async (payload: CreatePedidoDTO): Promise<Pedido> => {
     return await apiRequest<Pedido>({ 
       method: 'POST', 

@@ -70,12 +70,21 @@ export async function initializeNotifications(
   const responseSubscription = Notifications.addNotificationResponseReceivedListener((response) => {
     forwardResponse(response, onOpened);
   });
+  const receivedSubscription = Notifications.addNotificationReceivedListener((notification) => {
+    const payload = parseNotificationPayload(notification.request.content.data);
+    if (payload) onOpened(payload);
+  });
 
   try {
-    forwardResponse(await Notifications.getLastNotificationResponseAsync(), onOpened);
+    const lastResponse = await Notifications.getLastNotificationResponseAsync();
+    forwardResponse(lastResponse, onOpened);
+    if (lastResponse) await Notifications.clearLastNotificationResponseAsync();
   } catch (error: unknown) {
     console.error('[NOTIFICATIONS] No se pudo leer la ultima notificacion.', error);
   }
 
-  return () => responseSubscription.remove();
+  return () => {
+    responseSubscription.remove();
+    receivedSubscription.remove();
+  };
 }

@@ -21,6 +21,7 @@ interface DeliveryState {
   loadData: () => Promise<void>;
   refreshPedidosHoy: () => Promise<void>;
   loadHistory: (fecha?: string) => Promise<void>;
+  loadAllHistory: (search?: string) => Promise<void>;
   loadCurrentDelivery: () => Promise<void>;
   assignPedido: (payload: CreatePedidoDTO) => Promise<boolean>;
   updateEstado: (pedidoId: string, estado: PedidoEstado) => Promise<boolean>;
@@ -73,6 +74,17 @@ export const useDeliveryStore = create<DeliveryState>((set, get) => ({
       set({ pedidosHistorial: history, historyStatus: 'success' });
     } catch (e: any) {
       set({ historyStatus: 'error', historyError: 'Error al cargar historial de pedidos' });
+    }
+  },
+
+  loadAllHistory: async (search) => {
+    set({ historyStatus: 'loading', historyError: null });
+    try {
+      const history = await DeliveryRepository.getAllPedidosHistorial(search);
+      set({ pedidosHistorial: history, historyStatus: 'success' });
+    } catch (error: unknown) {
+      console.error('[PEDIDOS] No se pudo cargar el historial global.', error);
+      set({ historyStatus: 'error', historyError: 'Error al cargar el historial de pedidos' });
     }
   },
 
