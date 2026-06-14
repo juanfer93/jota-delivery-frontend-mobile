@@ -32,6 +32,7 @@ export default function AppLayout() {
         name="delivery"
         options={{
           title: 'Pedidos',
+          popToTopOnBlur: true,
           tabBarIcon: ({ color }) => (
             <Ionicons name="bicycle-outline" size={22} color={color} />
           ),

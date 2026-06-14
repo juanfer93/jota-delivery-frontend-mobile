@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
 import CreatePedido from '@/features/delivery/presentation/CreatePedido';
 
+const mockReplace = jest.fn();
 const mockBack = jest.fn();
 const mockAssignPedido = jest.fn();
 const mockLoadData = jest.fn();
@@ -9,8 +10,16 @@ const mockLoadData = jest.fn();
 jest.setTimeout(30000);
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ replace: jest.fn(), back: mockBack, push: jest.fn() }),
-  router: { replace: jest.fn(), back: mockBack, push: jest.fn() },
+  useRouter: () => ({
+    replace: mockReplace,
+    back: mockBack,
+    push: jest.fn(),
+  }),
+  router: {
+    replace: mockReplace,
+    back: mockBack,
+    push: jest.fn(),
+  },
 }));
 
 jest.mock('@/features/delivery/application/delivery.store', () => ({
@@ -18,26 +27,47 @@ jest.mock('@/features/delivery/application/delivery.store', () => ({
     assignPedido: mockAssignPedido,
     status: 'idle',
     domiciliarios: [
-      { id: '5d6517de-c78a-4b99-bdb4-d981c13c27c5', nombre: 'Domi Uno', email: 'domi1@jota.com', rol: 'DOMICILIARIO' },
+      {
+        id: '5d6517de-c78a-4b99-bdb4-d981c13c27c5',
+        nombre: 'Domi Uno',
+        email: 'domi1@jota.com',
+        rol: 'DOMICILIARIO',
+      },
     ],
     comercios: [
-      { id: '1beb752b-8590-4c69-9cbe-bc7714a9ee94', nombre: 'Comercio Uno', direccion: 'Calle 1', telefono: '3000000000', estado: true, createdAt: '', updatedAt: '' }],
+      {
+        id: '1beb752b-8590-4c69-9cbe-bc7714a9ee94',
+        nombre: 'Comercio Uno',
+        direccion: 'Calle 1',
+        telefono: '3000000000',
+        estado: true,
+        createdAt: '',
+        updatedAt: '',
+      },
+    ],
     loadData: mockLoadData,
   }),
 }));
 
 jest.mock('react-native-safe-area-context', () => {
   const React = require('react');
+
   return {
     SafeAreaProvider: ({ children }: any) => React.createElement('View', null, children),
     SafeAreaView: ({ children }: any) => React.createElement('View', null, children),
-    useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+    useSafeAreaInsets: () => ({
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+    }),
   };
 });
 
 beforeEach(() => {
   mockAssignPedido.mockClear();
   mockBack.mockClear();
+  mockReplace.mockClear();
   mockLoadData.mockClear();
 });
 
@@ -46,10 +76,14 @@ test('E2E: Crear pedido asignado a domiciliario y comercio existente', async () 
 
   render(<CreatePedido />);
 
-  const domicilioOption = await screen.findByTestId('domiciliario-option-5d6517de-c78a-4b99-bdb4-d981c13c27c5');
+  const domicilioOption = await screen.findByTestId(
+    'domiciliario-option-5d6517de-c78a-4b99-bdb4-d981c13c27c5',
+  );
   fireEvent.press(domicilioOption);
 
-  const comercioOption = await screen.findByTestId('comercio-option-1beb752b-8590-4c69-9cbe-bc7714a9ee94');
+  const comercioOption = await screen.findByTestId(
+    'comercio-option-1beb752b-8590-4c69-9cbe-bc7714a9ee94',
+  );
   fireEvent.press(comercioOption);
 
   fireEvent.changeText(screen.getByTestId('direccionDestino-input'), 'Carrera 10 #20-30');
@@ -71,6 +105,8 @@ test('E2E: Crear pedido asignado a domiciliario y comercio existente', async () 
   }, { timeout: 5000 });
 
   await waitFor(() => {
-    expect(mockBack).toHaveBeenCalled();
+    expect(mockReplace).toHaveBeenCalledWith('/(app)/delivery');
   }, { timeout: 3000 });
+
+  expect(mockBack).not.toHaveBeenCalled();
 });

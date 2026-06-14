@@ -83,13 +83,16 @@ export default function LoginClient() {
             <View style={tw`flex-row items-center flex-1`}>
               <View
                 testID="login-logo"
-                style={tw`h-28 w-28 items-center justify-center rounded-3xl overflow-hidden mr-4 bg-white border border-jj-beige shadow-sm`}
+                style={tw`items-center justify-center mr-4`}
               >
                 <Image
-                  source={require('../../../../assets/images/jota-delivery-logo-blue.png')}
+                  source={require('../../../../assets/images/jota-delivery-logo-login-mark.png')}
                   resizeMode="contain"
                   accessibilityLabel="Logo Jota Delivery"
-                  style={{ width: 96, height: 96 }}
+                  style={{
+                    width: 78,
+                    height: 78,
+                  }}
                 />
               </View>
 

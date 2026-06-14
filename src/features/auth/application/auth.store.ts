@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import api from '@/core/api/axios.instance';
 import { TokenStorage } from '@/core/storage/token.storage';
-import { User, RawLoginResponse, SetPasswordDTO } from '@/features/auth/domain/auth.types'; 
+import { User, RawLoginResponse, SetPasswordDTO } from '@/features/auth/domain/auth.types';
 
 const USE_FAKE_API = process.env.JOTA_USE_FAKE_API === 'true';
 const FORCE_REAL_BACKEND = process.env.JOTA_REAL_BACKEND === 'true';
@@ -84,14 +84,19 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     console.log('🔐 [AUTH] logout INICIANDO...');
+
+    set({
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+    });
+
     try {
       await TokenStorage.removeToken();
       console.log('🔐 [AUTH] Token eliminado correctamente');
-      set({ user: null, isAuthenticated: false });
-    } catch (error: any) {
-      console.error('❌ [AUTH] Error eliminando token en logout:', error?.message || error);
-      set({ user: null, isAuthenticated: false });
-      throw error;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : error;
+      console.error('❌ [AUTH] Error eliminando token en logout:', message);
     }
   },
 
