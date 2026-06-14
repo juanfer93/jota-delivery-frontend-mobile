@@ -2,27 +2,25 @@
   "expo": {
     "name": "jota-delivery-mobile",
     "slug": "jota-delivery-mobile",
+    "owner": "juanfer93",
     "version": "1.0.0",
     "platforms": [
       "android",
       "web"
     ],
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/jota-delivery-logo-login-mark.png",
     "scheme": "jotadeliverymobile",
     "userInterfaceStyle": "automatic",
-    "extra": {
-      "eas": {
-        "projectId": "57d42d38-7913-4395-926e-44c211246990"
-      }
-    },
     "android": {
+      "icon": "./assets/images/jota-delivery-logo-login-mark.png",
       "adaptiveIcon": {
         "backgroundColor": "#174A8B",
-        "foregroundImage": "./assets/images/android-icon-foreground.png"
+        "foregroundImage": "./assets/images/jota-delivery-logo-login-mark.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.jotadeliverymobile"
+      "package": "com.jotadelivery.mobile",
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "output": "static",
@@ -55,6 +53,20 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4c30edef-d7d7-4a3a-84be-fb170949d87a"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/4c30edef-d7d7-4a3a-84be-fb170949d87a"
+    },
+    "ios": {
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     }
   }
 }
