@@ -29,7 +29,7 @@ react {
     // codegenDir = file("../../node_modules/@react-native/codegen")
 
     /* Variants */
-    //   The list of variants to that are debuggable. For those we're going to
+    //   The list of variants that are debuggable. For those we're going to
     //   skip the bundling of the JS bundle and the assets. By default is just 'debug'.
     //   If you add flavors like lite, prod, etc. you'll have to list your debuggableVariants.
     // debuggableVariants = ["liteDebug", "prodDebug"]
@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.anonymous.jotadeliverymobile'
+    namespace 'com.jotadelivery.mobile'
     defaultConfig {
-        applicationId 'com.anonymous.jotadeliverymobile'
+        applicationId 'com.jotadelivery.mobile'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -132,7 +132,7 @@ android {
     }
 }
 
-// Apply static values from `gradle.properties` to the `android.packagingOptions`
+// Apply static values from `gradle.properties` to `android.packagingOptions`
 // Accepts values in comma delimited lists, example:
 // android.packagingOptions.pickFirsts=/LICENSE,**/picasa.ini
 ["pickFirsts", "excludes", "merges", "doNotStrip"].each { prop ->
