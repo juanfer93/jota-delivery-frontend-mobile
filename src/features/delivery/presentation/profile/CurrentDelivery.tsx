@@ -17,7 +17,7 @@ export function CurrentDelivery() {
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.replace('/profile');
+      router.replace('/delivery');
     }
   };
 

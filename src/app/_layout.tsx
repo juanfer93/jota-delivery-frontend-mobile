@@ -58,11 +58,7 @@ export default function RootLayout() {
         router.replace('/login' as any);
         return;
       }
-      if (user && (user as any).rol === 'ADMIN') {
-        router.replace('/(app)/' as any);
-      } else {
-        router.replace('/(app)/' as any);
-      }
+      router.replace('/(app)/' as any);
       return;
     }
 

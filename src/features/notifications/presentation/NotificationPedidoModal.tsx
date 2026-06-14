@@ -24,7 +24,7 @@ export function NotificationPedidoModal() {
   } = useDeliveryStore();
   const [actionError, setActionError] = useState<string | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<PedidoEstado | null>(null);
-  const isDomiciliario = user?.rol === 'DOMICILIARIO';
+  const isDomiciliario = user?.rol === 'domiciliario';
 
   useEffect(() => {
     if (!notification) return;

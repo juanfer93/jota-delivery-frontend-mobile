@@ -46,7 +46,15 @@ export default function LoginClient() {
 
           <View style={tw`flex-row items-center justify-between rounded-3xl border border-jj-beige/30 bg-jj-blueDark p-6 shadow-lg mb-10`}>
             <View style={tw`flex-row items-center`}>
-              <View style={tw`h-12 w-12 items-center justify-center rounded-full bg-jj-beige overflow-hidden mr-4`}>
+              <View
+                testID="login-logo"
+                style={[tw`h-24 w-24 items-center justify-center rounded-2xl overflow-hidden mr-4`, { backgroundColor: '#174A8B' }]}
+              >
+                <Image
+                  source={require('../../../../assets/images/jota-delivery-logo-blue.png')}
+                  resizeMode="contain"
+                  style={{ width: 96, height: 96 }}
+                />
               </View>
               <View>
                 <Text style={tw`text-xs uppercase tracking-widest text-jj-beige/80`}>Jota Jota Delivery</Text>

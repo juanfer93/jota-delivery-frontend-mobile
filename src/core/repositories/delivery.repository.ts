@@ -18,7 +18,7 @@ export const DeliveryRepository = {
   getPedidosHistorial: async (fecha: string): Promise<Pedido[]> => {
     return await apiListRequest<Pedido>({ 
       method: 'GET', 
-      url: `/pedidos/admin/history?date=${fecha}`
+      url: `/pedidos/admin/domiciliarios/history?date=${fecha}`
     });
   },
 

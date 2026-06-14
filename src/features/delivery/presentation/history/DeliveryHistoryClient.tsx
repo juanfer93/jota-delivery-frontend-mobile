@@ -16,7 +16,7 @@ const STATUS_STYLES: Record<PedidoEstado, { badge: string; text: string }> = {
 export default function DeliveryHistoryClient() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
-  const isDomiciliario = user?.rol === 'DOMICILIARIO';
+  const isDomiciliario = user?.rol === 'domiciliario';
   const { pedidosHistorial, historyStatus, historyError, loadHistory, loadAllHistory } = useDeliveryStore();
   const [search, setSearch] = useState('');
 

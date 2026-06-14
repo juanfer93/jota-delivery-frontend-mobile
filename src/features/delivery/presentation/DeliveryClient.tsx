@@ -1,10 +1,12 @@
 ﻿import { useEffect, useMemo } from 'react';
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
 import { PedidoEstado } from '@/features/delivery/domain/delivery.types';
 import { formatColombiaDateTime } from '@/core/time/colombia-time';
+import { useAuthStore } from '@/features/auth/application/auth.store';
 
 const EstadoOpciones = [
   { label: 'En proceso', value: PedidoEstado.EN_PROCESO },
@@ -16,6 +18,11 @@ export function DeliveryClient() {
   const router = useRouter();
   const { pedidoId } = useLocalSearchParams<{ pedidoId?: string }>();
   const { pedidosHoy, status, error, refreshPedidosHoy, updateEstado } = useDeliveryStore();
+  const user = useAuthStore((state) => state.user);
+  const isDomiciliario = user?.rol === 'domiciliario';
+  const isAdmin = user?.rol === 'admin';
+  const [domiciliarioFilter, setDomiciliarioFilter] = useState('');
+  const [comercioFilter, setComercioFilter] = useState('');
 
   useEffect(() => {
     void refreshPedidosHoy();
@@ -25,13 +32,23 @@ export function DeliveryClient() {
 
   const pedidosPorDomiciliario = useMemo(() => {
     const map = new Map<string, typeof pedidosHoy>();
-    pedidosHoy.forEach((pedido) => {
+    const normalizedDomiciliario = domiciliarioFilter.trim().toLocaleLowerCase('es-CO');
+    const normalizedComercio = comercioFilter.trim().toLocaleLowerCase('es-CO');
+    const filteredPedidos = pedidosHoy.filter((pedido) => {
+      const domiciliario = pedido.usuario?.nombre?.toLocaleLowerCase('es-CO') ?? '';
+      const comercio = pedido.comercio?.nombre?.toLocaleLowerCase('es-CO') ?? '';
+
+      return (!normalizedDomiciliario || domiciliario.includes(normalizedDomiciliario))
+        && (!normalizedComercio || comercio.includes(normalizedComercio));
+    });
+
+    filteredPedidos.forEach((pedido) => {
       const key = pedido.usuario?.nombre ?? 'Sin domiciliario';
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(pedido);
     });
     return Array.from(map.entries());
-  }, [pedidosHoy]);
+  }, [comercioFilter, domiciliarioFilter, pedidosHoy]);
 
   const handleChangeEstado = async (pedidoId: string, nuevoEstado: PedidoEstado) => {
     await updateEstado(pedidoId, nuevoEstado);
@@ -41,17 +58,23 @@ export function DeliveryClient() {
     <ScrollView style={tw`flex-1 bg-jjBeigeSoft`} contentContainerStyle={tw`p-6`}>
       <View style={tw`mb-6`}>
         <Text style={tw`text-3xl font-bold text-jjBlueDark`}>Pedidos</Text>
-        <Text style={tw`text-sm text-jjBlueDark/60 mt-2`}>Administra las órdenes y asignaciones por domiciliario.</Text>
+        <Text style={tw`text-sm text-jjBlueDark/60 mt-2`}>
+          {isDomiciliario
+            ? 'Consulta tus pedidos y gestiona su estado.'
+            : 'Administra las órdenes y asignaciones por domiciliario.'}
+        </Text>
       </View>
 
       <View style={tw`mb-5 flex-row gap-3`}>
-        <TouchableOpacity
-          testID="btn-crear-pedido"
-          onPress={() => router.push('/delivery/create')}
-          style={tw`flex-1 rounded-3xl bg-jjBlueDark px-4 py-3`}
-        >
-          <Text style={tw`text-center text-sm font-bold text-white`}>Crear pedido</Text>
-        </TouchableOpacity>
+        {isAdmin ? (
+          <TouchableOpacity
+            testID="btn-crear-pedido"
+            onPress={() => router.push('/delivery/create')}
+            style={tw`flex-1 rounded-3xl bg-jjBlueDark px-4 py-3`}
+          >
+            <Text style={tw`text-center text-sm font-bold text-white`}>Crear pedido</Text>
+          </TouchableOpacity>
+        ) : null}
         <TouchableOpacity
           testID="btn-historial-pedidos"
           onPress={() => router.push('/delivery/history')}
@@ -61,6 +84,28 @@ export function DeliveryClient() {
         </TouchableOpacity>
       </View>
 
+      {isAdmin ? (
+        <View style={tw`mb-5 rounded-3xl border border-jjBeige bg-white p-4`}>
+          <Text style={tw`mb-3 text-sm font-bold text-jjBlueDark`}>Filtrar pedidos</Text>
+          <TextInput
+            testID="filter-pedidos-domiciliario"
+            value={domiciliarioFilter}
+            onChangeText={setDomiciliarioFilter}
+            placeholder="Buscar por domiciliario"
+            placeholderTextColor="#718096"
+            style={tw`mb-3 rounded-2xl border border-jjBeige bg-jjBeigeSoft px-4 py-3 text-sm text-jjBlueDark`}
+          />
+          <TextInput
+            testID="filter-pedidos-comercio"
+            value={comercioFilter}
+            onChangeText={setComercioFilter}
+            placeholder="Buscar por comercio"
+            placeholderTextColor="#718096"
+            style={tw`rounded-2xl border border-jjBeige bg-jjBeigeSoft px-4 py-3 text-sm text-jjBlueDark`}
+          />
+        </View>
+      ) : null}
+
       {status === 'loading' ? (
         <View style={tw`items-center justify-center py-16`}>
           <ActivityIndicator size="large" color={tw.color('jj-blue')} />
@@ -68,7 +113,11 @@ export function DeliveryClient() {
         </View>
       ) : pedidosHoy.length === 0 ? (
         <View style={tw`items-center justify-center py-16`}>
-          <Text style={tw`text-jjBlueDark/70`}>No hay pedidos para hoy.</Text>
+          <Text style={tw`text-jjBlueDark/70`}>No hay pedidos activos o finalizados recientemente.</Text>
+        </View>
+      ) : pedidosPorDomiciliario.length === 0 ? (
+        <View style={tw`items-center justify-center rounded-3xl border border-dashed border-jjBeige bg-white py-12`}>
+          <Text style={tw`text-jjBlueDark/70`}>No hay pedidos que coincidan con los filtros.</Text>
         </View>
       ) : (
         pedidosPorDomiciliario.map(([domiciliario, items]) => (

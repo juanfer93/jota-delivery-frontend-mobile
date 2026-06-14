@@ -2,15 +2,15 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import DeliveryHistoryClient from './DeliveryHistoryClient';
 
 const mockLoadAllHistory = jest.fn().mockResolvedValue(undefined);
+const mockLoadHistory = jest.fn().mockResolvedValue(undefined);
+const mockAuthState = { user: { rol: 'admin' } };
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ back: jest.fn() }),
 }));
 
 jest.mock('@/features/auth/application/auth.store', () => ({
-  useAuthStore: (selector: (state: unknown) => unknown) => selector({
-    user: { rol: 'ADMIN' },
-  }),
+  useAuthStore: (selector: (state: typeof mockAuthState) => unknown) => selector(mockAuthState),
 }));
 
 jest.mock('@/features/delivery/application/delivery.store', () => ({
@@ -18,7 +18,7 @@ jest.mock('@/features/delivery/application/delivery.store', () => ({
     pedidosHistorial: [],
     historyStatus: 'success',
     historyError: null,
-    loadHistory: jest.fn(),
+    loadHistory: mockLoadHistory,
     loadAllHistory: mockLoadAllHistory,
   }),
 }));
@@ -26,7 +26,9 @@ jest.mock('@/features/delivery/application/delivery.store', () => ({
 describe('DeliveryHistoryClient para admin', () => {
   beforeEach(() => {
     jest.useFakeTimers();
+    mockAuthState.user.rol = 'admin';
     mockLoadAllHistory.mockClear();
+    mockLoadHistory.mockClear();
   });
 
   afterEach(() => jest.useRealTimers());
@@ -41,5 +43,14 @@ describe('DeliveryHistoryClient para admin', () => {
     });
 
     expect(mockLoadAllHistory).toHaveBeenLastCalledWith('Juan');
+  });
+
+  it('usa el historial privado para el rol domiciliario del backend', () => {
+    mockAuthState.user.rol = 'domiciliario';
+    render(<DeliveryHistoryClient />);
+
+    expect(mockLoadHistory).toHaveBeenCalledTimes(1);
+    expect(mockLoadAllHistory).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('search-historial-pedidos')).toBeNull();
   });
 });

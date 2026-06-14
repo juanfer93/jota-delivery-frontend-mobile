@@ -1,20 +1,8 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import { EntityPreviewCard } from './EntityPreviewCard';
 
 describe('EntityPreviewCard', () => {
-  beforeEach(() => {
-    jest.useFakeTimers();
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
-  it('busca por nombre cuando hay mas de tres registros', async () => {
-    const onSearch = jest.fn().mockResolvedValue([
-      { id: '4', name: 'Juancho', detail: 'juancho@jota.com' },
-    ]);
-
+  it('busca por nombre entre todos los registros', () => {
     render(
       <EntityPreviewCard
         title="Domiciliarios"
@@ -25,17 +13,31 @@ describe('EntityPreviewCard', () => {
           { id: '3', name: 'Carlos' },
           { id: '4', name: 'Juancho' },
         ]}
-        onSearch={onSearch}
       />,
     );
 
     fireEvent.changeText(screen.getByTestId('search-domiciliarios'), 'juan');
-    await act(async () => {
-      jest.advanceTimersByTime(300);
-      await Promise.resolve();
-    });
 
-    await waitFor(() => expect(onSearch).toHaveBeenCalledWith('juan'));
     expect(screen.getByText('Juancho')).toBeTruthy();
+    expect(screen.queryByText('Ana')).toBeNull();
+  });
+
+  it('permite mostrar el directorio completo', () => {
+    render(
+      <EntityPreviewCard
+        title="Comercios"
+        emptyMessage="Sin comercios"
+        items={[
+          { id: '1', name: 'Comercio 1' },
+          { id: '2', name: 'Comercio 2' },
+          { id: '3', name: 'Comercio 3' },
+          { id: '4', name: 'Comercio 4' },
+        ]}
+      />,
+    );
+
+    expect(screen.queryByText('Comercio 4')).toBeNull();
+    fireEvent.press(screen.getByTestId('toggle-comercios'));
+    expect(screen.getByText('Comercio 4')).toBeTruthy();
   });
 });

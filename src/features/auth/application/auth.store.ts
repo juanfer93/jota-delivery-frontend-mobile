@@ -54,7 +54,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         const fakeToken = 'test-token';
         await TokenStorage.setToken(fakeToken);
         set({
-          user: { id: 'test', nombre: 'Test User', email: credentials.email, rol: 'ADMIN' } as User,
+          user: { id: 'test', nombre: 'Test User', email: credentials.email, rol: 'admin' } as User,
           isAuthenticated: true,
         });
         console.log('🔐 [LOGIN] Simulación de login en entorno de prueba');
@@ -114,19 +114,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         console.log('✅ [AUTH] Usuario cargado desde API:', usuario?.email || usuario?.name || 'sin nombre');
         return;
       }
-    } catch (err) {
-      console.warn('⚠️ [AUTH] No se pudo obtener usuario con /auth/me, intentando /users/me');
-      try {
-        const resp2 = await api.get('/users/me');
-        const usuario2 = resp2.data.data ?? null;
-        if (usuario2) {
-          set({ user: usuario2 as User, isAuthenticated: true });
-          console.log('✅ [AUTH] Usuario cargado desde API /users/me');
-          return;
-        }
-      } catch (err2) {
-        console.warn('⚠️ [AUTH] No se pudo obtener usuario desde /users/me');
-      }
+    } catch (error: unknown) {
+      console.warn('[AUTH] No se pudo obtener el perfil desde /usuarios/perfil.', error);
     }
 
     console.warn('⚠️ [AUTH] No se pudo validar el token. Limpiando sesión local.');
