@@ -2,7 +2,6 @@
   "expo": {
     "name": "jota-delivery-mobile",
     "slug": "jota-delivery-mobile",
-    "owner": "juanfer93",
     "version": "1.0.0",
     "platforms": [
       "android",
@@ -57,16 +56,14 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "4c30edef-d7d7-4a3a-84be-fb170949d87a"
+        "projectId": "6a0f9c23-98c6-47c8-af9c-997b1948051c"
       }
-    },
-    "updates": {
-      "url": "https://u.expo.dev/4c30edef-d7d7-4a3a-84be-fb170949d87a"
     },
     "ios": {
       "runtimeVersion": {
         "policy": "appVersion"
       }
-    }
+    },
+    "owner": "juanfer93"
   }
 }
