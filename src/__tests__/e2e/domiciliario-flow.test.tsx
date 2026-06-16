@@ -78,12 +78,9 @@ describe('E2E SIMULADO: Flujo completo de creación de domiciliario', () => {
   });
 
   test('Admin crea domiciliario → Domiciliario recibe email → Crea contraseña → Login', async () => {
-    
     // ─────────────────────────────────────────────
     // PASO 1: Admin crea domiciliario
     // ─────────────────────────────────────────────
-    console.log('📝 PASO 1: Admin creando domiciliario...');
-    
     // Configurar mock para que retorne éxito
     mockCreateDomiciliario.mockResolvedValueOnce(true);
 
@@ -108,19 +105,13 @@ describe('E2E SIMULADO: Flujo completo de creación de domiciliario', () => {
       });
     }, { timeout: 5000 });
 
-    console.log('✅ Admin llamó a createDomiciliario correctamente');
-
     // ─────────────────────────────────────────────
     // PASO 2: Simular que el domiciliario recibe el email
     // ─────────────────────────────────────────────
-    console.log('📧 PASO 2: Simulando email recibido con token...');
-    console.log('🔗 Token recibido: mock-token-12345');
 
     // ─────────────────────────────────────────────
     // PASO 3: Domiciliario abre link y crea contraseña
     // ─────────────────────────────────────────────
-    console.log('🔐 PASO 3: Domiciliario creando contraseña...');
-    
     // Configurar mock para que retorne éxito
     mockSetPassword.mockResolvedValueOnce(true);
 
@@ -149,14 +140,5 @@ describe('E2E SIMULADO: Flujo completo de creación de domiciliario', () => {
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith('/login');
     }, { timeout: 5000 });
-
-    console.log('✅ Domiciliario llamó a setPassword correctamente');
-    console.log('✅ Redirección a /login confirmada');
-
-    console.log('🎉 Test E2E completado exitosamente:');
-    console.log('   1. ✅ Admin creó domiciliario');
-    console.log('   2. ✅ Email simulado con token');
-    console.log('   3. ✅ Domiciliario creó contraseña');
-    console.log('   4. ✅ Redirigido a login');
   });
 });
