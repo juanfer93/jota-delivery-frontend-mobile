@@ -75,8 +75,6 @@ describe('E2E REAL: Flujo completo Backend', () => {
       expect(mockReplace).toHaveBeenCalledWith('/login');
     }, { timeout: 20000 });
 
-    console.log("✅ Navegación a /login confirmada por mock");
-
     // ─────────────────────────────────────────────
     // PASO 2: Login (render manual, SIN cleanup intermedio)
     // ─────────────────────────────────────────────
@@ -95,8 +93,6 @@ describe('E2E REAL: Flujo completo Backend', () => {
       expect(mockReplace).toHaveBeenCalledWith('/(app)/');
     }, { timeout: 20000 });
 
-    console.log("✅ Navegación a /(app)/ confirmada por mock");
-
     // ─────────────────────────────────────────────
     // PASO 3: Dashboard (render manual, SIN cleanup intermedio)
     // ─────────────────────────────────────────────
@@ -104,9 +100,5 @@ describe('E2E REAL: Flujo completo Backend', () => {
 
     const btnCrear = await screen.findByTestId('btn-nav-crear-domiciliario', {}, { timeout: 20000 });
     expect(btnCrear).toBeTruthy();
-    console.log("🔍 Token en mockToken:", mockToken);
-    console.log("🔍 Llamadas a router.replace:", mockReplace.mock.calls);
-
-    console.log("🎉 Test finalizado con éxito: Dashboard alcanzado");
   });
 });
