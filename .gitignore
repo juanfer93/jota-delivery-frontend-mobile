@@ -12,6 +12,10 @@ dist/
 build/
 *.bak
 
+# Generated native projects for Expo managed workflow
+android/
+ios/
+
 # Environment variables
 .env
 .env.*
@@ -26,7 +30,7 @@ Thumbs.db
 expo-env.d.ts
 # @end expo-cli
 
-# --- Android ---
+# --- Android build artifacts ---
 android/.gradle/
 android/.kotlin/
 android/build/
