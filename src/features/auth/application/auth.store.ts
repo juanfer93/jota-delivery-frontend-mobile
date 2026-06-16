@@ -33,11 +33,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   isInitializing: true,
 
   checkAdminStatus: async () => {
-    console.log("🔍 [STORE] checkAdminStatus INICIANDO");
     try {
       const response = await api.get('/users/admin-status');
       const hasAdmin = response.data.data?.hasAdmin ?? false;
-      console.log("🔍 [STORE] Respuesta API:", hasAdmin);
       set({ hasAdmin });
       return hasAdmin;
     } catch (error: any) {
@@ -57,7 +55,6 @@ export const useAuthStore = create<AuthState>((set) => ({
           user: { id: 'test', nombre: 'Test User', email: credentials.email, rol: 'admin' } as User,
           isAuthenticated: true,
         });
-        console.log('🔐 [LOGIN] Simulación de login en entorno de prueba');
         return;
       }
 
@@ -69,11 +66,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
 
       await TokenStorage.setToken(loginData.accessToken);
-      const savedToken = await TokenStorage.getToken();
-      console.log('🔐 [LOGIN] Token verificado en storage:', savedToken ? 'SÍ' : 'NO');
-
       set({ user: loginData.usuario as User, isAuthenticated: true });
-      console.log('✅ [LOGIN] Estado actualizado exitosamente');
     } catch (error: any) {
       console.error('❌ [LOGIN] Error crítico:', error?.message || error);
       throw error;
@@ -83,8 +76,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: async () => {
-    console.log('🔐 [AUTH] logout INICIANDO...');
-
     set({
       user: null,
       isAuthenticated: false,
@@ -93,7 +84,6 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     try {
       await TokenStorage.removeToken();
-      console.log('🔐 [AUTH] Token eliminado correctamente');
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : error;
       console.error('❌ [AUTH] Error eliminando token en logout:', message);
@@ -101,12 +91,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   checkAuth: async () => {
-    console.log('🔐 [AUTH] checkAuth INICIANDO...');
     const token = await TokenStorage.getToken();
-    console.log('🔐 [AUTH] Token encontrado:', token ? 'SÍ (' + token.substring(0, 10) + '...)' : 'NO');
 
     if (!token) {
-      console.log(' [AUTH] No hay token, usuario NO autenticado');
       set({ isAuthenticated: false, user: null });
       return;
     }
@@ -116,7 +103,6 @@ export const useAuthStore = create<AuthState>((set) => ({
       const usuario = response.data.data?.usuario ?? response.data.data ?? null;
       if (usuario) {
         set({ user: usuario as User, isAuthenticated: true });
-        console.log('✅ [AUTH] Usuario cargado desde API:', usuario?.email || usuario?.name || 'sin nombre');
         return;
       }
     } catch (error: unknown) {
