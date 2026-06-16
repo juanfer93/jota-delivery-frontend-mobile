@@ -22,7 +22,7 @@ function isProtectedRoute(pathname: string | null | undefined): boolean {
 }
 
 export default function RootLayout() {
-  const { hasAdmin, isAuthenticated, user, checkAdminStatus, checkAuth } = useAuthStore();
+  const { hasAdmin, isAuthenticated, checkAdminStatus, checkAuth } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
   const [isReady, setIsReady] = useState(false);
@@ -31,14 +31,8 @@ export default function RootLayout() {
     LogBox.ignoreLogs(['Cannot find single active touch']);
 
     const initializeApp = async () => {
-      console.log("🚀 Iniciando app...");
-      
       await checkAdminStatus();
-      console.log("✅ checkAdminStatus completado, hasAdmin =", hasAdmin);
-      
       await checkAuth();
-      console.log("✅ checkAuth completado, isAuthenticated =", isAuthenticated);
-      
       setIsReady(true);
     };
     initializeApp();
@@ -46,8 +40,6 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (!isReady) return;
-
-    console.log("🔍 Decisión de ruta:", { hasAdmin, isAuthenticated, pathname, user: user ? (user.email || (user as any).nombre) : null });
 
     if (pathname === '/') {
       if (!hasAdmin) {
@@ -63,30 +55,25 @@ export default function RootLayout() {
     }
 
     if (isPublicRoute(pathname)) {
-      console.log("🔓 Ruta pública detectada, permitiendo acceso:", pathname);
       return;
     }
 
     if (!hasAdmin) {
-      console.log("👉 Redirigiendo a /create-admin");
       router.replace('/create-admin' as any);
       return;
     }
 
     if (!isAuthenticated) {
-      console.log("👉 Usuario no autenticado, redirigiendo a /login");
       router.replace('/login' as any);
       return;
     }
 
     if (isProtectedRoute(pathname)) {
-      console.log("✅ Ruta protegida con sesión válida:", pathname);
       return;
     }
 
-    console.log("👉 Redirigiendo a /(app)/ por defecto");
     router.replace('/(app)/' as any);
-  }, [isReady, hasAdmin, isAuthenticated, pathname, user]);
+  }, [isReady, hasAdmin, isAuthenticated, pathname]);
 
   if (!isReady) {
     return (
