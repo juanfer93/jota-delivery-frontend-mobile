@@ -30,7 +30,6 @@ export const useAdminStore = create<AdminStore>((set) => ({
     try {
       if (shouldMockBackend) {
         // En entorno de tests controlado, evitamos llamadas reales y simulamos éxito.
-        console.log('[TEST MODE] Simulando createFirstAdmin');
         return;
       }
 
