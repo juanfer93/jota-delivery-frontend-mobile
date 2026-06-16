@@ -14,9 +14,3 @@ export interface ApiListResponse<T> {
     lastPage: number;
   };
 }
-
-export interface ApiErrorResponse {
-  statusCode: number;
-  message: string | string[];
-  error: string;
-}
