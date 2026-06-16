@@ -41,8 +41,6 @@ export default function CreateAdminClient() {
       };
 
       await createFirstAdmin(payload);
-      console.log("Creación exitosa, intentando navegar...");
-      console.log("DEBUG ROUTER:", typeof router.replace);
       router.replace('/login');
     } catch (err: unknown) {
       if (isAxiosError(err)) {
