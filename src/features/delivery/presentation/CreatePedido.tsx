@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -48,6 +48,8 @@ export default function CreatePedido() {
     string | null
   >(null);
 
+  const [manualPanelOpen, setManualPanelOpen] = useState(false);
+  const [domiciliarioSearch, setDomiciliarioSearch] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -57,11 +59,20 @@ export default function CreatePedido() {
     }
   }, [comercios.length, domiciliarios.length, loadData]);
 
-  const busyIds = new Set(
-    pedidosHoy
-      .filter((pedido) => pedido.estado === PedidoEstado.EN_PROCESO)
-      .map((pedido) => pedido.domiciliarioId ?? pedido.usuarioId)
-      .filter(Boolean),
+  const busyIds = useMemo(
+    () =>
+      new Set(
+        pedidosHoy
+          .filter((pedido) => pedido.estado === PedidoEstado.EN_PROCESO)
+          .map((pedido) => pedido.domiciliarioId ?? pedido.usuarioId)
+          .filter(Boolean),
+      ),
+    [pedidosHoy],
+  );
+
+  const selectedDomiciliario = useMemo(
+    () => domiciliarios.find((domi) => domi.id === selectedDomiciliarioId),
+    [domiciliarios, selectedDomiciliarioId],
   );
 
   const handleCreate = async () => {
@@ -82,6 +93,7 @@ export default function CreatePedido() {
 
     if (assignmentMode === 'manual' && !selectedDomiciliarioId) {
       setErrorMsg('Selecciona un domiciliario para asignacion manual.');
+      setManualPanelOpen(true);
       return;
     }
 
@@ -91,6 +103,7 @@ export default function CreatePedido() {
       busyIds.has(selectedDomiciliarioId)
     ) {
       setErrorMsg('Ese domiciliario ya tiene un pedido activo.');
+      setManualPanelOpen(true);
       return;
     }
 
@@ -126,6 +139,8 @@ export default function CreatePedido() {
 
     setSelectedComercioId(null);
     setSelectedDomiciliarioId(null);
+    setDomiciliarioSearch('');
+    setManualPanelOpen(false);
     setAssignmentMode('auto');
 
     router.replace('/(app)/delivery' as any);
@@ -177,15 +192,28 @@ export default function CreatePedido() {
     sublabel: comercio.direccion,
   }));
 
-  const domiciliarioOptions = domiciliarios.map(
+  const filteredDomiciliarios = domiciliarios.filter((domiciliario) => {
+    const term = domiciliarioSearch.trim().toLowerCase();
+    if (!term) return true;
+    return `${domiciliario.nombre || ''} ${domiciliario.email || ''}`
+      .toLowerCase()
+      .includes(term);
+  });
+
+  const domiciliarioOptions = filteredDomiciliarios.map(
     (domiciliario: DomiciliarioItem) => {
       const isBusy = busyIds.has(domiciliario.id);
+      const isUnconfirmed = domiciliario.email_confirmado === false;
 
       return {
         id: domiciliario.id,
         label: domiciliario.nombre || domiciliario.email,
-        sublabel: isBusy ? 'Ocupado con pedido activo' : domiciliario.email,
-        disabled: isBusy || !!domiciliario.bloqueado,
+        sublabel: isBusy
+          ? 'Ocupado con pedido activo'
+          : isUnconfirmed
+            ? 'Pendiente por confirmar correo'
+            : domiciliario.email,
+        disabled: isBusy || isUnconfirmed || !!domiciliario.bloqueado,
       };
     },
   );
@@ -206,65 +234,90 @@ export default function CreatePedido() {
             </Text>
           </View>
 
-          <View style={tw`rounded-3xl border border-jj-blueDark/10 bg-white p-4 shadow-sm mb-6`}>
-            <Text style={tw`text-sm font-semibold text-jjBlueDark mb-3`}>
-              Tipo de asignacion
+          <View style={tw`rounded-3xl border border-jj-blueDark/10 bg-white p-4 shadow-sm mb-4`}>
+            <Text style={tw`text-sm font-semibold text-jjBlueDark mb-1`}>
+              Asignacion automatica
             </Text>
-
-            <View style={tw`flex-row gap-3`}>
-              <TouchableOpacity
-                testID="assignment-auto-button"
-                onPress={() => {
-                  setAssignmentMode('auto');
-                  setSelectedDomiciliarioId(null);
-                }}
-                style={tw`flex-1 rounded-2xl border px-4 py-3 ${
-                  assignmentMode === 'auto'
-                    ? 'border-jjBlueDark bg-jjBlueDark/10'
-                    : 'border-jjBeige'
-                }`}
-              >
-                <Text style={tw`text-center font-semibold text-jjBlueDark`}>
-                  Automatica
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                testID="assignment-manual-button"
-                onPress={() => setAssignmentMode('manual')}
-                style={tw`flex-1 rounded-2xl border px-4 py-3 ${
-                  assignmentMode === 'manual'
-                    ? 'border-jjBlueDark bg-jjBlueDark/10'
-                    : 'border-jjBeige'
-                }`}
-              >
-                <Text style={tw`text-center font-semibold text-jjBlueDark`}>
-                  Manual
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <Text style={tw`text-xs text-jjBlueDark/70 mt-3`}>
-              {assignmentMode === 'auto'
-                ? 'El sistema asigna al domiciliario libre que lleva mas tiempo sin pedido. Si hay empate, se elige al azar.'
-                : 'Selecciona un domiciliario libre. Los ocupados no se pueden escoger.'}
+            <Text style={tw`text-xs text-jjBlueDark/70`}>
+              El sistema asigna al domiciliario libre que lleva mas tiempo sin pedido. Si hay empate, se elige al azar.
             </Text>
+            <TouchableOpacity
+              testID="assignment-auto-button"
+              onPress={() => {
+                setAssignmentMode('auto');
+                setSelectedDomiciliarioId(null);
+                setManualPanelOpen(false);
+              }}
+              style={tw`mt-4 rounded-2xl border px-4 py-3 ${
+                assignmentMode === 'auto'
+                  ? 'border-jjBlueDark bg-jjBlueDark/10'
+                  : 'border-jjBeige bg-white'
+              }`}
+            >
+              <Text style={tw`text-center font-semibold text-jjBlueDark`}>
+                Usar asignacion automatica
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          {assignmentMode === 'manual' ? (
-            <>
-              <Text style={tw`mb-2 text-sm font-semibold text-jjBlueDark`}>
-                Domiciliario
+          <View style={tw`rounded-3xl border border-jj-blueDark/10 bg-white p-4 shadow-sm mb-6`}>
+            <Text style={tw`text-sm font-semibold text-jjBlueDark mb-1`}>
+              Asignacion manual
+            </Text>
+            <Text style={tw`text-xs text-jjBlueDark/70 mb-3`}>
+              Abre la lista, busca un domiciliario y elige uno libre. Los ocupados quedan bloqueados.
+            </Text>
+            {selectedDomiciliario ? (
+              <View style={tw`mb-3 rounded-2xl bg-jjBlueDark/10 px-4 py-3`}>
+                <Text style={tw`text-sm font-semibold text-jjBlueDark`}>
+                  Seleccionado: {selectedDomiciliario.nombre || selectedDomiciliario.email}
+                </Text>
+                <Text style={tw`text-xs text-jjBlueDark/60 mt-1`}>
+                  {selectedDomiciliario.email}
+                </Text>
+              </View>
+            ) : null}
+            <TouchableOpacity
+              testID="open-manual-assignment-button"
+              onPress={() => {
+                setAssignmentMode('manual');
+                setManualPanelOpen((current) => !current);
+              }}
+              style={tw`rounded-2xl border px-4 py-3 ${
+                assignmentMode === 'manual'
+                  ? 'border-jjBlueDark bg-jjBlueDark/10'
+                  : 'border-jjBeige bg-white'
+              }`}
+            >
+              <Text style={tw`text-center font-semibold text-jjBlueDark`}>
+                {manualPanelOpen ? 'Cerrar lista de domiciliarios' : 'Abrir lista de domiciliarios'}
               </Text>
-              {renderSelectionList(
-                domiciliarioOptions,
-                selectedDomiciliarioId,
-                setSelectedDomiciliarioId,
-                'No hay domiciliarios disponibles.',
-                'domiciliario',
-              )}
-            </>
-          ) : null}
+            </TouchableOpacity>
+
+            {manualPanelOpen ? (
+              <View testID="manual-assignment-panel" style={tw`mt-4`}>
+                <TextInput
+                  testID="domiciliario-search-input"
+                  style={tw`mb-3 w-full rounded-xl border border-jj-beige px-4 py-3 text-sm text-jj-blueDark bg-white`}
+                  placeholder="Buscar por nombre o correo"
+                  placeholderTextColor="#718096"
+                  value={domiciliarioSearch}
+                  onChangeText={setDomiciliarioSearch}
+                />
+                {renderSelectionList(
+                  domiciliarioOptions,
+                  selectedDomiciliarioId,
+                  (id) => {
+                    setSelectedDomiciliarioId(id);
+                    setAssignmentMode('manual');
+                    setManualPanelOpen(false);
+                  },
+                  'No hay domiciliarios que coincidan con la busqueda.',
+                  'domiciliario',
+                )}
+              </View>
+            ) : null}
+          </View>
 
           <Text style={tw`mb-2 text-sm font-semibold text-jjBlueDark`}>
             Comercio
