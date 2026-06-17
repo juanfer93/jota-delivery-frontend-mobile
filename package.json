@@ -55,6 +55,7 @@
     "xhr2": "^0.2.1"
   },
   "scripts": {
+    "prepare:notification-sound": "node scripts/write-notification-sound.mjs",
     "start": "expo start",
     "web": "expo start --web",
     "android": "expo start --android",
