@@ -1,1 +1,77 @@
-{"expo":{"name":"jota-delivery-mobile","slug":"jota-delivery-mobile","version":"1.0.0","platforms":["android","web"],"orientation":"portrait","icon":"./assets/images/jota-delivery-logo-login-mark.png","scheme":"jotadeliverymobile","userInterfaceStyle":"automatic","android":{"icon":"./assets/images/jota-delivery-logo-login-mark.png","adaptiveIcon":{"backgroundColor":"#174A8B","foregroundImage":"./assets/images/jota-delivery-logo-login-mark.png"},"predictiveBackGestureEnabled":false,"package":"com.jotadelivery.mobile","runtimeVersion":"1.0.0"},"web":{"output":"static","bundler":"metro","openBrowserOnStart":false},"plugins":["expo-router",["expo-splash-screen",{"backgroundColor":"#174A8B","image":"./assets/images/jota-delivery-logo-blue.png","imageWidth":200,"resizeMode":"contain","android":{"backgroundColor":"#174A8B","image":"./assets/images/jota-delivery-logo-blue.png","imageWidth":200,"resizeMode":"contain"}}],"expo-status-bar","expo-secure-store","expo-image",["expo-notifications",{"color":"#174A8B","defaultChannel":"orders-v2","sounds":["./assets/sounds/jota-notification.mp3"]}]],"experiments":{"typedRoutes":true,"reactCompiler":true},"extra":{"router":{},"eas":{"projectId":"6a0f9c23-98c6-47c8-af9c-997b1948051c"}},"ios":{"runtimeVersion":{"policy":"appVersion"}},"owner":"juanfer93"}}
+{
+  "expo": {
+    "name": "jota-delivery-mobile",
+    "slug": "jota-delivery-mobile",
+    "version": "1.0.0",
+    "platforms": [
+      "android",
+      "web"
+    ],
+    "orientation": "portrait",
+    "icon": "./assets/images/jota-delivery-logo-login-mark.png",
+    "scheme": "jotadeliverymobile",
+    "userInterfaceStyle": "automatic",
+    "android": {
+      "icon": "./assets/images/jota-delivery-logo-login-mark.png",
+      "adaptiveIcon": {
+        "backgroundColor": "#174A8B",
+        "foregroundImage": "./assets/images/jota-delivery-logo-login-mark.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.jotadelivery.mobile",
+      "runtimeVersion": "1.0.0"
+    },
+    "web": {
+      "output": "static",
+      "bundler": "metro",
+      "openBrowserOnStart": false
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#174A8B",
+          "image": "./assets/images/jota-delivery-logo-blue.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "android": {
+            "backgroundColor": "#174A8B",
+            "image": "./assets/images/jota-delivery-logo-blue.png",
+            "imageWidth": 200,
+            "resizeMode": "contain"
+          }
+        }
+      ],
+      "expo-status-bar",
+      "expo-secure-store",
+      "expo-image",
+      [
+        "expo-notifications",
+        {
+          "color": "#174A8B",
+          "defaultChannel": "orders-v2",
+          "sounds": [
+            "./assets/sounds/jota-notification.mp3"
+          ]
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "580acbf3-2b66-4dc5-943b-1f290eefc636"
+      }
+    },
+    "ios": {
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
+    },
+    "owner": "juanfer93"
+  }
+}
