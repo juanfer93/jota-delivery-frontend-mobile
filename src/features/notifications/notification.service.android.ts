@@ -6,7 +6,8 @@ import { NotificationPayload, parseNotificationPayload } from './domain/notifica
 
 export type NotificationOpenedHandler = (payload: NotificationPayload) => void;
 
-const ORDERS_CHANNEL_ID = 'orders-v2';
+const ORDERS_CHANNEL_ID = 'orders-v3';
+const LEGACY_ORDERS_CHANNEL_ID = 'orders-v2';
 const ORDERS_NOTIFICATION_SOUND = 'jota_notification.mp3';
 
 Notifications.setNotificationHandler({
@@ -26,7 +27,8 @@ function forwardResponse(
   if (payload) onOpened(payload);
 }
 
-async function registerAndroidToken(): Promise<void> {
+async function configureAndroidChannels(): Promise<void> {
+  await Notifications.deleteNotificationChannelAsync(LEGACY_ORDERS_CHANNEL_ID).catch(() => undefined);
   await Notifications.setNotificationChannelAsync(ORDERS_CHANNEL_ID, {
     name: 'Pedidos',
     description: 'Notificaciones de pedidos y cambios de estado.',
@@ -34,7 +36,13 @@ async function registerAndroidToken(): Promise<void> {
     vibrationPattern: [0, 250, 250, 250],
     lightColor: '#174A8B',
     sound: ORDERS_NOTIFICATION_SOUND,
+    enableVibrate: true,
+    lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
   });
+}
+
+async function registerAndroidToken(): Promise<void> {
+  await configureAndroidChannels();
 
   if (!Device.isDevice) {
     console.info('[NOTIFICATIONS] Expo Push requiere un dispositivo Android fisico.');
@@ -59,6 +67,7 @@ async function registerAndroidToken(): Promise<void> {
 
   const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
   await NotificationRepository.registerExpoToken(token);
+  console.info('[NOTIFICATIONS] Token Expo registrado correctamente.');
 }
 
 export async function initializeNotifications(
