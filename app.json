@@ -52,7 +52,7 @@
           "color": "#174A8B",
           "defaultChannel": "orders-v2",
           "sounds": [
-            "./assets/sounds/jota-notification.mp3"
+            "./assets/sounds/jota_notification.mp3"
           ]
         }
       ]
