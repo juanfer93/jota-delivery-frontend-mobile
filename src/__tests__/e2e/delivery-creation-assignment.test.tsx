@@ -42,6 +42,7 @@ jest.mock('@/features/delivery/application/delivery.store', () => ({
         email: 'libre@test.com',
         rol: 'domiciliario',
         bloqueado: false,
+        email_confirmado: true,
       },
       {
         id: 'domi-busy',
@@ -49,6 +50,7 @@ jest.mock('@/features/delivery/application/delivery.store', () => ({
         email: 'ocupado@test.com',
         rol: 'domiciliario',
         bloqueado: false,
+        email_confirmado: true,
       },
     ],
     comercios: [
@@ -128,12 +130,13 @@ test('E2E: Crear pedido con asignacion automatica y comercio existente', async (
   expect(mockBack).not.toHaveBeenCalled();
 });
 
-test('E2E: Crear pedido con asignacion manual manda domiciliarioId libre', async () => {
+test('E2E: Crear pedido con asignacion manual manda domiciliarioId libre desde panel buscable', async () => {
   mockAssignPedido.mockResolvedValue(true);
 
   render(<CreatePedido />);
 
-  fireEvent.press(screen.getByTestId('assignment-manual-button'));
+  fireEvent.press(screen.getByTestId('open-manual-assignment-button'));
+  fireEvent.changeText(screen.getByTestId('domiciliario-search-input'), 'Libre');
 
   const domiciliarioOption = await screen.findByTestId(
     'domiciliario-option-domi-free',
@@ -163,7 +166,7 @@ test('E2E: Crear pedido con asignacion manual manda domiciliarioId libre', async
 test('E2E: No permite escoger domiciliario ocupado en manual', async () => {
   render(<CreatePedido />);
 
-  fireEvent.press(screen.getByTestId('assignment-manual-button'));
+  fireEvent.press(screen.getByTestId('open-manual-assignment-button'));
 
   const busyOption = await screen.findByTestId('domiciliario-option-domi-busy');
 
