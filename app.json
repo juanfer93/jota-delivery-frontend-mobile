@@ -3,10 +3,7 @@
     "name": "jota-delivery-mobile",
     "slug": "jota-delivery-mobile",
     "version": "1.0.0",
-    "platforms": [
-      "android",
-      "web"
-    ],
+    "platforms": ["android", "web"],
     "orientation": "portrait",
     "icon": "./assets/images/jota-delivery-logo-login-mark.png",
     "scheme": "jotadeliverymobile",
@@ -50,7 +47,8 @@
         "expo-notifications",
         {
           "color": "#174A8B",
-          "defaultChannel": "orders"
+          "defaultChannel": "orders-v2",
+          "sounds": ["./assets/sounds/jota-notification.mp3"]
         }
       ]
     ],
