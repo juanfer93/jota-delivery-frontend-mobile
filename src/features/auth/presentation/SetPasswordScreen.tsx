@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  ScrollView,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useAuthStore } from '@/features/auth/application/auth.store';
@@ -10,7 +17,11 @@ const COLORS = {
   neutralCard: '#ffffff',
 };
 
-export const SetPasswordScreen = () => {
+type SetPasswordScreenProps = {
+  mode?: 'token' | 'profile';
+};
+
+export const SetPasswordScreen = ({ mode = 'token' }: SetPasswordScreenProps) => {
   const router = useRouter();
   const { token } = useLocalSearchParams<{ token: string }>();
 
@@ -20,11 +31,17 @@ export const SetPasswordScreen = () => {
     setPasswordError,
     clearPasswordMessages,
     setPassword,
+    changeProfilePassword,
   } = useAuthStore();
 
   const [password, setPasswordValue] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string }>({});
+  const [errors, setErrors] = useState<{
+    password?: string;
+    confirmPassword?: string;
+  }>({});
+
+  const isProfileMode = mode === 'profile';
 
   useEffect(() => {
     clearPasswordMessages();
@@ -32,49 +49,64 @@ export const SetPasswordScreen = () => {
 
   const validateForm = () => {
     const newErrors: { password?: string; confirmPassword?: string } = {};
-    
+
     try {
       setPasswordSchema.parse({ password, confirmPassword });
     } catch (error: any) {
       if (error.errors) {
         error.errors.forEach((err: any) => {
           if (err.path[0] === 'password') newErrors.password = err.message;
-          if (err.path[0] === 'confirmPassword') newErrors.confirmPassword = err.message;
+          if (err.path[0] === 'confirmPassword') {
+            newErrors.confirmPassword = err.message;
+          }
         });
       }
     }
-    
+
     setErrors(newErrors);
+
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
-    if (!token) return;
-    
+    if (!isProfileMode && !token) return;
+
     clearPasswordMessages();
-    
+
     if (!validateForm()) return;
 
-    const success = await setPassword({
-      token,
-      password,
-    });
+    const success = isProfileMode
+      ? await changeProfilePassword({
+        password,
+        confirmPassword,
+      })
+      : await setPassword({
+        token,
+        password,
+      });
 
     if (success) {
       setPasswordValue('');
       setConfirmPassword('');
       setErrors({});
-      router.push('/login');
+
+      if (isProfileMode) {
+        router.replace('/(app)/profile' as any);
+      } else {
+        router.push('/login');
+      }
     }
   };
 
-  if (!token) {
+  if (!isProfileMode && !token) {
     return (
-      <ScrollView 
+      <ScrollView
         style={tw`flex-1 bg-jjBeigeSoft`}
         contentContainerStyle={tw`flex-grow justify-center items-center p-4`}
       >
-        <View style={tw`w-full max-w-md bg-neutral-card rounded-xl shadow-lg border border-jjBeige p-6`}>
+        <View
+          style={tw`w-full max-w-md bg-neutral-card rounded-xl shadow-lg border border-jjBeige p-6`}
+        >
           <Text style={tw`text-xl font-semibold text-neutral-dark mb-2`}>
             Crear contraseña
           </Text>
@@ -87,16 +119,19 @@ export const SetPasswordScreen = () => {
   }
 
   return (
-    <ScrollView 
+    <ScrollView
       style={tw`flex-1 bg-jjBeigeSoft`}
       contentContainerStyle={tw`flex-grow justify-center items-center p-4`}
     >
       <View style={tw`w-full max-w-md bg-neutral-card rounded-xl shadow-lg p-6`}>
         <Text testID="screen-title" style={tw`text-xl font-semibold text-neutral-dark mb-2`}>
-          Crear contraseña
+          {isProfileMode ? 'Cambiar contraseña' : 'Crear contraseña'}
         </Text>
+
         <Text style={tw`text-sm text-neutral-gray mb-6`}>
-          Define tu nueva contraseña para poder iniciar sesión como domiciliario.
+          {isProfileMode
+            ? 'Define una nueva contraseña para tu cuenta.'
+            : 'Define tu nueva contraseña para poder iniciar sesión como domiciliario.'}
         </Text>
 
         <View style={tw`gap-4`}>
@@ -105,7 +140,7 @@ export const SetPasswordScreen = () => {
               Nueva contraseña
             </Text>
             <TextInput
-              testID="password-input" 
+              testID="password-input"
               style={tw`px-3 py-2 rounded-lg border border-neutral-light bg-neutral-card text-neutral-dark`}
               value={password}
               onChangeText={(text) => {
@@ -128,12 +163,14 @@ export const SetPasswordScreen = () => {
               Confirmar contraseña
             </Text>
             <TextInput
-              testID="confirm-password-input" 
+              testID="confirm-password-input"
               style={tw`px-3 py-2 rounded-lg border border-neutral-light bg-neutral-card text-neutral-dark`}
               value={confirmPassword}
               onChangeText={(text) => {
                 setConfirmPassword(text);
-                if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: undefined });
+                if (errors.confirmPassword) {
+                  setErrors({ ...errors, confirmPassword: undefined });
+                }
               }}
               placeholder="••••••"
               placeholderTextColor={COLORS.neutralGray}
@@ -147,10 +184,11 @@ export const SetPasswordScreen = () => {
           </View>
 
           <TouchableOpacity
-            testID="submit-button" 
+            testID="submit-button"
             onPress={handleSubmit}
             disabled={isSettingPassword}
-            style={tw`mt-2 py-3 rounded-lg ${isSettingPassword ? 'bg-neutral-gray' : 'bg-jjBlue'}`}
+            style={tw`mt-2 py-3 rounded-lg ${isSettingPassword ? 'bg-neutral-gray' : 'bg-jjBlue'
+              }`}
           >
             {isSettingPassword ? (
               <ActivityIndicator color={COLORS.neutralCard} />
@@ -167,6 +205,7 @@ export const SetPasswordScreen = () => {
             {setPasswordMessage}
           </Text>
         )}
+
         {setPasswordError && (
           <Text testID="error-message" style={tw`mt-4 text-status-cancelado text-sm text-center`}>
             {setPasswordError}

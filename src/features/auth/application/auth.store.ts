@@ -1,11 +1,17 @@
 import { create } from 'zustand';
 import api from '@/core/api/axios.instance';
 import { TokenStorage } from '@/core/storage/token.storage';
-import { User, RawLoginResponse, SetPasswordDTO } from '@/features/auth/domain/auth.types';
+import {
+  User,
+  RawLoginResponse,
+  SetPasswordDTO,
+  ChangePasswordDTO,
+} from '@/features/auth/domain/auth.types';
 
 const USE_FAKE_API = process.env.JOTA_USE_FAKE_API === 'true';
 const FORCE_REAL_BACKEND = process.env.JOTA_REAL_BACKEND === 'true';
-const shouldMockBackend = USE_FAKE_API || (process.env.NODE_ENV === 'test' && !FORCE_REAL_BACKEND);
+const shouldMockBackend =
+  USE_FAKE_API || (process.env.NODE_ENV === 'test' && !FORCE_REAL_BACKEND);
 
 interface AuthState {
   user: User | null;
@@ -22,6 +28,7 @@ interface AuthState {
   setPasswordMessage: string | null;
   setPasswordError: string | null;
   setPassword: (data: SetPasswordDTO) => Promise<boolean>;
+  changeProfilePassword: (data: ChangePasswordDTO) => Promise<boolean>;
   clearPasswordMessages: () => void;
 }
 
@@ -39,7 +46,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ hasAdmin });
       return hasAdmin;
     } catch (error: any) {
-      console.error("❌ [STORE] Error en checkAdminStatus:", error?.message || error);
+      console.error('❌ [STORE] Error en checkAdminStatus:', error?.message || error);
       set({ hasAdmin: false });
       return false;
     }
@@ -47,14 +54,22 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   login: async (credentials: { email: string; password: string }) => {
     set({ isLoading: true });
+
     try {
       if (shouldMockBackend) {
         const fakeToken = 'test-token';
         await TokenStorage.setToken(fakeToken);
+
         set({
-          user: { id: 'test', nombre: 'Test User', email: credentials.email, rol: 'admin' } as User,
+          user: {
+            id: 'test',
+            nombre: 'Test User',
+            email: credentials.email,
+            rol: 'admin',
+          } as User,
           isAuthenticated: true,
         });
+
         return;
       }
 
@@ -66,7 +81,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
 
       await TokenStorage.setToken(loginData.accessToken);
-      set({ user: loginData.usuario as User, isAuthenticated: true });
+
+      set({
+        user: loginData.usuario as User,
+        isAuthenticated: true,
+      });
     } catch (error: any) {
       console.error('❌ [LOGIN] Error crítico:', error?.message || error);
       throw error;
@@ -101,8 +120,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const response = await api.get('/usuarios/perfil');
       const usuario = response.data.data?.usuario ?? response.data.data ?? null;
+
       if (usuario) {
-        set({ user: usuario as User, isAuthenticated: true });
+        set({
+          user: usuario as User,
+          isAuthenticated: true,
+        });
         return;
       }
     } catch (error: unknown) {
@@ -119,18 +142,62 @@ export const useAuthStore = create<AuthState>((set) => ({
   setPasswordError: null,
 
   clearPasswordMessages: () => {
-    set({ setPasswordMessage: null, setPasswordError: null });
+    set({
+      setPasswordMessage: null,
+      setPasswordError: null,
+    });
   },
 
   setPassword: async (data: SetPasswordDTO) => {
-    set({ isSettingPassword: true, setPasswordMessage: null, setPasswordError: null });
+    set({
+      isSettingPassword: true,
+      setPasswordMessage: null,
+      setPasswordError: null,
+    });
+
     try {
       await api.post('/auth/domiciliarios/set-password', data);
-      set({ setPasswordMessage: 'Contraseña creada correctamente. Ya puedes iniciar sesión.' });
+
+      set({
+        setPasswordMessage: 'Contraseña creada correctamente. Ya puedes iniciar sesión.',
+      });
+
       return true;
     } catch (error: any) {
-      const message = error?.response?.data?.message || 'No se pudo crear la contraseña. El enlace puede haber expirado.';
+      const message =
+        error?.response?.data?.message ||
+        'No se pudo crear la contraseña. El enlace puede haber expirado.';
+
       set({ setPasswordError: message });
+
+      return false;
+    } finally {
+      set({ isSettingPassword: false });
+    }
+  },
+
+  changeProfilePassword: async (data: ChangePasswordDTO) => {
+    set({
+      isSettingPassword: true,
+      setPasswordMessage: null,
+      setPasswordError: null,
+    });
+
+    try {
+      await api.patch('/usuarios/perfil/password', data);
+
+      set({
+        setPasswordMessage: 'Contraseña actualizada correctamente.',
+      });
+
+      return true;
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        'No se pudo actualizar la contraseña. Intenta de nuevo.';
+
+      set({ setPasswordError: message });
+
       return false;
     } finally {
       set({ isSettingPassword: false });

@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  ScrollView,
+} from 'react-native';
 import tw from '@/lib/tailwind';
 import { useAdminStore } from '@/features/admin/application/admin.store';
 import { createDomiciliarioSchema } from '@/features/admin/domain/admin.schema';
@@ -14,6 +21,7 @@ export const CreateDeliveryScreen = () => {
     isCreatingDomiciliario,
     domiciliarioMessage,
     domiciliarioError,
+    lastTemporaryPassword,
     clearDomiciliarioMessages,
     createDomiciliario,
   } = useAdminStore();
@@ -46,6 +54,7 @@ export const CreateDeliveryScreen = () => {
     if (!validateForm()) return;
 
     const success = await createDomiciliario({ nombre, email });
+
     if (success) {
       setNombre('');
       setEmail('');
@@ -54,14 +63,21 @@ export const CreateDeliveryScreen = () => {
   };
 
   useEffect(() => {
-    if (!domiciliarioMessage && !domiciliarioError) return;
+    if (!domiciliarioMessage && !domiciliarioError && !lastTemporaryPassword) {
+      return;
+    }
 
     const timer = setTimeout(() => {
       clearDomiciliarioMessages();
-    }, 5000);
+    }, 15000);
 
     return () => clearTimeout(timer);
-  }, [domiciliarioMessage, domiciliarioError, clearDomiciliarioMessages]);
+  }, [
+    domiciliarioMessage,
+    domiciliarioError,
+    lastTemporaryPassword,
+    clearDomiciliarioMessages,
+  ]);
 
   return (
     <ScrollView
@@ -74,14 +90,14 @@ export const CreateDeliveryScreen = () => {
         </Text>
 
         <Text style={tw`text-sm text-neutral-gray mb-6`}>
-          Registra un domiciliario. Le enviaremos un correo para que cree su contraseña.
+          Registra un domiciliario. El correo solo confirma la cuenta y envía el link de la APK.
         </Text>
 
         <View style={tw`gap-4`}>
           <View style={tw`gap-1`}>
             <Text style={tw`text-sm font-medium text-jjBlueDark`}>Nombre</Text>
             <TextInput
-              testID="nombre-input" 
+              testID="nombre-input"
               style={tw`px-3 py-2 rounded-lg border border-neutral-light bg-neutral-card text-neutral-dark`}
               value={nombre}
               onChangeText={(text) => {
@@ -92,14 +108,18 @@ export const CreateDeliveryScreen = () => {
               placeholderTextColor={COLORS.neutralGray}
             />
             {errors.nombre && (
-              <Text style={tw`text-status-cancelado text-xs mt-1`}>{errors.nombre}</Text>
+              <Text style={tw`text-status-cancelado text-xs mt-1`}>
+                {errors.nombre}
+              </Text>
             )}
           </View>
 
           <View style={tw`gap-1`}>
-            <Text style={tw`text-sm font-medium text-jjBlueDark`}>Correo electrónico</Text>
+            <Text style={tw`text-sm font-medium text-jjBlueDark`}>
+              Correo electrónico
+            </Text>
             <TextInput
-              testID="email-input" 
+              testID="email-input"
               style={tw`px-3 py-2 rounded-lg border border-neutral-light bg-neutral-card text-neutral-dark`}
               value={email}
               onChangeText={(text) => {
@@ -112,15 +132,19 @@ export const CreateDeliveryScreen = () => {
               autoCapitalize="none"
             />
             {errors.email && (
-              <Text style={tw`text-status-cancelado text-xs mt-1`}>{errors.email}</Text>
+              <Text style={tw`text-status-cancelado text-xs mt-1`}>
+                {errors.email}
+              </Text>
             )}
           </View>
 
           <TouchableOpacity
-            testID="submit-button" 
+            testID="submit-button"
             onPress={handleSubmit}
             disabled={isCreatingDomiciliario}
-            style={tw`mt-2 py-3 rounded-lg ${isCreatingDomiciliario ? 'bg-neutral-gray' : 'bg-jjBlue'}`}
+            style={tw`mt-2 py-3 rounded-lg ${
+              isCreatingDomiciliario ? 'bg-neutral-gray' : 'bg-jjBlue'
+            }`}
           >
             {isCreatingDomiciliario ? (
               <ActivityIndicator color={COLORS.neutralCard} />
@@ -137,6 +161,24 @@ export const CreateDeliveryScreen = () => {
             {domiciliarioMessage}
           </Text>
         )}
+
+        {lastTemporaryPassword && (
+          <View
+            testID="temporary-password-card"
+            style={tw`mt-4 rounded-xl border border-jjBlue/20 bg-jjBlue/10 p-4`}
+          >
+            <Text style={tw`text-sm font-semibold text-jjBlueDark mb-1`}>
+              Clave temporal
+            </Text>
+            <Text selectable style={tw`text-lg font-bold text-jjBlueDark`}>
+              {lastTemporaryPassword}
+            </Text>
+            <Text style={tw`text-xs text-jjBlueDark/70 mt-2`}>
+              Entrega esta clave al domiciliario. El correo solo confirma la cuenta y permite instalar la APK.
+            </Text>
+          </View>
+        )}
+
         {domiciliarioError && (
           <Text testID="error-message" style={tw`mt-4 text-status-cancelado text-sm text-center`}>
             {domiciliarioError}

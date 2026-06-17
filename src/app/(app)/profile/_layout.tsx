@@ -5,6 +5,7 @@ export default function ProfileLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="current-delivery" />
+      <Stack.Screen name="change-password" />
     </Stack>
   );
 }
