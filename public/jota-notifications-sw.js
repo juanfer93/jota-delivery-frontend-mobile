@@ -19,6 +19,8 @@ self.addEventListener('push', (event) => {
       body: payload.body,
       data: payload,
       tag: payload.notificationId || payload.pedidoId || 'jota-delivery',
+      renotify: true,
+      silent: false,
     });
   })());
 });
