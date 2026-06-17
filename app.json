@@ -50,7 +50,7 @@
         "expo-notifications",
         {
           "color": "#174A8B",
-          "defaultChannel": "orders-v2",
+          "defaultChannel": "orders-v3",
           "sounds": [
             "./assets/sounds/jota_notification.mp3"
           ]
