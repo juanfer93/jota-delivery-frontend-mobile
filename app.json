@@ -72,6 +72,9 @@
         "policy": "appVersion"
       }
     },
-    "owner": "juanfer93"
+    "owner": "juanfer93",
+    "updates": {
+      "url": "https://u.expo.dev/580acbf3-2b66-4dc5-943b-1f290eefc636"
+    }
   }
 }
