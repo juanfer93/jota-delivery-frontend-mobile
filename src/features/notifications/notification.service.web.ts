@@ -6,6 +6,20 @@ import {
 
 export type NotificationOpenedHandler = (payload: NotificationPayload) => void;
 
+const WEB_NOTIFICATION_SOUND_URL = '/sounds/jota-notification.mp3';
+
+function playNotificationSound(): void {
+  try {
+    const audio = new Audio(WEB_NOTIFICATION_SOUND_URL);
+    audio.currentTime = 0;
+    void audio.play().catch((error: unknown) => {
+      console.info('[NOTIFICATIONS] El navegador bloqueo el sonido personalizado.', error);
+    });
+  } catch (error: unknown) {
+    console.info('[NOTIFICATIONS] No se pudo reproducir el sonido personalizado web.', error);
+  }
+}
+
 function base64UrlToUint8Array(value: string): Uint8Array<ArrayBuffer> {
   const padding = '='.repeat((4 - (value.length % 4)) % 4);
   const base64 = (value + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -100,7 +114,10 @@ export async function initializeNotifications(
 
   const handleMessage = (event: MessageEvent<unknown>) => {
     const payload = parseNotificationPayload(event.data);
-    if (payload) onOpened(payload);
+    if (payload) {
+      playNotificationSound();
+      onOpened(payload);
+    }
   };
 
   navigator.serviceWorker?.addEventListener('message', handleMessage);
