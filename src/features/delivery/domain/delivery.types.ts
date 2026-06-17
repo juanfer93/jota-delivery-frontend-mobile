@@ -31,8 +31,8 @@ export interface Pedido {
 }
 
 export interface CreatePedidoDTO {
-  usuarioId: string;
-  domiciliarioId: string;
+  usuarioId?: string;
+  domiciliarioId?: string;
   comercioId: string;
   valorFinal: number;
   valorDomicilio?: number;
