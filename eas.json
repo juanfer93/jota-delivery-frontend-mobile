@@ -8,9 +8,6 @@
       "distribution": "internal",
       "channel": "production",
       "environment": "production",
-      "env": {
-        "EXPO_PUBLIC_API_URL": "https://domicilios-jota-backend.vercel.app/api/v1"
-      },
       "android": {
         "buildType": "apk"
       }
@@ -19,9 +16,6 @@
       "distribution": "internal",
       "channel": "production",
       "environment": "production",
-      "env": {
-        "EXPO_PUBLIC_API_URL": "https://domicilios-jota-backend.vercel.app/api/v1"
-      },
       "android": {
         "buildType": "apk"
       }
@@ -29,9 +23,6 @@
     "production": {
       "channel": "production",
       "environment": "production",
-      "env": {
-        "EXPO_PUBLIC_API_URL": "https://domicilios-jota-backend.vercel.app/api/v1"
-      },
       "android": {
         "buildType": "app-bundle"
       },
