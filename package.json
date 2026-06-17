@@ -55,6 +55,11 @@
     "xhr2": "^0.2.1"
   },
   "scripts": {
+    "prepare:notification-sound": "node scripts/write-notification-sound.mjs",
+    "eas-build-pre-install": "node scripts/write-notification-sound.mjs",
+    "prestart": "node scripts/write-notification-sound.mjs",
+    "preweb": "node scripts/write-notification-sound.mjs",
+    "preandroid": "node scripts/write-notification-sound.mjs",
     "start": "expo start",
     "web": "expo start --web",
     "android": "expo start --android",
