@@ -71,15 +71,10 @@ beforeEach(() => {
   mockLoadData.mockClear();
 });
 
-test('E2E: Crear pedido asignado a domiciliario y comercio existente', async () => {
+test('E2E: Crear pedido con asignacion automatica y comercio existente', async () => {
   mockAssignPedido.mockResolvedValue(true);
 
   render(<CreatePedido />);
-
-  const domicilioOption = await screen.findByTestId(
-    'domiciliario-option-5d6517de-c78a-4b99-bdb4-d981c13c27c5',
-  );
-  fireEvent.press(domicilioOption);
 
   const comercioOption = await screen.findByTestId(
     'comercio-option-1beb752b-8590-4c69-9cbe-bc7714a9ee94',
@@ -94,8 +89,6 @@ test('E2E: Crear pedido asignado a domiciliario y comercio existente', async () 
 
   await waitFor(() => {
     expect(mockAssignPedido).toHaveBeenCalledWith({
-      usuarioId: '5d6517de-c78a-4b99-bdb4-d981c13c27c5',
-      domiciliarioId: '5d6517de-c78a-4b99-bdb4-d981c13c27c5',
       comercioId: '1beb752b-8590-4c69-9cbe-bc7714a9ee94',
       valorFinal: 25000,
       valorDomicilio: 0,
