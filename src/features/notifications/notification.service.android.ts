@@ -7,7 +7,7 @@ import { NotificationPayload, parseNotificationPayload } from './domain/notifica
 export type NotificationOpenedHandler = (payload: NotificationPayload) => void;
 
 const ORDERS_CHANNEL_ID = 'orders-v2';
-const ORDERS_NOTIFICATION_SOUND = 'jota-notification.mp3';
+const ORDERS_NOTIFICATION_SOUND = 'jota_notification.mp3';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
