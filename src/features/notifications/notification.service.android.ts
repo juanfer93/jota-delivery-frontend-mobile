@@ -6,7 +6,8 @@ import { NotificationPayload, parseNotificationPayload } from './domain/notifica
 
 export type NotificationOpenedHandler = (payload: NotificationPayload) => void;
 
-const ORDERS_CHANNEL_ID = 'orders';
+const ORDERS_CHANNEL_ID = 'orders-v2';
+const ORDERS_NOTIFICATION_SOUND = 'jota-notification.mp3';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -28,9 +29,11 @@ function forwardResponse(
 async function registerAndroidToken(): Promise<void> {
   await Notifications.setNotificationChannelAsync(ORDERS_CHANNEL_ID, {
     name: 'Pedidos',
+    description: 'Notificaciones de pedidos y cambios de estado.',
     importance: Notifications.AndroidImportance.MAX,
     vibrationPattern: [0, 250, 250, 250],
     lightColor: '#174A8B',
+    sound: ORDERS_NOTIFICATION_SOUND,
   });
 
   if (!Device.isDevice) {
