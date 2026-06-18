@@ -121,7 +121,7 @@ export default function AdminProfileClient() {
                 disabled={notificationPermission === 'unsupported'}
                 onValueChange={handleNotificationToggle}
                 trackColor={{ false: '#CBD5E1', true: '#174A8B' }}
-                thumbColor={notificationPermission === 'granted' ? '#F5E9C8' : '#FFFFFF'}
+                thumbColor="#FFFFFF"
               />
             )}
           </View>
