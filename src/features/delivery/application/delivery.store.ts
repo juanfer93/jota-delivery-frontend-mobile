@@ -24,7 +24,11 @@ interface DeliveryState {
   loadAllHistory: (search?: string) => Promise<void>;
   loadCurrentDelivery: () => Promise<void>;
   assignPedido: (payload: CreatePedidoDTO) => Promise<boolean>;
-  updateEstado: (pedidoId: string, estado: PedidoEstado) => Promise<boolean>;
+  updateEstado: (
+    pedidoId: string,
+    estado: PedidoEstado,
+    options?: { refresh?: 'both' | 'admin' | 'current' | 'none' },
+  ) => Promise<boolean>;
   toggleDomiciliarioBloqueo: (domiciliarioId: string, bloqueado: boolean) => Promise<boolean>;
 }
 
@@ -110,11 +114,18 @@ export const useDeliveryStore = create<DeliveryState>((set, get) => ({
     }
   },
 
-  updateEstado: async (pedidoId, estado) => {
+  updateEstado: async (pedidoId, estado, options) => {
     set({ status: 'loading', error: null });
     try {
       await DeliveryRepository.updatePedidoEstado(pedidoId, { estado });
-      await Promise.all([get().loadData(), get().loadCurrentDelivery()]);
+      const refresh = options?.refresh ?? 'both';
+      if (refresh === 'both') {
+        await Promise.all([get().loadData(), get().loadCurrentDelivery()]);
+      } else if (refresh === 'admin') {
+        await get().loadData();
+      } else if (refresh === 'current') {
+        await get().loadCurrentDelivery();
+      }
       return true;
     } catch (e: unknown) {
       set({ status: 'error', error: 'Error actualizando estado' });

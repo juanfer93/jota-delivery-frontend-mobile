@@ -10,12 +10,13 @@ import {
 import { router } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useAuthStore } from '@/features/auth/application/auth.store';
+import { isDomiciliarioRole } from '@/features/auth/domain/auth.types';
 
 export default function AdminProfileClient() {
   const { user, logout } = useAuthStore();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const isDomiciliario = user?.rol === 'domiciliario';
+  const isDomiciliario = isDomiciliarioRole(user?.rol);
   const name =
     user?.nombre || user?.email || (isDomiciliario ? 'Domiciliario' : 'Administrador');
 

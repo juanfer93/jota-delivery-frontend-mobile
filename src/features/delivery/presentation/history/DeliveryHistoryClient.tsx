@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
 import { useAuthStore } from '@/features/auth/application/auth.store';
+import { isDomiciliarioRole } from '@/features/auth/domain/auth.types';
 import { useRouter } from 'expo-router';
 import tw from '@/lib/tailwind';
 import DeliveryHistoryFilters from './DeliveryHistoryFilters';
@@ -27,7 +28,7 @@ import {
 export default function DeliveryHistoryClient() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
-  const isDomiciliario = user?.rol?.toLowerCase() === 'domiciliario';
+  const isDomiciliario = isDomiciliarioRole(user?.rol);
 
   const {
     pedidosHistorial,

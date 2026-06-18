@@ -23,7 +23,7 @@ jest.mock('@/features/auth/application/auth.store', () => ({
         id: 'domi-uuid',
         nombre: 'Domi Libre',
         email: 'domi@test.com',
-        rol: 'domiciliario',
+        rol: 'Domiciliario',
       },
     }),
 }));
@@ -99,7 +99,7 @@ describe('NotificationPedidoModal', () => {
     fireEvent.press(await screen.findByTestId('notification-status-HECHO'));
 
     await waitFor(() => {
-      expect(mockUpdateEstado).toHaveBeenCalledWith('pedido-uuid', PedidoEstado.HECHO);
+      expect(mockUpdateEstado).toHaveBeenCalledWith('pedido-uuid', PedidoEstado.HECHO, { refresh: 'current' });
       expect(mockCloseNotification).toHaveBeenCalled();
     });
   });

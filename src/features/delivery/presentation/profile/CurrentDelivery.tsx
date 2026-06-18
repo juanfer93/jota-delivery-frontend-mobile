@@ -28,7 +28,7 @@ export function CurrentDelivery() {
     if (!currentDelivery) return;
     setUpdating(estado);
     setStatusError(null);
-    const ok = await updateEstado(currentDelivery.id, estado);
+    const ok = await updateEstado(currentDelivery.id, estado, { refresh: 'current' });
     setUpdating(null);
     if (!ok) {
       setStatusError('No se pudo actualizar el estado del pedido.');

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { router } from 'expo-router';
 import { useAuthStore } from '@/features/auth/application/auth.store';
+import { isDomiciliarioRole } from '@/features/auth/domain/auth.types';
 import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
 import { PedidoEstado } from '@/features/delivery/domain/delivery.types';
 import tw from '@/lib/tailwind';
@@ -26,7 +27,7 @@ export function NotificationPedidoModal() {
   } = useDeliveryStore();
   const [actionError, setActionError] = useState<string | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<PedidoEstado | null>(null);
-  const isDomiciliario = user?.rol === 'domiciliario';
+  const isDomiciliario = isDomiciliarioRole(user?.rol);
 
   useEffect(() => {
     if (!notification) return;
@@ -51,7 +52,9 @@ export function NotificationPedidoModal() {
     if (!notification) return;
     setUpdatingStatus(estado);
     setActionError(null);
-    const updated = await updateEstado(notification.pedidoId, estado);
+    const updated = await updateEstado(notification.pedidoId, estado, {
+      refresh: isDomiciliario ? 'current' : 'admin',
+    });
     setUpdatingStatus(null);
     if (updated) closeNotification();
     else setActionError('No se pudo actualizar el estado del pedido.');

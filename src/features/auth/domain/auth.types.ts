@@ -3,6 +3,18 @@ export enum UserRole {
   DOMICILIARIO = 'domiciliario',
 }
 
+export function normalizeUserRole(rol?: string | null): string {
+  return rol?.toLowerCase() ?? '';
+}
+
+export function isDomiciliarioRole(rol?: string | null): boolean {
+  return normalizeUserRole(rol) === UserRole.DOMICILIARIO;
+}
+
+export function isAdminRole(rol?: string | null): boolean {
+  return normalizeUserRole(rol) === UserRole.ADMIN;
+}
+
 export interface User {
   id: string;
   nombre: string;

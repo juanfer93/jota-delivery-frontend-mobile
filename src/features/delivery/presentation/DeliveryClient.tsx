@@ -6,6 +6,7 @@ import { useDeliveryStore } from '@/features/delivery/application/delivery.store
 import { Pedido, PedidoEstado } from '@/features/delivery/domain/delivery.types';
 import { formatColombiaDateTime } from '@/core/time/colombia-time';
 import { useAuthStore } from '@/features/auth/application/auth.store';
+import { isAdminRole, isDomiciliarioRole } from '@/features/auth/domain/auth.types';
 import { DeliveryRepository } from '@/core/repositories/delivery.repository';
 
 const EstadoOpciones = [
@@ -55,7 +56,7 @@ function CourierAvailableOrders() {
     } catch (acceptError: any) {
       const message = acceptError?.response?.data?.message;
       await loadAvailable(false);
-      setError(Array.isArray(message) ? message.join(' ') : message || 'Este pedido fue asignado.');
+      setError(Array.isArray(message) ? message.join(' ') : message || 'Este pedido ya fue asignado.');
     } finally {
       setAcceptingId(null);
     }
@@ -116,8 +117,8 @@ export function DeliveryClient() {
   const { pedidoId } = useLocalSearchParams<{ pedidoId?: string }>();
   const { pedidosHoy, status, error, refreshPedidosHoy, updateEstado } = useDeliveryStore();
   const user = useAuthStore((state) => state.user);
-  const isDomiciliario = user?.rol === 'domiciliario';
-  const isAdmin = user?.rol === 'admin';
+  const isDomiciliario = isDomiciliarioRole(user?.rol);
+  const isAdmin = isAdminRole(user?.rol);
   const [domiciliarioFilter, setDomiciliarioFilter] = useState('');
   const [comercioFilter, setComercioFilter] = useState('');
 
@@ -149,7 +150,7 @@ export function DeliveryClient() {
   }, [comercioFilter, domiciliarioFilter, pedidosHoy]);
 
   const handleChangeEstado = async (id: string, nuevoEstado: PedidoEstado) => {
-    await updateEstado(id, nuevoEstado);
+    await updateEstado(id, nuevoEstado, { refresh: 'admin' });
   };
 
   return (

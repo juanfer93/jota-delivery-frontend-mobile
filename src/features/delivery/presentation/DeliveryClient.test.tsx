@@ -81,6 +81,8 @@ describe('DeliveryClient', () => {
   });
 
   it('muestra al domiciliario la lista de pedidos libres y permite aceptar uno', async () => {
+    mockAuthState.user.rol = 'Domiciliario';
+
     render(<DeliveryClient />);
 
     expect(await screen.findByText('Pedidos disponibles')).toBeTruthy();
@@ -109,7 +111,7 @@ describe('DeliveryClient', () => {
   });
 
   it('mantiene la creacion de pedidos disponible para admin', () => {
-    mockAuthState.user.rol = 'admin';
+    mockAuthState.user.rol = 'Admin';
     render(<DeliveryClient />);
 
     expect(screen.getByTestId('btn-crear-pedido')).toBeTruthy();
