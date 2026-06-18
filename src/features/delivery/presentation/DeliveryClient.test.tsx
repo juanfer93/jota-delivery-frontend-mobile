@@ -3,11 +3,23 @@ import { DeliveryClient } from './DeliveryClient';
 
 const mockRefreshPedidosHoy = jest.fn().mockResolvedValue(undefined);
 const mockUpdateEstado = jest.fn().mockResolvedValue(true);
+const mockLoadCurrentDelivery = jest.fn().mockResolvedValue(undefined);
 const mockGetPedidosDisponibles = jest.fn();
 const mockTomarPedidoDisponible = jest.fn();
 const mockPush = jest.fn();
 const mockAuthState = {
   user: { rol: 'domiciliario' },
+};
+const mockDeliveryState: { currentDelivery: any } = {
+  currentDelivery: {
+    id: 'pedido-actual',
+    valorFinal: 35000,
+    valorDomicilio: 0,
+    estado: 'EN_PROCESO',
+    direccionDestino: 'Calle actual',
+    createdAt: '2026-06-13T20:00:00.000Z',
+    comercio: { id: 'comercio-current', nombre: 'Comercio actual', direccion: 'Cra 1' },
+  },
 };
 
 jest.mock('expo-router', () => ({
@@ -53,7 +65,9 @@ jest.mock('../application/delivery.store', () => ({
     }],
     status: 'success',
     error: null,
+    currentDelivery: mockDeliveryState.currentDelivery,
     refreshPedidosHoy: mockRefreshPedidosHoy,
+    loadCurrentDelivery: mockLoadCurrentDelivery,
     updateEstado: mockUpdateEstado,
   }),
 }));
@@ -76,6 +90,15 @@ describe('DeliveryClient', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockAuthState.user.rol = 'domiciliario';
+    mockDeliveryState.currentDelivery = {
+      id: 'pedido-actual',
+      valorFinal: 35000,
+      valorDomicilio: 0,
+      estado: 'EN_PROCESO',
+      direccionDestino: 'Calle actual',
+      createdAt: '2026-06-13T20:00:00.000Z',
+      comercio: { id: 'comercio-current', nombre: 'Comercio actual', direccion: 'Cra 1' },
+    };
     mockGetPedidosDisponibles.mockResolvedValue([availablePedido]);
     mockTomarPedidoDisponible.mockResolvedValue({ ...availablePedido, domiciliarioId: 'domi-actual' });
   });
@@ -86,6 +109,7 @@ describe('DeliveryClient', () => {
     render(<DeliveryClient />);
 
     expect(await screen.findByText('Pedidos disponibles')).toBeTruthy();
+    expect(screen.getByText('Pedido en proceso')).toBeTruthy();
     expect(await screen.findByText('Chori 84')).toBeTruthy();
     expect(screen.getByText('Entregar: Alto Prado')).toBeTruthy();
 
@@ -95,6 +119,23 @@ describe('DeliveryClient', () => {
       expect(mockTomarPedidoDisponible).toHaveBeenCalledWith('pedido-libre');
       expect(mockPush).toHaveBeenCalledWith('/profile/current-delivery');
     });
+  });
+
+  it('permite abrir el pedido en proceso desde pedidos del domiciliario', async () => {
+    render(<DeliveryClient />);
+
+    fireEvent.press(await screen.findByTestId('view-current-delivery'));
+
+    expect(mockPush).toHaveBeenCalledWith('/profile/current-delivery');
+  });
+
+  it('oculta el acceso a pedido en proceso cuando no hay pedido actual', async () => {
+    mockDeliveryState.currentDelivery = null;
+
+    render(<DeliveryClient />);
+
+    expect(await screen.findByText('Pedidos disponibles')).toBeTruthy();
+    expect(screen.queryByTestId('view-current-delivery')).toBeNull();
   });
 
   it('avisa si otro domiciliario ya tomo el pedido', async () => {

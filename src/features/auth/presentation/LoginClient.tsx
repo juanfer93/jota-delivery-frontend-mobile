@@ -62,7 +62,7 @@ export default function LoginClient() {
       const rol = user?.rol?.toLowerCase() ?? '';
 
       if (rol === 'domiciliario') {
-        router.replace('/(app)/delivery' as any);
+        router.replace('/(app)/' as any);
         return;
       }
 
