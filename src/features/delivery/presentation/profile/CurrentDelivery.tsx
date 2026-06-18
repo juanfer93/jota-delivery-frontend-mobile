@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useDeliveryStore } from "@/features/delivery/application/delivery.store";
@@ -8,6 +8,7 @@ import { PedidoEstado } from '@/features/delivery/domain/delivery.types';
 
 export function CurrentDelivery() {
   const router = useRouter();
+  const { height } = useWindowDimensions();
   const { currentDelivery, currentDeliveryStatus, currentDeliveryError, loadCurrentDelivery, updateEstado } = useDeliveryStore();
   const [updating, setUpdating] = useState<PedidoEstado | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
@@ -89,6 +90,7 @@ export function CurrentDelivery() {
   const valorFinal = Number(currentDelivery.valorFinal ?? 0);
   const valorDomicilio = Number(currentDelivery.valorDomicilio ?? 0);
   const finalizado = currentDelivery.estado === PedidoEstado.HECHO || currentDelivery.estado === PedidoEstado.CANCELADO;
+  const cardHeight = Math.max(320, Math.round(height * 0.5));
 
   const formatCOP = (n: number) => {
     return new Intl.NumberFormat("es-CO", {
@@ -107,48 +109,58 @@ export function CurrentDelivery() {
         </TouchableOpacity>
       </View>
 
-      <View style={tw`h-40 bg-[#F5E9C8]`} />
-
-      <ScrollView style={tw`flex-1 -mt-8 px-4 pb-6`}>
-        <View style={tw`bg-[#174A8B] rounded-3xl shadow-lg px-5 py-4 border border-[#F5E9C8]`}>
-          <View style={tw`items-center mb-4`}>
-            <View style={tw`bg-[#FFF9E8] px-4 py-2 rounded-full`}>
-              <Text style={tw`text-[#174A8B] font-semibold text-sm`}>{comercioNombre}</Text>
+      <ScrollView
+        style={tw`flex-1`}
+        contentContainerStyle={tw`px-4 pt-5 pb-6`}
+        showsVerticalScrollIndicator={false}
+      >
+        <View
+          testID="current-delivery-card"
+          style={[
+            tw`bg-[#174A8B] rounded-3xl shadow-lg px-5 py-4 border border-[#F5E9C8]`,
+            { height: cardHeight },
+          ]}
+        >
+          <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+            <View style={tw`items-center mb-4`}>
+              <View style={tw`bg-[#FFF9E8] px-4 py-2 rounded-full`}>
+                <Text style={tw`text-[#174A8B] font-semibold text-sm`}>{comercioNombre}</Text>
+              </View>
             </View>
-          </View>
 
-          <View style={tw`border-t border-[#F5E9C8]/40 my-2`} />
+            <View style={tw`border-t border-[#F5E9C8]/40 my-2`} />
 
-          <Text style={tw`text-sm font-semibold mt-2 mb-1 text-[#FFF9E8]`}>IR A RESTAURANTE</Text>
-          <Text style={tw`text-sm mb-3 text-[#FFF9E8]`}>{comercioDireccion}</Text>
+            <Text style={tw`text-sm font-semibold mt-2 mb-1 text-[#FFF9E8]`}>IR A RESTAURANTE</Text>
+            <Text style={tw`text-sm mb-3 text-[#FFF9E8]`}>{comercioDireccion}</Text>
 
-          <Text style={tw`text-sm font-semibold mb-1 text-[#FFF9E8]`}>Entrega A:</Text>
-          <Text style={tw`text-sm mb-3 text-[#FFF9E8]`}>{currentDelivery.direccionDestino}</Text>
+            <Text style={tw`text-sm font-semibold mb-1 text-[#FFF9E8]`}>Entrega A:</Text>
+            <Text style={tw`text-sm mb-3 text-[#FFF9E8]`}>{currentDelivery.direccionDestino}</Text>
 
-          <View style={tw`border-t border-[#F5E9C8]/40 my-2`} />
+            <View style={tw`border-t border-[#F5E9C8]/40 my-2`} />
 
-          <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
-            <Text style={tw`font-semibold`}>Estado: </Text>{currentDelivery.estado}
-          </Text>
-          <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
-            <Text style={tw`font-semibold`}>Pedido creado: </Text>{formatColombiaDateTime(currentDelivery.createdAt)}
-          </Text>
-          {currentDelivery.assignedAt ? (
             <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
-              <Text style={tw`font-semibold`}>Asignado: </Text>{formatColombiaDateTime(currentDelivery.assignedAt)}
+              <Text style={tw`font-semibold`}>Estado: </Text>{currentDelivery.estado}
             </Text>
-          ) : null}
-
-          <View style={tw`border-t border-[#F5E9C8]/40 my-2`} />
-
-          <View style={tw`mt-3`}>
             <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
-              <Text style={tw`font-semibold`}>Valor compra: </Text>{formatCOP(valorFinal)}
+              <Text style={tw`font-semibold`}>Pedido creado: </Text>{formatColombiaDateTime(currentDelivery.createdAt)}
             </Text>
-            <Text style={tw`text-sm text-[#FFF9E8]`}>
-              <Text style={tw`font-semibold`}>Domicilio: </Text>{formatCOP(valorDomicilio)}
-            </Text>
-          </View>
+            {currentDelivery.assignedAt ? (
+              <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
+                <Text style={tw`font-semibold`}>Asignado: </Text>{formatColombiaDateTime(currentDelivery.assignedAt)}
+              </Text>
+            ) : null}
+
+            <View style={tw`border-t border-[#F5E9C8]/40 my-2`} />
+
+            <View style={tw`mt-3`}>
+              <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
+                <Text style={tw`font-semibold`}>Valor compra: </Text>{formatCOP(valorFinal)}
+              </Text>
+              <Text style={tw`text-sm text-[#FFF9E8]`}>
+                <Text style={tw`font-semibold`}>Domicilio: </Text>{formatCOP(valorDomicilio)}
+              </Text>
+            </View>
+          </ScrollView>
         </View>
 
         {statusError ? <Text style={tw`mt-4 text-sm font-semibold text-red-700`}>{statusError}</Text> : null}
