@@ -25,9 +25,9 @@ function CourierAvailableOrders() {
   const [error, setError] = useState<string | null>(null);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
 
-  const loadAvailable = useCallback(async () => {
+  const loadAvailable = useCallback(async (clearError = true) => {
     setLoading(true);
-    setError(null);
+    if (clearError) setError(null);
     try {
       const data = await DeliveryRepository.getPedidosDisponibles();
       setPedidos(data.filter((pedido) => !pedido.domiciliarioId));
@@ -54,8 +54,8 @@ function CourierAvailableOrders() {
       router.push('/profile/current-delivery' as any);
     } catch (acceptError: any) {
       const message = acceptError?.response?.data?.message;
+      await loadAvailable(false);
       setError(Array.isArray(message) ? message.join(' ') : message || 'Este pedido fue asignado.');
-      await loadAvailable();
     } finally {
       setAcceptingId(null);
     }
