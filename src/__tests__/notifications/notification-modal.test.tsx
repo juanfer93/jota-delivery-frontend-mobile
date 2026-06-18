@@ -1,6 +1,5 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { NotificationPedidoModal } from '@/features/notifications/presentation/NotificationPedidoModal';
 import { PedidoEstado } from '@/features/delivery/domain/delivery.types';
 
 const mockPush = jest.fn();
@@ -11,8 +10,9 @@ const mockUpdateEstado = jest.fn();
 const mockMarkAsRead = jest.fn();
 
 jest.mock('expo-router', () => ({
+  __esModule: true,
   router: {
-    push: mockPush,
+    push: (...args: unknown[]) => mockPush(...args),
   },
 }));
 
@@ -69,6 +69,8 @@ jest.mock('../../features/notifications/infrastructure/notification-read.reposit
     markAsRead: (...args: unknown[]) => mockMarkAsRead(...args),
   },
 }));
+
+const { NotificationPedidoModal } = require('@/features/notifications/presentation/NotificationPedidoModal');
 
 describe('NotificationPedidoModal', () => {
   beforeEach(() => {
