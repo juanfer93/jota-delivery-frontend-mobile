@@ -13,7 +13,7 @@ export type NotificationPermissionState =
 
 const ORDERS_CHANNEL_ID = 'orders-v3';
 const LEGACY_ORDERS_CHANNEL_ID = 'orders-v2';
-const ORDERS_NOTIFICATION_SOUND = 'jota_notification.mp3';
+const ORDERS_NOTIFICATION_SOUND = 'jota_notifications.mp3';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({

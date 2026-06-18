@@ -11,6 +11,7 @@ node_modules/
 dist/
 build/
 *.bak
+app.backup.json
 
 # Generated native projects for Expo managed workflow
 android/

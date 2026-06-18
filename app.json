@@ -53,7 +53,7 @@
           "color": "#174A8B",
           "defaultChannel": "orders-v3",
           "sounds": [
-            "./assets/sounds/jota_notification.mp3"
+            "./assets/sounds/jota_notifications.mp3"
           ]
         }
       ]
@@ -65,7 +65,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "580acbf3-2b66-4dc5-943b-1f290eefc636"
+        "projectId": "f3bb395c-fe1a-474a-9f6a-949b619e0d40"
       }
     },
     "ios": {
@@ -75,7 +75,7 @@
     },
     "owner": "juanfer93",
     "updates": {
-      "url": "https://u.expo.dev/580acbf3-2b66-4dc5-943b-1f290eefc636"
+      "url": "https://u.expo.dev/f3bb395c-fe1a-474a-9f6a-949b619e0d40"
     }
   }
 }
