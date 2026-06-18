@@ -64,9 +64,9 @@ jest.mock('@/features/delivery/application/delivery.store', () => ({
   }),
 }));
 
-jest.mock('@/features/notifications/infrastructure/notification-read.repository', () => ({
+jest.mock('../../features/notifications/infrastructure/notification-read.repository', () => ({
   NotificationReadRepository: {
-    markAsRead: mockMarkAsRead,
+    markAsRead: (...args: unknown[]) => mockMarkAsRead(...args),
   },
 }));
 
