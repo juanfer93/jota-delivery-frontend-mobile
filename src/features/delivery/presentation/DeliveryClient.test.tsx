@@ -1,16 +1,25 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { DeliveryClient } from './DeliveryClient';
 
 const mockRefreshPedidosHoy = jest.fn().mockResolvedValue(undefined);
-const mockLogout = jest.fn().mockResolvedValue(undefined);
+const mockUpdateEstado = jest.fn().mockResolvedValue(true);
+const mockGetPedidosDisponibles = jest.fn();
+const mockTomarPedidoDisponible = jest.fn();
+const mockPush = jest.fn();
 const mockAuthState = {
   user: { rol: 'domiciliario' },
-  logout: mockLogout,
 };
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), replace: jest.fn() }),
+  useRouter: () => ({ push: mockPush, replace: jest.fn() }),
   useLocalSearchParams: () => ({}),
+}));
+
+jest.mock('@/core/repositories/delivery.repository', () => ({
+  DeliveryRepository: {
+    getPedidosDisponibles: (...args: unknown[]) => mockGetPedidosDisponibles(...args),
+    tomarPedidoDisponible: (...args: unknown[]) => mockTomarPedidoDisponible(...args),
+  },
 }));
 
 jest.mock('@/features/auth/application/auth.store', () => ({
@@ -45,28 +54,58 @@ jest.mock('../application/delivery.store', () => ({
     status: 'success',
     error: null,
     refreshPedidosHoy: mockRefreshPedidosHoy,
-    updateEstado: jest.fn(),
+    updateEstado: mockUpdateEstado,
   }),
 }));
 
+const availablePedido = {
+  id: 'pedido-libre',
+  comercioId: 'comercio-chori',
+  valorFinal: 25000,
+  valorDomicilio: 0,
+  estado: 'EN_PROCESO',
+  direccionDestino: 'Alto Prado',
+  direccionRecogida: 'Chori 84',
+  createdAt: '2026-06-13T20:00:00.000Z',
+  domiciliarioId: null,
+  usuarioId: null,
+  comercio: { id: 'comercio-chori', nombre: 'Chori 84', direccion: 'Chori 84' },
+};
+
 describe('DeliveryClient', () => {
   beforeEach(() => {
+    jest.clearAllMocks();
     mockAuthState.user.rol = 'domiciliario';
+    mockGetPedidosDisponibles.mockResolvedValue([availablePedido]);
+    mockTomarPedidoDisponible.mockResolvedValue({ ...availablePedido, domiciliarioId: 'domi-actual' });
   });
 
-  it('bloquea todos los botones cuando el pedido esta hecho', () => {
+  it('muestra al domiciliario la lista de pedidos libres y permite aceptar uno', async () => {
     render(<DeliveryClient />);
 
-    expect(screen.getByTestId('pedido-pedido-1-estado-EN_PROCESO')).toBeDisabled();
-    expect(screen.getByTestId('pedido-pedido-1-estado-HECHO')).toBeDisabled();
-    expect(screen.getByTestId('pedido-pedido-1-estado-CANCELADO')).toBeDisabled();
+    expect(await screen.findByText('Pedidos disponibles')).toBeTruthy();
+    expect(await screen.findByText('Chori 84')).toBeTruthy();
+    expect(screen.getByText('Entregar: Alto Prado')).toBeTruthy();
+
+    fireEvent.press(screen.getByTestId('accept-pedido-pedido-libre'));
+
+    await waitFor(() => {
+      expect(mockTomarPedidoDisponible).toHaveBeenCalledWith('pedido-libre');
+      expect(mockPush).toHaveBeenCalledWith('/profile/current-delivery');
+    });
   });
 
-  it('no muestra la creacion de pedidos al domiciliario', () => {
+  it('avisa si otro domiciliario ya tomo el pedido', async () => {
+    mockTomarPedidoDisponible.mockRejectedValueOnce({
+      response: { data: { message: 'Este pedido ya fue asignado.' } },
+    });
+
     render(<DeliveryClient />);
 
-    expect(screen.queryByTestId('btn-crear-pedido')).toBeNull();
-    expect(screen.getByTestId('btn-historial-pedidos')).toBeTruthy();
+    await screen.findByText('Chori 84');
+    fireEvent.press(screen.getByTestId('accept-pedido-pedido-libre'));
+
+    expect(await screen.findByText('Este pedido ya fue asignado.')).toBeTruthy();
   });
 
   it('mantiene la creacion de pedidos disponible para admin', () => {
