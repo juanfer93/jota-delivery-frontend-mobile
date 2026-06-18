@@ -1,13 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useDeliveryStore } from "@/features/delivery/application/delivery.store";
 import { formatColombiaDateTime } from '@/core/time/colombia-time';
+import { PedidoEstado } from '@/features/delivery/domain/delivery.types';
 
 export function CurrentDelivery() {
   const router = useRouter();
-  const { currentDelivery, currentDeliveryStatus, currentDeliveryError, loadCurrentDelivery } = useDeliveryStore();
+  const { currentDelivery, currentDeliveryStatus, currentDeliveryError, loadCurrentDelivery, updateEstado } = useDeliveryStore();
+  const [updating, setUpdating] = useState<PedidoEstado | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
 
   useEffect(() => {
     loadCurrentDelivery();
@@ -18,6 +21,17 @@ export function CurrentDelivery() {
       router.back();
     } else {
       router.replace('/delivery');
+    }
+  };
+
+  const handleStatus = async (estado: PedidoEstado) => {
+    if (!currentDelivery) return;
+    setUpdating(estado);
+    setStatusError(null);
+    const ok = await updateEstado(currentDelivery.id, estado);
+    setUpdating(null);
+    if (!ok) {
+      setStatusError('No se pudo actualizar el estado del pedido.');
     }
   };
 
@@ -74,6 +88,7 @@ export function CurrentDelivery() {
   const comercioDireccion = currentDelivery.comercio?.direccion ?? "Dirección no disponible";
   const valorFinal = Number(currentDelivery.valorFinal ?? 0);
   const valorDomicilio = Number(currentDelivery.valorDomicilio ?? 0);
+  const finalizado = currentDelivery.estado === PedidoEstado.HECHO || currentDelivery.estado === PedidoEstado.CANCELADO;
 
   const formatCOP = (n: number) => {
     return new Intl.NumberFormat("es-CO", {
@@ -98,17 +113,13 @@ export function CurrentDelivery() {
         <View style={tw`bg-[#174A8B] rounded-3xl shadow-lg px-5 py-4 border border-[#F5E9C8]`}>
           <View style={tw`items-center mb-4`}>
             <View style={tw`bg-[#FFF9E8] px-4 py-2 rounded-full`}>
-              <Text style={tw`text-[#174A8B] font-semibold text-sm`}>
-                {comercioNombre}
-              </Text>
+              <Text style={tw`text-[#174A8B] font-semibold text-sm`}>{comercioNombre}</Text>
             </View>
           </View>
 
           <View style={tw`border-t border-[#F5E9C8]/40 my-2`} />
 
-          <Text style={tw`text-sm font-semibold mt-2 mb-1 text-[#FFF9E8]`}>
-            IR A RESTAURANTE
-          </Text>
+          <Text style={tw`text-sm font-semibold mt-2 mb-1 text-[#FFF9E8]`}>IR A RESTAURANTE</Text>
           <Text style={tw`text-sm mb-3 text-[#FFF9E8]`}>{comercioDireccion}</Text>
 
           <Text style={tw`text-sm font-semibold mb-1 text-[#FFF9E8]`}>Entrega A:</Text>
@@ -117,13 +128,14 @@ export function CurrentDelivery() {
           <View style={tw`border-t border-[#F5E9C8]/40 my-2`} />
 
           <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
-            <Text style={tw`font-semibold`}>Pedido creado: </Text>
-            {formatColombiaDateTime(currentDelivery.createdAt)}
+            <Text style={tw`font-semibold`}>Estado: </Text>{currentDelivery.estado}
+          </Text>
+          <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
+            <Text style={tw`font-semibold`}>Pedido creado: </Text>{formatColombiaDateTime(currentDelivery.createdAt)}
           </Text>
           {currentDelivery.assignedAt ? (
             <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
-              <Text style={tw`font-semibold`}>Asignado: </Text>
-              {formatColombiaDateTime(currentDelivery.assignedAt)}
+              <Text style={tw`font-semibold`}>Asignado: </Text>{formatColombiaDateTime(currentDelivery.assignedAt)}
             </Text>
           ) : null}
 
@@ -131,14 +143,33 @@ export function CurrentDelivery() {
 
           <View style={tw`mt-3`}>
             <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
-              <Text style={tw`font-semibold`}>Valor compra: </Text>
-              {formatCOP(valorFinal)}
+              <Text style={tw`font-semibold`}>Valor compra: </Text>{formatCOP(valorFinal)}
             </Text>
             <Text style={tw`text-sm text-[#FFF9E8]`}>
-              <Text style={tw`font-semibold`}>Domicilio: </Text>
-              {formatCOP(valorDomicilio)}
+              <Text style={tw`font-semibold`}>Domicilio: </Text>{formatCOP(valorDomicilio)}
             </Text>
           </View>
+        </View>
+
+        {statusError ? <Text style={tw`mt-4 text-sm font-semibold text-red-700`}>{statusError}</Text> : null}
+
+        <View style={tw`mt-5 gap-3`}>
+          <TouchableOpacity
+            testID="current-delivery-finish"
+            disabled={finalizado || !!updating}
+            onPress={() => void handleStatus(PedidoEstado.HECHO)}
+            style={tw`rounded-2xl bg-green-700 px-4 py-4 ${finalizado || updating ? 'opacity-50' : ''}`}
+          >
+            <Text style={tw`text-center font-bold text-white`}>{updating === PedidoEstado.HECHO ? 'Actualizando...' : 'Finalizar servicio'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            testID="current-delivery-cancel"
+            disabled={finalizado || !!updating}
+            onPress={() => void handleStatus(PedidoEstado.CANCELADO)}
+            style={tw`rounded-2xl bg-red-600 px-4 py-4 ${finalizado || updating ? 'opacity-50' : ''}`}
+          >
+            <Text style={tw`text-center font-bold text-white`}>{updating === PedidoEstado.CANCELADO ? 'Actualizando...' : 'Cancelar servicio'}</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
