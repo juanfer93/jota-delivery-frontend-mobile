@@ -47,7 +47,7 @@ jest.mock('@/features/delivery/application/delivery.store', () => ({
   useDeliveryStore: () => ({
     currentDelivery: {
       id: 'pedido-uuid',
-      estado: PedidoEstado.EN_PROCESO,
+      estado: 'EN_PROCESO',
       valorFinal: 14935.12,
       direccionDestino: 'KR 57 # 84',
       clienteNombre: 'Cliente prueba',
