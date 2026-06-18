@@ -9,6 +9,13 @@ describe('getNotificationRoute', () => {
     })).toBe('/profile/current-delivery');
   });
 
+  it('lleva al domiciliario a la lista cuando hay pedido disponible', () => {
+    expect(getNotificationRoute({
+      type: 'PEDIDO_DISPONIBLE',
+      pedidoId: 'pedido-2',
+    })).toBe('/delivery');
+  });
+
   it('lleva al admin al pedido que cambio de estado', () => {
     expect(getNotificationRoute({
       type: 'PEDIDO_ESTADO_ACTUALIZADO',
