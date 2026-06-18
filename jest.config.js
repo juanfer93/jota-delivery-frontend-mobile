@@ -8,6 +8,8 @@ module.exports = {
   ],
   setupFilesAfterEnv: ['./jest.setup.js'],
   moduleNameMapper: {
+    '^@/features/notifications/notification\\.service$': '<rootDir>/src/features/notifications/notification.service.android.ts',
+
     // 1. PRIMERO: Captura los imports de CSS con alias
     '^@/(.*)\\.css$': '<rootDir>/__mocks__/fileMock.js',
     

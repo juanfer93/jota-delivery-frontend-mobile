@@ -5,6 +5,11 @@ import {
 } from './infrastructure/notification.repository.web';
 
 export type NotificationOpenedHandler = (payload: NotificationPayload) => void;
+export type NotificationPermissionState =
+  | 'granted'
+  | 'denied'
+  | 'undetermined'
+  | 'unsupported';
 
 function base64UrlToUint8Array(value: string): Uint8Array<ArrayBuffer> {
   const padding = '='.repeat((4 - (value.length % 4)) % 4);
@@ -58,19 +63,25 @@ function readPayloadFromUrl(): NotificationPayload | null {
   return payload;
 }
 
-async function registerWebPush(): Promise<void> {
+function mapWebPermission(permission: NotificationPermission): NotificationPermissionState {
+  if (permission === 'granted') return 'granted';
+  if (permission === 'denied') return 'denied';
+  return 'undetermined';
+}
+
+async function registerWebPush(shouldRequestPermission: boolean): Promise<NotificationPermissionState> {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     console.info('[NOTIFICATIONS] Este navegador no soporta Web Push.');
-    return;
+    return 'unsupported';
   }
 
-  const permission = window.Notification.permission === 'default'
+  const permission = shouldRequestPermission && window.Notification.permission === 'default'
     ? await window.Notification.requestPermission()
     : window.Notification.permission;
 
   if (permission !== 'granted') {
     console.info('[NOTIFICATIONS] El usuario no concedio permisos de notificacion.');
-    return;
+    return mapWebPermission(permission);
   }
 
   const registration = await navigator.serviceWorker.register('/jota-notifications-sw.js');
@@ -84,13 +95,31 @@ async function registerWebPush(): Promise<void> {
 
   if (!input) throw new Error('La suscripcion Web Push no contiene llaves validas.');
   await NotificationRepository.subscribeWebPush(input);
+  return 'granted';
+}
+
+export async function getNotificationPermissionState(): Promise<NotificationPermissionState> {
+  if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+    return 'unsupported';
+  }
+
+  return mapWebPermission(window.Notification.permission);
+}
+
+export async function requestNotificationPermission(): Promise<NotificationPermissionState> {
+  try {
+    return await registerWebPush(true);
+  } catch (error: unknown) {
+    console.error('[NOTIFICATIONS] No se pudo solicitar permisos Web Push.', error);
+    return 'denied';
+  }
 }
 
 export async function initializeNotifications(
   onOpened: NotificationOpenedHandler,
 ): Promise<() => void> {
   try {
-    await registerWebPush();
+    await registerWebPush(false);
   } catch (error: unknown) {
     console.error('[NOTIFICATIONS] No se pudo registrar Web Push.', error);
   }

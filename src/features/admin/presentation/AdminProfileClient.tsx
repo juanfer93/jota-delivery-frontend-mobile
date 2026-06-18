@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   SafeAreaView,
   ScrollView,
+  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -11,14 +12,47 @@ import { router } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useAuthStore } from '@/features/auth/application/auth.store';
 import { isDomiciliarioRole } from '@/features/auth/domain/auth.types';
+import {
+  getNotificationPermissionState,
+  NotificationPermissionState,
+  requestNotificationPermission,
+} from '@/features/notifications/notification.service';
 
 export default function AdminProfileClient() {
   const { user, logout } = useAuthStore();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [notificationPermission, setNotificationPermission] =
+    useState<NotificationPermissionState>('undetermined');
+  const [isRequestingNotifications, setIsRequestingNotifications] = useState(false);
 
   const isDomiciliario = isDomiciliarioRole(user?.rol);
   const name =
     user?.nombre || user?.email || (isDomiciliario ? 'Domiciliario' : 'Administrador');
+
+  useEffect(() => {
+    let active = true;
+
+    void getNotificationPermissionState()
+      .then((state) => {
+        if (active) setNotificationPermission(state);
+      })
+      .catch(() => {
+        if (active) setNotificationPermission('undetermined');
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleNotificationToggle = async (enabled: boolean) => {
+    if (!enabled || notificationPermission === 'granted') return;
+
+    setIsRequestingNotifications(true);
+    const state = await requestNotificationPermission();
+    setNotificationPermission(state);
+    setIsRequestingNotifications(false);
+  };
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -56,6 +90,41 @@ export default function AdminProfileClient() {
             Email: {user?.email || '-'}
           </Text>
           <Text style={tw`text-jj-blueDark/80`}>Rol: {user?.rol || '-'}</Text>
+        </View>
+
+        <View style={tw`mb-6 rounded-3xl border border-jj-blueDark/10 bg-white p-5`}>
+          <Text style={tw`mb-4 text-lg font-bold text-jj-blueDark`}>
+            Opciones
+          </Text>
+          <View style={tw`flex-row items-center justify-between`}>
+            <View style={tw`flex-1 pr-4`}>
+              <Text style={tw`text-base font-semibold text-jj-blueDark`}>
+                Permitir notificaciones
+              </Text>
+              {notificationPermission === 'denied' ? (
+                <Text style={tw`mt-1 text-xs text-red-600`}>
+                  Permiso bloqueado. Activalo desde ajustes del dispositivo.
+                </Text>
+              ) : null}
+              {notificationPermission === 'unsupported' ? (
+                <Text style={tw`mt-1 text-xs text-jj-blueDark/60`}>
+                  Este dispositivo no soporta notificaciones push.
+                </Text>
+              ) : null}
+            </View>
+            {isRequestingNotifications ? (
+              <ActivityIndicator color="#174A8B" />
+            ) : (
+              <Switch
+                testID="notifications-permission-switch"
+                value={notificationPermission === 'granted'}
+                disabled={notificationPermission === 'unsupported'}
+                onValueChange={handleNotificationToggle}
+                trackColor={{ false: '#CBD5E1', true: '#174A8B' }}
+                thumbColor={notificationPermission === 'granted' ? '#F5E9C8' : '#FFFFFF'}
+              />
+            )}
+          </View>
         </View>
 
         <TouchableOpacity
