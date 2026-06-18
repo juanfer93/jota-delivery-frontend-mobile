@@ -15,6 +15,20 @@ export const DeliveryRepository = {
     });
   },
 
+  getPedidosDisponibles: async (): Promise<Pedido[]> => {
+    return await apiListRequest<Pedido>({
+      method: 'GET',
+      url: '/pedidos/admin/domiciliarios/disponibles',
+    });
+  },
+
+  tomarPedidoDisponible: async (pedidoId: string): Promise<Pedido> => {
+    return await apiRequest<Pedido>({
+      method: 'PATCH',
+      url: `/pedidos/admin/${pedidoId}/tomar`,
+    });
+  },
+
   getPedidosHistorial: async (fecha: string): Promise<Pedido[]> => {
     return await apiListRequest<Pedido>({ 
       method: 'GET', 
@@ -93,5 +107,5 @@ export const DeliveryRepository = {
       url: `/usuarios/domiciliarios/${id}/bloqueo`,
       data: { bloqueado },
     });
-  },
+  }
 };
