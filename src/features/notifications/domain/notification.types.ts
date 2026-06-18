@@ -1,6 +1,10 @@
 import { PedidoEstado } from '@/features/delivery/domain/delivery.types';
 
-export type NotificationKind = 'PEDIDO_ASIGNADO' | 'PEDIDO_ESTADO_ACTUALIZADO';
+export type NotificationKind =
+  | 'PEDIDO_DISPONIBLE'
+  | 'PEDIDO_ASIGNADO'
+  | 'PEDIDO_TOMADO'
+  | 'PEDIDO_ESTADO_ACTUALIZADO';
 
 export interface NotificationPayload {
   notificationId?: string;
@@ -12,6 +16,9 @@ export interface NotificationPayload {
   estado?: PedidoEstado;
   domiciliarioId?: string;
   domiciliarioNombre?: string;
+  comercioNombre?: string;
+  direccionRecogida?: string;
+  direccionDestino?: string;
   createdAt?: string;
 }
 
@@ -28,7 +35,10 @@ function isPedidoEstado(value: unknown): value is PedidoEstado {
 }
 
 function isNotificationKind(value: unknown): value is NotificationKind {
-  return value === 'PEDIDO_ASIGNADO' || value === 'PEDIDO_ESTADO_ACTUALIZADO';
+  return value === 'PEDIDO_DISPONIBLE'
+    || value === 'PEDIDO_ASIGNADO'
+    || value === 'PEDIDO_TOMADO'
+    || value === 'PEDIDO_ESTADO_ACTUALIZADO';
 }
 
 export function parseNotificationPayload(value: unknown): NotificationPayload | null {
@@ -47,6 +57,9 @@ export function parseNotificationPayload(value: unknown): NotificationPayload | 
     estado: isPedidoEstado(value.estado) ? value.estado : undefined,
     domiciliarioId: optionalString(value.domiciliarioId),
     domiciliarioNombre: optionalString(value.domiciliarioNombre),
+    comercioNombre: optionalString(value.comercioNombre),
+    direccionRecogida: optionalString(value.direccionRecogida),
+    direccionDestino: optionalString(value.direccionDestino),
     createdAt: optionalString(value.createdAt),
   };
 }
