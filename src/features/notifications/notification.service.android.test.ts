@@ -63,7 +63,7 @@ describe('notification.service.android', () => {
     jest.requireMock('expo-device').isDevice = true;
     mockDeleteNotificationChannelAsync.mockResolvedValue(undefined);
     mockSetNotificationChannelAsync.mockResolvedValue(undefined);
-    mockGetPermissionsAsync.mockResolvedValue({ status: 'undetermined' });
+    mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' });
     mockRequestPermissionsAsync.mockResolvedValue({ status: 'granted' });
     mockGetExpoPushTokenAsync.mockResolvedValue({
       data: 'ExponentPushToken[android-token]',
@@ -79,12 +79,12 @@ describe('notification.service.android', () => {
     mockClearLastNotificationResponseAsync.mockResolvedValue(undefined);
   });
 
-  it('pide permiso en el arranque autenticado y registra el token Android en backend', async () => {
+  it('registra el token Android al iniciar sesion si el permiso ya fue concedido', async () => {
     const { initializeNotifications } = require('./notification.service.android') as typeof import('./notification.service.android');
 
     await initializeNotifications(jest.fn());
 
-    expect(mockRequestPermissionsAsync).toHaveBeenCalled();
+    expect(mockRequestPermissionsAsync).not.toHaveBeenCalled();
     expect(mockGetExpoPushTokenAsync).toHaveBeenCalledWith({
       projectId: 'test-project-id',
     });
@@ -93,12 +93,13 @@ describe('notification.service.android', () => {
     );
   });
 
-  it('no llama backend cuando Android no concede permisos', async () => {
-    mockRequestPermissionsAsync.mockResolvedValueOnce({ status: 'denied' });
+  it('no solicita permisos ni llama backend durante el arranque si aun no hay permiso', async () => {
+    mockGetPermissionsAsync.mockResolvedValueOnce({ status: 'undetermined' });
     const { initializeNotifications } = require('./notification.service.android') as typeof import('./notification.service.android');
 
     await initializeNotifications(jest.fn());
 
+    expect(mockRequestPermissionsAsync).not.toHaveBeenCalled();
     expect(mockGetExpoPushTokenAsync).not.toHaveBeenCalled();
     expect(mockRegisterExpoToken).not.toHaveBeenCalled();
   });

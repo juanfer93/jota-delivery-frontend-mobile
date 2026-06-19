@@ -103,7 +103,7 @@ export async function initializeNotifications(
   onOpened: NotificationOpenedHandler,
 ): Promise<() => void> {
   try {
-    await registerAndroidToken(true);
+    await registerAndroidToken(false);
   } catch (error: unknown) {
     console.error('[NOTIFICATIONS] No se pudo registrar el dispositivo Android.', error);
   }

@@ -90,7 +90,7 @@ export const CreateDeliveryScreen = () => {
         </Text>
 
         <Text style={tw`text-sm text-neutral-gray mb-6`}>
-          Registra un domiciliario. El correo solo confirma la cuenta y envía el link de la APK.
+          Registra un domiciliario. El correo entrega la clave temporal y el enlace de la APK.
         </Text>
 
         <View style={tw`gap-4`}>
@@ -174,7 +174,7 @@ export const CreateDeliveryScreen = () => {
               {lastTemporaryPassword}
             </Text>
             <Text style={tw`text-xs text-jjBlueDark/70 mt-2`}>
-              Entrega esta clave al domiciliario. El correo solo confirma la cuenta y permite instalar la APK.
+              Esta misma clave se envía al correo del domiciliario. Puede usarla para iniciar sesión y luego cambiarla desde Perfil.
             </Text>
           </View>
         )}
