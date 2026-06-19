@@ -76,7 +76,9 @@ async function registerAndroidToken(shouldRequestPermission: boolean): Promise<N
     return 'unsupported';
   }
 
+  console.info('[NOTIFICATIONS] Solicitando Expo Push Token para Android.');
   const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+  console.info('[NOTIFICATIONS] Registrando Expo Push Token Android en el backend.');
   await NotificationRepository.registerExpoToken(token);
   console.info('[NOTIFICATIONS] Token Expo registrado correctamente.');
   return 'granted';
@@ -101,7 +103,7 @@ export async function initializeNotifications(
   onOpened: NotificationOpenedHandler,
 ): Promise<() => void> {
   try {
-    await registerAndroidToken(false);
+    await registerAndroidToken(true);
   } catch (error: unknown) {
     console.error('[NOTIFICATIONS] No se pudo registrar el dispositivo Android.', error);
   }

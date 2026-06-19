@@ -25,6 +25,7 @@ const mockDeliveryState: { currentDelivery: any } = {
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, replace: jest.fn() }),
   useLocalSearchParams: () => ({}),
+  usePathname: () => '/delivery',
 }));
 
 jest.mock('@/core/repositories/delivery.repository', () => ({

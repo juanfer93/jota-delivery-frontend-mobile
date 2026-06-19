@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
-import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { ActivityIndicator, AppState, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
 import { Pedido, PedidoEstado } from '@/features/delivery/domain/delivery.types';
@@ -18,6 +18,65 @@ const EstadoOpciones = [
 
 function formatMoney(value: number) {
   return Number(value ?? 0).toLocaleString('es-CO');
+}
+
+function useFocusedPolling(
+  callback: () => Promise<void> | void,
+  intervalMs: number,
+  enabled = true,
+) {
+  const pathname = usePathname();
+  const callbackRef = useRef(callback);
+  const runningRef = useRef(false);
+  const routeIsActive = pathname.includes('/delivery');
+  const shouldRun = enabled && routeIsActive;
+
+  useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
+
+  useEffect(() => {
+    if (!shouldRun) return undefined;
+
+    let interval: ReturnType<typeof setInterval> | undefined;
+    let active = true;
+
+    const run = () => {
+      if (!active || runningRef.current) return;
+
+      runningRef.current = true;
+      void Promise.resolve(callbackRef.current()).finally(() => {
+        runningRef.current = false;
+      });
+    };
+
+    const start = () => {
+      if (interval) return;
+      run();
+      interval = setInterval(run, intervalMs);
+    };
+
+    const stop = () => {
+      if (!interval) return;
+      clearInterval(interval);
+      interval = undefined;
+    };
+
+    if (AppState.currentState !== 'background' && AppState.currentState !== 'inactive') {
+      start();
+    }
+
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') start();
+      else stop();
+    });
+
+    return () => {
+      active = false;
+      stop();
+      subscription.remove();
+    };
+  }, [intervalMs, shouldRun]);
 }
 
 function CourierAvailableOrders() {
@@ -41,11 +100,7 @@ function CourierAvailableOrders() {
     }
   }, []);
 
-  useEffect(() => {
-    void loadAvailable();
-    const interval = setInterval(() => void loadAvailable(), 10000);
-    return () => clearInterval(interval);
-  }, [loadAvailable]);
+  useFocusedPolling(loadAvailable, 60000);
 
   const acceptOrder = async (pedidoId: string) => {
     setAcceptingId(pedidoId);
@@ -162,19 +217,8 @@ export function DeliveryClient() {
   const [domiciliarioFilter, setDomiciliarioFilter] = useState('');
   const [comercioFilter, setComercioFilter] = useState('');
 
-  useEffect(() => {
-    if (isDomiciliario) return;
-    void refreshPedidosHoy();
-    const interval = setInterval(() => void refreshPedidosHoy(), 15000);
-    return () => clearInterval(interval);
-  }, [isDomiciliario, refreshPedidosHoy]);
-
-  useEffect(() => {
-    if (!isDomiciliario) return;
-    void loadCurrentDelivery();
-    const interval = setInterval(() => void loadCurrentDelivery(), 15000);
-    return () => clearInterval(interval);
-  }, [isDomiciliario, loadCurrentDelivery]);
+  useFocusedPolling(refreshPedidosHoy, 60000, !isDomiciliario);
+  useFocusedPolling(loadCurrentDelivery, 45000, isDomiciliario);
 
   const pedidosPorDomiciliario = useMemo(() => {
     const map = new Map<string, typeof pedidosHoy>();
