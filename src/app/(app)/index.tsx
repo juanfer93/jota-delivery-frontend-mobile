@@ -26,7 +26,7 @@ export default function HomePage() {
         if (!active) return;
         setDomiciliarioRoute(
           pedido?.estado === PedidoEstado.EN_PROCESO
-            ? '/profile/current-delivery'
+            ? '/delivery/current-delivery'
             : '/delivery',
         );
       })

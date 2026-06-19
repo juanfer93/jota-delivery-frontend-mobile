@@ -90,7 +90,7 @@ describe('NotificationPedidoModal', () => {
     fireEvent.press(screen.getByTestId('notification-primary-action'));
 
     expect(mockCloseNotification).toHaveBeenCalled();
-    expect(mockPush).toHaveBeenCalledWith('/profile/current-delivery');
+    expect(mockPush).toHaveBeenCalledWith('/delivery/current-delivery');
   });
 
   it('permite finalizar el servicio desde la ventana', async () => {

@@ -21,7 +21,7 @@ export function CurrentDelivery() {
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.replace('/delivery');
+      router.replace('/(app)/delivery');
     }
   };
 
@@ -33,7 +33,9 @@ export function CurrentDelivery() {
     setUpdating(null);
     if (!ok) {
       setStatusError('No se pudo actualizar el estado del pedido.');
+      return;
     }
+    router.replace('/(app)/delivery');
   };
 
   if (currentDeliveryStatus === 'loading') {

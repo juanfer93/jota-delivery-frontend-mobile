@@ -6,7 +6,7 @@ describe('getNotificationRoute', () => {
     expect(getNotificationRoute({
       type: 'PEDIDO_ASIGNADO',
       pedidoId: 'pedido-1',
-    })).toBe('/profile/current-delivery');
+    })).toBe('/delivery/current-delivery');
   });
 
   it('lleva al domiciliario a la lista cuando hay pedido disponible', () => {

@@ -25,7 +25,6 @@ const mockDeliveryState: { currentDelivery: any } = {
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, replace: jest.fn() }),
   useLocalSearchParams: () => ({}),
-  usePathname: () => '/delivery',
 }));
 
 jest.mock('@/core/repositories/delivery.repository', () => ({
@@ -118,7 +117,7 @@ describe('DeliveryClient', () => {
 
     await waitFor(() => {
       expect(mockTomarPedidoDisponible).toHaveBeenCalledWith('pedido-libre');
-      expect(mockPush).toHaveBeenCalledWith('/profile/current-delivery');
+      expect(mockPush).toHaveBeenCalledWith('/(app)/delivery/current-delivery');
     });
   });
 
@@ -127,7 +126,7 @@ describe('DeliveryClient', () => {
 
     fireEvent.press(await screen.findByTestId('view-current-delivery'));
 
-    expect(mockPush).toHaveBeenCalledWith('/profile/current-delivery');
+    expect(mockPush).toHaveBeenCalledWith('/(app)/delivery/current-delivery');
   });
 
   it('oculta el acceso a pedido en proceso cuando no hay pedido actual', async () => {
