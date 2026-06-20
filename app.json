@@ -19,7 +19,7 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.jotadelivery.mobile",
-      "versionCode": 3,
+      "versionCode": 4,
       "runtimeVersion": "1.0.1",
       "googleServicesFile": "./google-services.json"
     },
