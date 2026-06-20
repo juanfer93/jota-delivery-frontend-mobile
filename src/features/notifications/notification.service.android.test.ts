@@ -63,7 +63,7 @@ describe('notification.service.android', () => {
     jest.requireMock('expo-device').isDevice = true;
     mockDeleteNotificationChannelAsync.mockResolvedValue(undefined);
     mockSetNotificationChannelAsync.mockResolvedValue(undefined);
-    mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' });
+    mockGetPermissionsAsync.mockResolvedValue({ status: 'undetermined' });
     mockRequestPermissionsAsync.mockResolvedValue({ status: 'granted' });
     mockGetExpoPushTokenAsync.mockResolvedValue({
       data: 'ExponentPushToken[android-token]',
@@ -79,12 +79,12 @@ describe('notification.service.android', () => {
     mockClearLastNotificationResponseAsync.mockResolvedValue(undefined);
   });
 
-  it('registra el token Android al iniciar sesion si el permiso ya fue concedido', async () => {
+  it('pide permiso y registra el token Android durante la primera sesion', async () => {
     const { initializeNotifications } = require('./notification.service.android') as typeof import('./notification.service.android');
 
     await initializeNotifications(jest.fn());
 
-    expect(mockRequestPermissionsAsync).not.toHaveBeenCalled();
+    expect(mockRequestPermissionsAsync).toHaveBeenCalled();
     expect(mockGetExpoPushTokenAsync).toHaveBeenCalledWith({
       projectId: 'test-project-id',
     });
@@ -93,8 +93,8 @@ describe('notification.service.android', () => {
     );
   });
 
-  it('no solicita permisos ni llama backend durante el arranque si aun no hay permiso', async () => {
-    mockGetPermissionsAsync.mockResolvedValueOnce({ status: 'undetermined' });
+  it('no insiste si el usuario ya rechazo los permisos', async () => {
+    mockGetPermissionsAsync.mockResolvedValueOnce({ status: 'denied' });
     const { initializeNotifications } = require('./notification.service.android') as typeof import('./notification.service.android');
 
     await initializeNotifications(jest.fn());

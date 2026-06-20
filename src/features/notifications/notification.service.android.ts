@@ -61,7 +61,7 @@ async function registerAndroidToken(shouldRequestPermission: boolean): Promise<N
   }
 
   const current = await Notifications.getPermissionsAsync();
-  const finalPermission = shouldRequestPermission && current.status !== 'granted'
+  const finalPermission = shouldRequestPermission && current.status === 'undetermined'
     ? (await Notifications.requestPermissionsAsync()).status
     : current.status;
 
@@ -103,7 +103,7 @@ export async function initializeNotifications(
   onOpened: NotificationOpenedHandler,
 ): Promise<() => void> {
   try {
-    await registerAndroidToken(false);
+    await registerAndroidToken(true);
   } catch (error: unknown) {
     console.error('[NOTIFICATIONS] No se pudo registrar el dispositivo Android.', error);
   }
