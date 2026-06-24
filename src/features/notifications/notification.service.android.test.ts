@@ -91,6 +91,13 @@ describe('notification.service.android', () => {
     expect(mockRegisterExpoToken).toHaveBeenCalledWith(
       'ExponentPushToken[android-token]',
     );
+    expect(mockDeleteNotificationChannelAsync).toHaveBeenCalledWith('orders-v2');
+    expect(mockDeleteNotificationChannelAsync).toHaveBeenCalledWith('orders-v3');
+    expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith('orders-v4', expect.objectContaining({
+      importance: 'max',
+      sound: 'jota_notifications.mp3',
+      vibrationPattern: [0, 900, 250, 900, 250, 900, 250, 900, 250, 900, 250, 900],
+    }));
   });
 
   it('no insiste si el usuario ya rechazo los permisos', async () => {

@@ -2,7 +2,7 @@
   "expo": {
     "name": "jota-delivery-mobile",
     "slug": "jota-delivery-mobile",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "platforms": [
       "android",
       "web"
@@ -19,8 +19,8 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.jotadelivery.mobile",
-      "versionCode": 4,
-      "runtimeVersion": "1.0.1",
+      "versionCode": 5,
+      "runtimeVersion": "1.0.2",
       "googleServicesFile": "./google-services.json"
     },
     "web": {
@@ -52,7 +52,7 @@
         "expo-notifications",
         {
           "color": "#174A8B",
-          "defaultChannel": "orders-v3",
+          "defaultChannel": "orders-v4",
           "sounds": [
             "./assets/sounds/jota_notifications.mp3"
           ]

@@ -11,8 +11,11 @@ export type NotificationPermissionState =
   | 'undetermined'
   | 'unsupported';
 
-const ORDERS_CHANNEL_ID = 'orders-v3';
-const LEGACY_ORDERS_CHANNEL_ID = 'orders-v2';
+// Android does not let an existing notification channel change its alert settings.
+// A new id therefore makes the longer, high-priority alert take effect on devices
+// that already installed an earlier version of the app.
+const ORDERS_CHANNEL_ID = 'orders-v4';
+const LEGACY_ORDERS_CHANNEL_IDS = ['orders-v2', 'orders-v3'];
 const ORDERS_NOTIFICATION_SOUND = 'jota_notifications.mp3';
 
 Notifications.setNotificationHandler({
@@ -33,12 +36,16 @@ function forwardResponse(
 }
 
 async function configureAndroidChannels(): Promise<void> {
-  await Notifications.deleteNotificationChannelAsync(LEGACY_ORDERS_CHANNEL_ID).catch(() => undefined);
+  await Promise.all(
+    LEGACY_ORDERS_CHANNEL_IDS.map((channelId) =>
+      Notifications.deleteNotificationChannelAsync(channelId).catch(() => undefined),
+    ),
+  );
   await Notifications.setNotificationChannelAsync(ORDERS_CHANNEL_ID, {
     name: 'Pedidos',
-    description: 'Notificaciones de pedidos y cambios de estado.',
+    description: 'Alerta insistente para pedidos nuevos y cambios de estado.',
     importance: Notifications.AndroidImportance.MAX,
-    vibrationPattern: [0, 250, 250, 250],
+    vibrationPattern: [0, 900, 250, 900, 250, 900, 250, 900, 250, 900, 250, 900],
     lightColor: '#174A8B',
     sound: ORDERS_NOTIFICATION_SOUND,
     enableVibrate: true,
