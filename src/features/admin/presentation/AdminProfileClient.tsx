@@ -19,7 +19,7 @@ import {
 } from '@/features/notifications/notification.service';
 
 export default function AdminProfileClient() {
-  const { user, logout } = useAuthStore();
+  const { user, logout, checkAuth } = useAuthStore();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [notificationPermission, setNotificationPermission] =
     useState<NotificationPermissionState>('undetermined');
@@ -28,6 +28,14 @@ export default function AdminProfileClient() {
   const isDomiciliario = isDomiciliarioRole(user?.rol);
   const name =
     user?.nombre || user?.email || (isDomiciliario ? 'Domiciliario' : 'Administrador');
+  const gananciaDia = Number(user?.gananciaDia ?? 0);
+
+  const formatCOP = (value: number) =>
+    new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      maximumFractionDigits: 0,
+    }).format(value);
 
   useEffect(() => {
     let active = true;
@@ -44,6 +52,10 @@ export default function AdminProfileClient() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    void checkAuth();
+  }, [checkAuth]);
 
   const handleNotificationToggle = async (enabled: boolean) => {
     if (!enabled || notificationPermission === 'granted') return;
@@ -79,6 +91,11 @@ export default function AdminProfileClient() {
           <Text style={tw`text-sm text-jj-blueDark/60`}>
             {isDomiciliario ? 'Panel del domiciliario' : 'Panel de administración'}
           </Text>
+          {isDomiciliario ? (
+            <Text style={tw`mt-2 text-base font-bold text-jj-blueDark`}>
+              Ganancias de hoy: {formatCOP(gananciaDia)}
+            </Text>
+          ) : null}
         </View>
 
         <View style={tw`mb-6 rounded-3xl border border-jj-blueDark/10 bg-white p-5`}>

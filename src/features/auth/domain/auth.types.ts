@@ -22,6 +22,7 @@ export interface User {
   rol: UserRole;
   codigo?: string;
   saldo?: number;
+  gananciaDia?: number;
   bloqueado?: boolean;
   email_confirmado?: boolean;
   createdAt?: string;

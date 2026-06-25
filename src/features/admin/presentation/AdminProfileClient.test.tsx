@@ -4,8 +4,16 @@ import AdminProfileClient from './AdminProfileClient';
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 const mockLogout = jest.fn();
+const mockCheckAuth = jest.fn();
 const mockGetNotificationPermissionState = jest.fn();
 const mockRequestNotificationPermission = jest.fn();
+let mockUser = {
+  id: 'admin-uuid',
+  nombre: 'Admin Jota',
+  email: 'admin@test.com',
+  rol: 'admin',
+  gananciaDia: undefined as number | undefined,
+};
 
 jest.mock('expo-router', () => ({
   router: {
@@ -16,13 +24,9 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@/features/auth/application/auth.store', () => ({
   useAuthStore: () => ({
-    user: {
-      id: 'admin-uuid',
-      nombre: 'Admin Jota',
-      email: 'admin@test.com',
-      rol: 'admin',
-    },
+    user: mockUser,
     logout: mockLogout,
+    checkAuth: mockCheckAuth,
   }),
 }));
 
@@ -36,8 +40,16 @@ jest.mock('@/features/notifications/notification.service', () => ({
 describe('AdminProfileClient', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUser = {
+      id: 'admin-uuid',
+      nombre: 'Admin Jota',
+      email: 'admin@test.com',
+      rol: 'admin',
+      gananciaDia: undefined,
+    };
     mockGetNotificationPermissionState.mockResolvedValue('undetermined');
     mockRequestNotificationPermission.mockResolvedValue('granted');
+    mockCheckAuth.mockResolvedValue(undefined);
   });
 
   it('muestra opciones de notificaciones en el perfil', async () => {
@@ -46,6 +58,7 @@ describe('AdminProfileClient', () => {
     expect(await screen.findByText('Opciones')).toBeTruthy();
     expect(screen.getByText('Permitir notificaciones')).toBeTruthy();
     expect(screen.getByTestId('notifications-permission-switch')).toBeTruthy();
+    expect(screen.queryByText(/Ganancias de hoy/)).toBeNull();
   });
 
   it('solicita permiso de notificaciones al activar el switch', async () => {
@@ -57,5 +70,21 @@ describe('AdminProfileClient', () => {
     await waitFor(() => {
       expect(mockRequestNotificationPermission).toHaveBeenCalled();
     });
+  });
+
+  it('muestra ganancias del dia solo para domiciliario', async () => {
+    mockUser = {
+      id: 'domi-uuid',
+      nombre: 'Domi Jota',
+      email: 'domi@test.com',
+      rol: 'domiciliario',
+      gananciaDia: 18000,
+    };
+
+    render(<AdminProfileClient />);
+
+    expect(await screen.findByText(/Ganancias de hoy:/)).toBeTruthy();
+    expect(screen.getByText(/\$\s*18\.000/)).toBeTruthy();
+    expect(mockCheckAuth).toHaveBeenCalled();
   });
 });
