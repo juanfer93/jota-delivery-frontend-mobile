@@ -19,6 +19,8 @@ export interface NotificationPayload {
   comercioNombre?: string;
   direccionRecogida?: string;
   direccionDestino?: string;
+  ganancia?: number;
+  valorDomicilio?: number;
   createdAt?: string;
 }
 
@@ -28,6 +30,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function optionalString(value: unknown): string | undefined {
   return typeof value === 'string' && value.length > 0 ? value : undefined;
+}
+
+function optionalNumber(value: unknown): number | undefined {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : undefined;
 }
 
 function isPedidoEstado(value: unknown): value is PedidoEstado {
@@ -60,6 +67,8 @@ export function parseNotificationPayload(value: unknown): NotificationPayload | 
     comercioNombre: optionalString(value.comercioNombre),
     direccionRecogida: optionalString(value.direccionRecogida),
     direccionDestino: optionalString(value.direccionDestino),
+    ganancia: optionalNumber(value.ganancia),
+    valorDomicilio: optionalNumber(value.valorDomicilio),
     createdAt: optionalString(value.createdAt),
   };
 }

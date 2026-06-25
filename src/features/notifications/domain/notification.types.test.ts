@@ -9,6 +9,8 @@ describe('parseNotificationPayload', () => {
       pedidoId: 'pedido-id',
       estado: PedidoEstado.HECHO,
       domiciliarioNombre: 'Ana',
+      ganancia: '9000',
+      valorDomicilio: 9000,
       createdAt: '2026-06-12T18:30:00.000Z',
     })).toEqual({
       notificationId: 'notification-id',
@@ -20,6 +22,11 @@ describe('parseNotificationPayload', () => {
       body: undefined,
       url: undefined,
       domiciliarioId: undefined,
+      comercioNombre: undefined,
+      direccionRecogida: undefined,
+      direccionDestino: undefined,
+      ganancia: 9000,
+      valorDomicilio: 9000,
       createdAt: '2026-06-12T18:30:00.000Z',
     });
   });
