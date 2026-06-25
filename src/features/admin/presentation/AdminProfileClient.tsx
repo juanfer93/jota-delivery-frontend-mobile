@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useAuthStore } from '@/features/auth/application/auth.store';
 import { isDomiciliarioRole } from '@/features/auth/domain/auth.types';
@@ -37,6 +37,12 @@ export default function AdminProfileClient() {
       maximumFractionDigits: 0,
     }).format(value);
 
+  useFocusEffect(
+    useCallback(() => {
+      void checkAuth();
+    }, [checkAuth]),
+  );
+
   useEffect(() => {
     let active = true;
 
@@ -52,10 +58,6 @@ export default function AdminProfileClient() {
       active = false;
     };
   }, []);
-
-  useEffect(() => {
-    void checkAuth();
-  }, [checkAuth]);
 
   const handleNotificationToggle = async (enabled: boolean) => {
     if (!enabled || notificationPermission === 'granted') return;

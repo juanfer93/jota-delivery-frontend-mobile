@@ -20,6 +20,7 @@ jest.mock('expo-router', () => ({
     push: (...args: unknown[]) => mockPush(...args),
     replace: (...args: unknown[]) => mockReplace(...args),
   },
+  useFocusEffect: (callback: () => void) => callback(),
 }));
 
 jest.mock('@/features/auth/application/auth.store', () => ({
@@ -86,5 +87,22 @@ describe('AdminProfileClient', () => {
     expect(await screen.findByText(/Ganancias de hoy:/)).toBeTruthy();
     expect(screen.getByText(/\$\s*18\.000/)).toBeTruthy();
     expect(mockCheckAuth).toHaveBeenCalled();
+  });
+
+  it('refresca el perfil cuando la pantalla toma foco', async () => {
+    mockUser = {
+      id: 'domi-uuid',
+      nombre: 'Domi Jota',
+      email: 'domi@test.com',
+      rol: 'domiciliario',
+      gananciaDia: 27000,
+    };
+
+    render(<AdminProfileClient />);
+
+    await waitFor(() => {
+      expect(mockCheckAuth).toHaveBeenCalledTimes(1);
+    });
+    expect(screen.getByText(/\$\s*27\.000/)).toBeTruthy();
   });
 });
