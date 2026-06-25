@@ -5,6 +5,7 @@ import tw from '@/lib/tailwind';
 import { useDeliveryStore } from "@/features/delivery/application/delivery.store";
 import { formatColombiaDateTime } from '@/core/time/colombia-time';
 import { PedidoEstado } from '@/features/delivery/domain/delivery.types';
+import { formatRouteSummary, getPickupAddress, shortPedidoId } from '@/features/delivery/presentation/delivery.utils';
 
 export function CurrentDelivery() {
   const router = useRouter();
@@ -88,7 +89,7 @@ export function CurrentDelivery() {
   }
 
   const comercioNombre = currentDelivery.comercio?.nombre ?? "Comercio";
-  const comercioDireccion = currentDelivery.comercio?.direccion ?? "Dirección no disponible";
+  const comercioDireccion = getPickupAddress(currentDelivery);
   const valorFinal = Number(currentDelivery.valorFinal ?? 0);
   const valorDomicilio = Number(currentDelivery.valorDomicilio ?? 0);
   const finalizado = currentDelivery.estado === PedidoEstado.HECHO || currentDelivery.estado === PedidoEstado.CANCELADO;
@@ -132,6 +133,16 @@ export function CurrentDelivery() {
 
             <View style={tw`border-t border-[#F5E9C8]/40 my-2`} />
 
+            <Text style={tw`text-xs font-bold uppercase tracking-[2px] text-[#FFF9E8]/70`}>
+              Servicio activo
+            </Text>
+            <Text style={tw`mt-1 text-2xl font-bold text-[#FFF9E8]`}>Pedido en proceso</Text>
+            <Text style={tw`mt-2 text-sm font-semibold leading-5 text-[#FFF9E8]`}>
+              {formatRouteSummary(currentDelivery)}
+            </Text>
+
+            <View style={tw`border-t border-[#F5E9C8]/40 my-4`} />
+
             <Text style={tw`text-sm font-semibold mt-2 mb-1 text-[#FFF9E8]`}>IR A RESTAURANTE</Text>
             <Text style={tw`text-sm mb-3 text-[#FFF9E8]`}>{comercioDireccion}</Text>
 
@@ -146,9 +157,30 @@ export function CurrentDelivery() {
             <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
               <Text style={tw`font-semibold`}>Pedido creado: </Text>{formatColombiaDateTime(currentDelivery.createdAt)}
             </Text>
+            <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
+              <Text style={tw`font-semibold`}>Pedido: </Text>{shortPedidoId(currentDelivery.id)}
+            </Text>
+            <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
+              <Text style={tw`font-semibold`}>Notificacion: </Text>{formatColombiaDateTime(currentDelivery.createdAt)}
+            </Text>
             {currentDelivery.assignedAt ? (
               <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
                 <Text style={tw`font-semibold`}>Asignado: </Text>{formatColombiaDateTime(currentDelivery.assignedAt)}
+              </Text>
+            ) : null}
+            {currentDelivery.clienteNombre ? (
+              <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
+                <Text style={tw`font-semibold`}>Cliente: </Text>{currentDelivery.clienteNombre}
+              </Text>
+            ) : null}
+            {currentDelivery.clienteTelefono ? (
+              <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
+                <Text style={tw`font-semibold`}>Telefono: </Text>{currentDelivery.clienteTelefono}
+              </Text>
+            ) : null}
+            {currentDelivery.detallesAdicionales ? (
+              <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
+                <Text style={tw`font-semibold`}>Detalles: </Text>{currentDelivery.detallesAdicionales}
               </Text>
             ) : null}
 

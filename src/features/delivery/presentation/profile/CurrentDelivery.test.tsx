@@ -24,6 +24,9 @@ jest.mock('@/features/delivery/application/delivery.store', () => ({
       valorDomicilio: 5000,
       direccionDestino: 'Calle 10 # 20-30',
       createdAt: '2026-06-19T04:00:00.000Z',
+      clienteNombre: 'Cliente Actual',
+      clienteTelefono: '3007654321',
+      detallesAdicionales: 'Pago en efectivo',
       comercio: {
         id: 'comercio-1',
         nombre: 'Comercio de prueba',
@@ -46,6 +49,11 @@ describe('CurrentDelivery', () => {
 
   it('vuelve a pedidos despues de finalizar el servicio', async () => {
     render(<CurrentDelivery />);
+
+    expect(screen.getByText('Pedido en proceso')).toBeTruthy();
+    expect(screen.getByText('Recoger en Comercio de prueba, Carrera 1 # 2-3. Entregar en Calle 10 # 20-30.')).toBeTruthy();
+    expect(screen.getByText('Notificacion: ')).toBeTruthy();
+    expect(screen.getByText('Detalles: ')).toBeTruthy();
 
     fireEvent.press(screen.getByTestId('current-delivery-finish'));
 

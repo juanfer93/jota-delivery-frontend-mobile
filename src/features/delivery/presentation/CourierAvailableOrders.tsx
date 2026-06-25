@@ -5,7 +5,7 @@ import tw from '@/lib/tailwind';
 import { DeliveryRepository } from '@/core/repositories/delivery.repository';
 import { Pedido } from '@/features/delivery/domain/delivery.types';
 import { formatColombiaDateTime } from '@/core/time/colombia-time';
-import { formatMoney } from './delivery.utils';
+import { formatMoney, formatRouteSummary, shortPedidoId } from './delivery.utils';
 import { useDeliveryPolling } from './useDeliveryPolling';
 
 export function CourierAvailableOrders() {
@@ -69,17 +69,54 @@ export function CourierAvailableOrders() {
       ) : (
         <View style={tw`gap-4`}>
           {pedidos.map((pedido) => (
-            <View key={pedido.id} style={tw`rounded-3xl border border-jjBeige bg-white p-4 shadow-sm`}>
-              <Text style={tw`text-base font-bold text-jjBlueDark`}>{pedido.comercio?.nombre ?? `Comercio ${pedido.comercioId}`}</Text>
-              <Text style={tw`mt-2 text-sm text-jjBlueDark/70`}>Recoger: {pedido.direccionRecogida || pedido.comercio?.direccion || 'Direccion pendiente'}</Text>
-              <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>Entregar: {pedido.direccionDestino}</Text>
-              <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>Valor: ${formatMoney(pedido.valorFinal)}</Text>
-              <Text style={tw`mt-1 text-xs text-jjBlueDark/50`}>Creado: {formatColombiaDateTime(pedido.createdAt)}</Text>
+            <View key={pedido.id} style={tw`overflow-hidden rounded-3xl border border-jjBeige bg-white shadow-sm`}>
+              <View style={tw`bg-jjBlueDark px-4 py-4`}>
+                <Text style={tw`text-xs font-bold uppercase tracking-[2px] text-jjBeige/80`}>Servicio disponible</Text>
+                <Text style={tw`mt-1 text-xl font-bold text-jjBeige`}>Nuevo pedido disponible</Text>
+                <Text style={tw`mt-2 text-sm font-semibold leading-5 text-jjBeige`}>
+                  {formatRouteSummary(pedido)}
+                </Text>
+              </View>
+
+              <View style={tw`p-4`}>
+                <View style={tw`rounded-3xl bg-jjBeigeSoft p-4`}>
+                  <Text style={tw`mb-3 text-xs font-bold uppercase tracking-[1.5px] text-jjBlueDark/50`}>
+                    Detalles del servicio
+                  </Text>
+                  <Text style={tw`text-sm text-jjBlueDark`}>
+                    <Text style={tw`font-bold`}>Pedido: </Text>{shortPedidoId(pedido.id)}
+                  </Text>
+                  <Text style={tw`mt-2 text-sm text-jjBlueDark`}>
+                    <Text style={tw`font-bold`}>Comercio: </Text>{pedido.comercio?.nombre ?? `Comercio ${pedido.comercioId}`}
+                  </Text>
+                  {pedido.clienteNombre ? (
+                    <Text style={tw`mt-2 text-sm text-jjBlueDark`}>
+                      <Text style={tw`font-bold`}>Cliente: </Text>{pedido.clienteNombre}
+                    </Text>
+                  ) : null}
+                  {pedido.clienteTelefono ? (
+                    <Text style={tw`mt-2 text-sm text-jjBlueDark`}>
+                      <Text style={tw`font-bold`}>Telefono: </Text>{pedido.clienteTelefono}
+                    </Text>
+                  ) : null}
+                  {pedido.detallesAdicionales ? (
+                    <Text style={tw`mt-2 text-sm text-jjBlueDark`}>
+                      <Text style={tw`font-bold`}>Detalles: </Text>{pedido.detallesAdicionales}
+                    </Text>
+                  ) : null}
+                  <Text style={tw`mt-2 text-sm text-jjBlueDark`}>
+                    <Text style={tw`font-bold`}>Valor: </Text>${formatMoney(pedido.valorFinal)}
+                  </Text>
+                  <Text style={tw`mt-2 text-sm text-jjBlueDark/70`}>
+                    <Text style={tw`font-bold`}>Notificacion: </Text>{formatColombiaDateTime(pedido.createdAt)}
+                  </Text>
+                </View>
+              </View>
               <TouchableOpacity
                 testID={`accept-pedido-${pedido.id}`}
                 onPress={() => void acceptOrder(pedido.id)}
                 disabled={acceptingId === pedido.id}
-                style={tw`mt-4 rounded-2xl bg-jjBlue px-4 py-3 ${acceptingId === pedido.id ? 'opacity-60' : ''}`}
+                style={tw`mx-4 mb-4 rounded-2xl bg-jjBlue px-4 py-3 ${acceptingId === pedido.id ? 'opacity-60' : ''}`}
               >
                 <Text style={tw`text-center font-bold text-white`}>{acceptingId === pedido.id ? 'Aceptando...' : 'Aceptar pedido'}</Text>
               </TouchableOpacity>

@@ -83,6 +83,9 @@ const availablePedido = {
   createdAt: '2026-06-13T20:00:00.000Z',
   domiciliarioId: null,
   usuarioId: null,
+  clienteNombre: 'Cliente Libre',
+  clienteTelefono: '3001234567',
+  detallesAdicionales: 'Sin cebolla',
   comercio: { id: 'comercio-chori', nombre: 'Chori 84', direccion: 'Chori 84' },
 };
 
@@ -110,8 +113,9 @@ describe('DeliveryClient', () => {
 
     expect(await screen.findByText('Pedidos disponibles')).toBeTruthy();
     expect(screen.getByText('Pedido en proceso')).toBeTruthy();
-    expect(await screen.findByText('Chori 84')).toBeTruthy();
-    expect(screen.getByText('Entregar: Alto Prado')).toBeTruthy();
+    expect(await screen.findByText('Nuevo pedido disponible')).toBeTruthy();
+    expect(screen.getByText('Recoger en Chori 84, Chori 84. Entregar en Alto Prado.')).toBeTruthy();
+    expect(screen.getAllByText('Detalles del servicio').length).toBeGreaterThan(0);
 
     fireEvent.press(screen.getByTestId('accept-pedido-pedido-libre'));
 
@@ -145,7 +149,7 @@ describe('DeliveryClient', () => {
 
     render(<DeliveryClient />);
 
-    await screen.findByText('Chori 84');
+    await screen.findByText('Recoger en Chori 84, Chori 84. Entregar en Alto Prado.');
     fireEvent.press(screen.getByTestId('accept-pedido-pedido-libre'));
 
     expect(await screen.findByText('Este pedido ya fue asignado.')).toBeTruthy();
