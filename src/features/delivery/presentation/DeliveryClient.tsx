@@ -4,12 +4,11 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
 import { PedidoEstado } from '@/features/delivery/domain/delivery.types';
-import { formatColombiaDateTime } from '@/core/time/colombia-time';
 import { useAuthStore } from '@/features/auth/application/auth.store';
 import { isAdminRole, isDomiciliarioRole } from '@/features/auth/domain/auth.types';
 import { CourierAvailableOrders } from './CourierAvailableOrders';
 import { CourierCurrentDeliveryShortcut } from './CourierCurrentDeliveryShortcut';
-import { formatMoney, formatRouteSummary, shortPedidoId } from './delivery.utils';
+import { formatMoney, formatRouteSummary } from './delivery.utils';
 import { useDeliveryPolling } from './useDeliveryPolling';
 
 const EstadoOpciones = [
@@ -135,7 +134,6 @@ export function DeliveryClient() {
                   <View key={pedido.id} style={tw`mb-4 rounded-3xl border ${pedidoId === pedido.id ? 'border-jjBlueDark' : 'border-jjBeige'} bg-jjBeigeSoft p-4`}>
                     <Text style={tw`text-sm font-bold text-jjBlueDark`}>{pedido.comercio?.nombre ?? `Comercio ${pedido.comercioId}`}</Text>
                     <Text style={tw`mt-2 text-sm font-semibold leading-5 text-jjBlueDark/80`}>{formatRouteSummary(pedido)}</Text>
-                    <Text style={tw`mt-3 text-sm text-jjBlueDark/70`}>Pedido: {shortPedidoId(pedido.id)}</Text>
                     <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>Valor: ${formatMoney(pedido.valorFinal)}</Text>
                     {pedido.clienteNombre ? (
                       <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>Cliente: {pedido.clienteNombre}</Text>
@@ -147,7 +145,6 @@ export function DeliveryClient() {
                       <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>Detalles: {pedido.detallesAdicionales}</Text>
                     ) : null}
                     <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>Estado actual: {pedido.estado}</Text>
-                    <Text style={tw`mt-1 text-sm text-jjBlueDark/70`}>Notificacion: {formatColombiaDateTime(pedido.createdAt)}</Text>
                     <View style={tw`mt-4 flex-row flex-wrap gap-2`}>
                       {EstadoOpciones.map((option) => {
                         const active = option.value === pedido.estado;

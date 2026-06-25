@@ -4,8 +4,7 @@ import { useRouter } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { DeliveryRepository } from '@/core/repositories/delivery.repository';
 import { Pedido } from '@/features/delivery/domain/delivery.types';
-import { formatColombiaDateTime } from '@/core/time/colombia-time';
-import { formatMoney, formatRouteSummary, shortPedidoId } from './delivery.utils';
+import { formatMoney, formatRouteSummary } from './delivery.utils';
 import { useDeliveryPolling } from './useDeliveryPolling';
 
 export function CourierAvailableOrders() {
@@ -83,9 +82,6 @@ export function CourierAvailableOrders() {
                   <Text style={tw`mb-3 text-xs font-bold uppercase tracking-[1.5px] text-jjBlueDark/50`}>
                     Detalles del servicio
                   </Text>
-                  <Text style={tw`text-sm text-jjBlueDark`}>
-                    <Text style={tw`font-bold`}>Pedido: </Text>{shortPedidoId(pedido.id)}
-                  </Text>
                   <Text style={tw`mt-2 text-sm text-jjBlueDark`}>
                     <Text style={tw`font-bold`}>Comercio: </Text>{pedido.comercio?.nombre ?? `Comercio ${pedido.comercioId}`}
                   </Text>
@@ -106,9 +102,6 @@ export function CourierAvailableOrders() {
                   ) : null}
                   <Text style={tw`mt-2 text-sm text-jjBlueDark`}>
                     <Text style={tw`font-bold`}>Valor: </Text>${formatMoney(pedido.valorFinal)}
-                  </Text>
-                  <Text style={tw`mt-2 text-sm text-jjBlueDark/70`}>
-                    <Text style={tw`font-bold`}>Notificacion: </Text>{formatColombiaDateTime(pedido.createdAt)}
                   </Text>
                 </View>
               </View>

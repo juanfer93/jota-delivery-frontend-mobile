@@ -1,8 +1,7 @@
 import { Text, TouchableOpacity, View } from 'react-native';
 import tw from '@/lib/tailwind';
 import { PedidoEstado, CurrentDeliveryItem } from '@/features/delivery/domain/delivery.types';
-import { formatMoney, formatRouteSummary, shortPedidoId } from './delivery.utils';
-import { formatColombiaDateTime } from '@/core/time/colombia-time';
+import { formatMoney, formatRouteSummary } from './delivery.utils';
 
 interface CourierCurrentDeliveryShortcutProps {
   currentDelivery: CurrentDeliveryItem | null;
@@ -32,17 +31,11 @@ export function CourierCurrentDeliveryShortcut({
           <Text style={tw`mb-3 text-xs font-bold uppercase tracking-[1.5px] text-jjBlueDark/50`}>
             Detalles del servicio
           </Text>
-          <Text style={tw`text-sm text-jjBlueDark`}>
-            <Text style={tw`font-bold`}>Pedido: </Text>{shortPedidoId(currentDelivery.id)}
-          </Text>
           <Text style={tw`mt-2 text-sm text-jjBlueDark`}>
             <Text style={tw`font-bold`}>Comercio: </Text>{currentDelivery.comercio?.nombre ?? 'Comercio'}
           </Text>
           <Text style={tw`mt-2 text-sm text-jjBlueDark`}>
             <Text style={tw`font-bold`}>Valor: </Text>${formatMoney(currentDelivery.valorFinal)}
-          </Text>
-          <Text style={tw`mt-2 text-sm text-jjBlueDark/70`}>
-            <Text style={tw`font-bold`}>Notificacion: </Text>{formatColombiaDateTime(currentDelivery.createdAt)}
           </Text>
         </View>
       </View>

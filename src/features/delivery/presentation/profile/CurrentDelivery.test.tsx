@@ -52,7 +52,6 @@ describe('CurrentDelivery', () => {
 
     expect(screen.getByText('Pedido en proceso')).toBeTruthy();
     expect(screen.getByText('Recoger en Comercio de prueba, Carrera 1 # 2-3. Entregar en Calle 10 # 20-30.')).toBeTruthy();
-    expect(screen.getByText('Notificacion: ')).toBeTruthy();
     expect(screen.getByText('Detalles: ')).toBeTruthy();
 
     fireEvent.press(screen.getByTestId('current-delivery-finish'));

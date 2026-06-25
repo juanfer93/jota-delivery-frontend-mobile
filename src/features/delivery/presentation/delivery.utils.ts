@@ -2,11 +2,6 @@ export function formatMoney(value: number) {
   return Number(value ?? 0).toLocaleString('es-CO');
 }
 
-export function shortPedidoId(id?: string | null) {
-  if (!id) return 'Pendiente';
-  return id.length > 10 ? id.slice(-10) : id;
-}
-
 export function getPickupAddress<T extends {
   direccionRecogida?: string | null;
   comercio?: { direccion?: string | null } | null;
