@@ -15,7 +15,7 @@ import tw from '@/lib/tailwind';
 import { useDeliveryStore } from "@/features/delivery/application/delivery.store";
 import { formatColombiaDateTime } from '@/core/time/colombia-time';
 import { PedidoEstado } from '@/features/delivery/domain/delivery.types';
-import { formatRouteSummary, getPickupAddress } from '@/features/delivery/presentation/delivery.utils';
+import { formatRouteSummary, getCourierEarnings, getPickupAddress } from '@/features/delivery/presentation/delivery.utils';
 
 export function CurrentDelivery() {
   const router = useRouter();
@@ -104,6 +104,7 @@ export function CurrentDelivery() {
   const comercioNombre = currentDelivery.comercio?.nombre ?? "Comercio";
   const comercioDireccion = getPickupAddress(currentDelivery);
   const valorFinal = Number(currentDelivery.valorFinal ?? 0);
+  const ganancia = getCourierEarnings(currentDelivery);
   const finalizado = currentDelivery.estado === PedidoEstado.HECHO || currentDelivery.estado === PedidoEstado.CANCELADO;
   const cardHeight = Math.max(320, Math.round(height * 0.5));
   const scrollIndicatorVisible = scrollContentHeight > scrollViewportHeight + 8;
@@ -215,6 +216,9 @@ export function CurrentDelivery() {
             <View style={tw`mt-3`}>
               <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
                 <Text style={tw`font-semibold`}>Valor compra: </Text>{formatCOP(valorFinal)}
+              </Text>
+              <Text style={tw`text-sm text-[#FFF9E8] mb-1`}>
+                <Text style={tw`font-semibold`}>Ganancia: </Text>{formatCOP(ganancia)}
               </Text>
             </View>
           </ScrollView>

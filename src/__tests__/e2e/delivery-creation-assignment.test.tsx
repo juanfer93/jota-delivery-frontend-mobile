@@ -104,6 +104,7 @@ test('E2E: Crear pedido con asignacion automatica y comercio existente', async (
   fireEvent.press(comercioOption);
   fireEvent.changeText(screen.getByTestId('direccionDestino-input'), 'Carrera 10 #20-30');
   fireEvent.changeText(screen.getByTestId('valorFinal-input'), '25000');
+  fireEvent.changeText(screen.getByTestId('ganancia-input'), '9000');
   fireEvent.changeText(screen.getByTestId('detalles-input'), 'Entrega con precaución.');
   fireEvent.press(screen.getByTestId('create-pedido-button'));
 
@@ -112,7 +113,8 @@ test('E2E: Crear pedido con asignacion automatica y comercio existente', async (
       expect(mockAssignPedido).toHaveBeenCalledWith({
         comercioId: '1beb752b-8590-4c69-9cbe-bc7714a9ee94',
         valorFinal: 25000,
-        valorDomicilio: 0,
+        valorDomicilio: 9000,
+        ganancia: 9000,
         direccionDestino: 'Carrera 10 #20-30',
         detallesAdicionales: 'Entrega con precaución.',
       });
@@ -151,6 +153,7 @@ test('E2E: Crear pedido con asignacion manual manda domiciliarioId libre desde p
   fireEvent.press(comercioOption);
   fireEvent.changeText(screen.getByTestId('direccionDestino-input'), 'Carrera 10 #20-30');
   fireEvent.changeText(screen.getByTestId('valorFinal-input'), '25000');
+  fireEvent.changeText(screen.getByTestId('ganancia-input'), '9000');
   fireEvent.press(screen.getByTestId('create-pedido-button'));
 
   await waitFor(() => {

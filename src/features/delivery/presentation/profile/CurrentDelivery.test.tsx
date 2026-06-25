@@ -21,7 +21,8 @@ jest.mock('@/features/delivery/application/delivery.store', () => ({
       id: 'pedido-en-curso',
       estado: 'EN_PROCESO',
       valorFinal: 30000,
-      valorDomicilio: 5000,
+      valorDomicilio: 1000,
+      ganancia: 5000,
       direccionDestino: 'Calle 10 # 20-30',
       createdAt: '2026-06-19T04:00:00.000Z',
       clienteNombre: 'Cliente Actual',
@@ -52,6 +53,8 @@ describe('CurrentDelivery', () => {
 
     expect(screen.getByText('Pedido en proceso')).toBeTruthy();
     expect(screen.getByText('Recoger en Comercio de prueba, Carrera 1 # 2-3. Entregar en Calle 10 # 20-30.')).toBeTruthy();
+    expect(screen.getByText('Ganancia: ')).toBeTruthy();
+    expect(screen.getByText(/\$\s*5\.000/)).toBeTruthy();
     expect(screen.getByText('Detalles: ')).toBeTruthy();
 
     fireEvent.press(screen.getByTestId('current-delivery-finish'));

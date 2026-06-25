@@ -1,7 +1,7 @@
 import { Text, TouchableOpacity, View } from 'react-native';
 import tw from '@/lib/tailwind';
 import { PedidoEstado, CurrentDeliveryItem } from '@/features/delivery/domain/delivery.types';
-import { formatMoney, formatRouteSummary } from './delivery.utils';
+import { formatMoney, formatRouteSummary, getCourierEarnings } from './delivery.utils';
 
 interface CourierCurrentDeliveryShortcutProps {
   currentDelivery: CurrentDeliveryItem | null;
@@ -35,7 +35,7 @@ export function CourierCurrentDeliveryShortcut({
             <Text style={tw`font-bold`}>Comercio: </Text>{currentDelivery.comercio?.nombre ?? 'Comercio'}
           </Text>
           <Text style={tw`mt-2 text-sm text-jjBlueDark`}>
-            <Text style={tw`font-bold`}>Valor: </Text>${formatMoney(currentDelivery.valorFinal)}
+            <Text style={tw`font-bold`}>Ganancia: </Text>${formatMoney(getCourierEarnings(currentDelivery))}
           </Text>
         </View>
       </View>

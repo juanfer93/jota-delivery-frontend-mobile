@@ -97,6 +97,7 @@ function getPedidoSearchText(pedido: Pedido): string {
       pedido.comercio?.direccion,
       pedido.valorFinal,
       pedido.valorPedido,
+      pedido.ganancia,
       pedido.valorDomicilio,
     ]
       .filter(Boolean)

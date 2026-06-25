@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { DeliveryRepository } from '@/core/repositories/delivery.repository';
 import { Pedido } from '@/features/delivery/domain/delivery.types';
-import { formatMoney, formatRouteSummary } from './delivery.utils';
+import { formatMoney, formatRouteSummary, getCourierEarnings } from './delivery.utils';
 import { useDeliveryPolling } from './useDeliveryPolling';
 
 export function CourierAvailableOrders() {
@@ -71,14 +71,20 @@ export function CourierAvailableOrders() {
             <View key={pedido.id} style={tw`overflow-hidden rounded-3xl border border-jjBeige bg-white shadow-sm`}>
               <View style={tw`bg-jjBlueDark px-4 py-4`}>
                 <Text style={tw`text-xs font-bold uppercase tracking-[2px] text-jjBeige/80`}>Servicio disponible</Text>
-                <Text style={tw`mt-1 text-xl font-bold text-jjBeige`}>Nuevo pedido disponible</Text>
-                <Text style={tw`mt-2 text-sm font-semibold leading-5 text-jjBeige`}>
-                  {formatRouteSummary(pedido)}
-                </Text>
+                <Text style={tw`mt-1 text-xl font-bold text-jjBeige`}>Nuevo pedido</Text>
               </View>
 
               <View style={tw`p-4`}>
-                <View style={tw`rounded-3xl bg-jjBeigeSoft p-4`}>
+                <View style={tw`border-b border-jjBeige pb-4`}>
+                  <Text style={tw`text-sm font-semibold leading-5 text-jjBlueDark`}>
+                    {formatRouteSummary(pedido)}
+                  </Text>
+                  <Text style={tw`mt-3 text-lg font-bold text-jjBlueDark`}>
+                    Ganancia ${formatMoney(getCourierEarnings(pedido))}
+                  </Text>
+                </View>
+
+                <View style={tw`pt-4`}>
                   <Text style={tw`mb-3 text-xs font-bold uppercase tracking-[1.5px] text-jjBlueDark/50`}>
                     Detalles del servicio
                   </Text>
@@ -100,9 +106,6 @@ export function CourierAvailableOrders() {
                       <Text style={tw`font-bold`}>Detalles: </Text>{pedido.detallesAdicionales}
                     </Text>
                   ) : null}
-                  <Text style={tw`mt-2 text-sm text-jjBlueDark`}>
-                    <Text style={tw`font-bold`}>Valor: </Text>${formatMoney(pedido.valorFinal)}
-                  </Text>
                 </View>
               </View>
               <TouchableOpacity

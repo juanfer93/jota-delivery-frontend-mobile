@@ -2,6 +2,13 @@ export function formatMoney(value: number) {
   return Number(value ?? 0).toLocaleString('es-CO');
 }
 
+export function getCourierEarnings<T extends {
+  ganancia?: number | null;
+  valorDomicilio?: number | null;
+}>(pedido: T) {
+  return Number(pedido.ganancia ?? pedido.valorDomicilio ?? 0);
+}
+
 export function getPickupAddress<T extends {
   direccionRecogida?: string | null;
   comercio?: { direccion?: string | null } | null;

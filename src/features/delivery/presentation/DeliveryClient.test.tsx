@@ -14,7 +14,8 @@ const mockDeliveryState: { currentDelivery: any } = {
   currentDelivery: {
     id: 'pedido-actual',
     valorFinal: 35000,
-    valorDomicilio: 0,
+    valorDomicilio: 7000,
+    ganancia: 7000,
     estado: 'EN_PROCESO',
     direccionDestino: 'Calle actual',
     createdAt: '2026-06-13T20:00:00.000Z',
@@ -26,6 +27,18 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, replace: jest.fn() }),
   useLocalSearchParams: () => ({}),
 }));
+
+jest.mock('./useDeliveryPolling', () => {
+  const React = require('react');
+
+  return {
+    useDeliveryPolling: (callback: () => void | Promise<void>, _intervalMs: number, enabled = true) => {
+      React.useEffect(() => {
+        if (enabled) void callback();
+      }, [callback, enabled]);
+    },
+  };
+});
 
 jest.mock('@/core/repositories/delivery.repository', () => ({
   DeliveryRepository: {
@@ -45,7 +58,8 @@ jest.mock('../application/delivery.store', () => ({
       usuarioId: 'domi-1',
       comercioId: 'comercio-1',
       valorFinal: 53000,
-      valorDomicilio: 0,
+      valorDomicilio: 9000,
+      ganancia: 9000,
       estado: 'HECHO',
       direccionDestino: 'Carrera 20 # 20-20',
       createdAt: '2026-06-13T19:49:00.000Z',
@@ -56,7 +70,8 @@ jest.mock('../application/delivery.store', () => ({
       usuarioId: 'domi-2',
       comercioId: 'comercio-2',
       valorFinal: 20000,
-      valorDomicilio: 0,
+      valorDomicilio: 8000,
+      ganancia: 8000,
       estado: 'EN_PROCESO',
       direccionDestino: 'Calle 2',
       createdAt: '2026-06-13T20:00:00.000Z',
@@ -76,7 +91,8 @@ const availablePedido = {
   id: 'pedido-libre',
   comercioId: 'comercio-chori',
   valorFinal: 25000,
-  valorDomicilio: 0,
+  valorDomicilio: 1000,
+  ganancia: 9000,
   estado: 'EN_PROCESO',
   direccionDestino: 'Alto Prado',
   direccionRecogida: 'Chori 84',
@@ -96,7 +112,8 @@ describe('DeliveryClient', () => {
     mockDeliveryState.currentDelivery = {
       id: 'pedido-actual',
       valorFinal: 35000,
-      valorDomicilio: 0,
+      valorDomicilio: 7000,
+      ganancia: 7000,
       estado: 'EN_PROCESO',
       direccionDestino: 'Calle actual',
       createdAt: '2026-06-13T20:00:00.000Z',
@@ -113,8 +130,9 @@ describe('DeliveryClient', () => {
 
     expect(await screen.findByText('Pedidos disponibles')).toBeTruthy();
     expect(screen.getByText('Pedido en proceso')).toBeTruthy();
-    expect(await screen.findByText('Nuevo pedido disponible')).toBeTruthy();
+    expect(await screen.findByText('Nuevo pedido')).toBeTruthy();
     expect(screen.getByText('Recoger en Chori 84, Chori 84. Entregar en Alto Prado.')).toBeTruthy();
+    expect(screen.getByText('Ganancia $9.000')).toBeTruthy();
     expect(screen.getAllByText('Detalles del servicio').length).toBeGreaterThan(0);
 
     fireEvent.press(screen.getByTestId('accept-pedido-pedido-libre'));

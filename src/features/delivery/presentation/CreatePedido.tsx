@@ -29,7 +29,7 @@ export default function CreatePedido() {
     error,
   } = useDeliveryStore();
 
-  const [form, setForm] = useState({ direccionDestino: '', valorFinal: '', detalles: '' });
+  const [form, setForm] = useState({ direccionDestino: '', valorFinal: '', ganancia: '', detalles: '' });
   const [selectedComercioId, setSelectedComercioId] = useState<string | null>(null);
   const [selectedDomiciliarioId, setSelectedDomiciliarioId] = useState<string | null>(null);
   const [assignmentMode, setAssignmentMode] = useState<AssignmentMode>('queue');
@@ -70,14 +70,20 @@ export default function CreatePedido() {
     setErrorMsg('');
 
     const valorFinal = Number(form.valorFinal);
+    const ganancia = Number(form.ganancia);
 
-    if (!selectedComercioId || !form.valorFinal || !form.direccionDestino.trim()) {
+    if (!selectedComercioId || !form.valorFinal || !form.ganancia || !form.direccionDestino.trim()) {
       setErrorMsg('Todos los campos marcados son obligatorios.');
       return;
     }
 
     if (!Number.isFinite(valorFinal) || valorFinal <= 0) {
       setErrorMsg('El valor del pedido debe ser un numero positivo.');
+      return;
+    }
+
+    if (!Number.isFinite(ganancia) || ganancia <= 0) {
+      setErrorMsg('La ganancia del domiciliario debe ser un numero positivo.');
       return;
     }
 
@@ -96,7 +102,8 @@ export default function CreatePedido() {
     const created = await assignPedido({
       comercioId: selectedComercioId,
       valorFinal,
-      valorDomicilio: 0,
+      ganancia,
+      valorDomicilio: ganancia,
       direccionDestino: form.direccionDestino.trim(),
       detallesAdicionales: form.detalles.trim() || undefined,
       ...(assignmentMode === 'manual' && selectedDomiciliarioId ? { domiciliarioId: selectedDomiciliarioId } : {}),
@@ -113,7 +120,7 @@ export default function CreatePedido() {
         : 'Pedido creado en lista libre. Los domiciliarios fueron notificados.',
     );
 
-    setForm({ direccionDestino: '', valorFinal: '', detalles: '' });
+    setForm({ direccionDestino: '', valorFinal: '', ganancia: '', detalles: '' });
     setSelectedComercioId(null);
     setSelectedDomiciliarioId(null);
     setDomiciliarioSearch('');
@@ -249,6 +256,19 @@ export default function CreatePedido() {
                 placeholderTextColor="#718096"
                 value={form.valorFinal}
                 onChangeText={(text) => setForm({ ...form, valorFinal: text })}
+                keyboardType="numeric"
+              />
+            </View>
+
+            <View style={tw`mb-5`}>
+              <Text style={tw`text-sm font-medium text-jj-blueDark mb-2`}>Ganancia del domiciliario</Text>
+              <TextInput
+                testID="ganancia-input"
+                style={tw`w-full rounded-xl border border-jj-beige px-4 py-3 text-sm text-jj-blueDark bg-white`}
+                placeholder="9000"
+                placeholderTextColor="#718096"
+                value={form.ganancia}
+                onChangeText={(text) => setForm({ ...form, ganancia: text })}
                 keyboardType="numeric"
               />
             </View>
