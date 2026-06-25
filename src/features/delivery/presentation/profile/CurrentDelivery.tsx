@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, SafeAreaView, ActivityIndicator, useWindowDimensions } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  ActivityIndicator,
+  useWindowDimensions,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useDeliveryStore } from "@/features/delivery/application/delivery.store";
@@ -13,6 +23,9 @@ export function CurrentDelivery() {
   const { currentDelivery, currentDeliveryStatus, currentDeliveryError, loadCurrentDelivery, updateEstado } = useDeliveryStore();
   const [updating, setUpdating] = useState<PedidoEstado | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
+  const [scrollY, setScrollY] = useState(0);
+  const [scrollContentHeight, setScrollContentHeight] = useState(0);
+  const [scrollViewportHeight, setScrollViewportHeight] = useState(0);
 
   useEffect(() => {
     loadCurrentDelivery();
@@ -94,6 +107,18 @@ export function CurrentDelivery() {
   const valorDomicilio = Number(currentDelivery.valorDomicilio ?? 0);
   const finalizado = currentDelivery.estado === PedidoEstado.HECHO || currentDelivery.estado === PedidoEstado.CANCELADO;
   const cardHeight = Math.max(320, Math.round(height * 0.5));
+  const scrollIndicatorVisible = scrollContentHeight > scrollViewportHeight + 8;
+  const scrollTrackHeight = Math.max(72, cardHeight - 40);
+  const scrollThumbHeight = scrollIndicatorVisible
+    ? Math.max(40, Math.round((scrollViewportHeight / scrollContentHeight) * scrollTrackHeight))
+    : 0;
+  const scrollMaxOffset = Math.max(1, scrollContentHeight - scrollViewportHeight);
+  const scrollMaxThumbOffset = Math.max(0, scrollTrackHeight - scrollThumbHeight);
+  const scrollThumbOffset = Math.min(scrollMaxThumbOffset, Math.max(0, (scrollY / scrollMaxOffset) * scrollMaxThumbOffset));
+
+  const handleCardScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    setScrollY(event.nativeEvent.contentOffset.y);
+  };
 
   const formatCOP = (n: number) => {
     return new Intl.NumberFormat("es-CO", {
@@ -124,7 +149,15 @@ export function CurrentDelivery() {
             { height: cardHeight },
           ]}
         >
-          <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+          <ScrollView
+            nestedScrollEnabled
+            showsVerticalScrollIndicator={false}
+            scrollEventThrottle={16}
+            contentContainerStyle={tw`pr-4`}
+            onScroll={handleCardScroll}
+            onContentSizeChange={(_, contentHeight) => setScrollContentHeight(contentHeight)}
+            onLayout={(event) => setScrollViewportHeight(event.nativeEvent.layout.height)}
+          >
             <View style={tw`items-center mb-4`}>
               <View style={tw`bg-[#FFF9E8] px-4 py-2 rounded-full`}>
                 <Text style={tw`text-[#174A8B] font-semibold text-sm`}>{comercioNombre}</Text>
@@ -195,6 +228,25 @@ export function CurrentDelivery() {
               </Text>
             </View>
           </ScrollView>
+          {scrollIndicatorVisible ? (
+            <View
+              pointerEvents="none"
+              style={[
+                tw`absolute right-3 top-5 w-1 rounded-full bg-[#FFF9E8]/20`,
+                { height: scrollTrackHeight },
+              ]}
+            >
+              <View
+                style={[
+                  tw`w-1 rounded-full bg-[#FFF9E8]/80`,
+                  {
+                    height: scrollThumbHeight,
+                    transform: [{ translateY: scrollThumbOffset }],
+                  },
+                ]}
+              />
+            </View>
+          ) : null}
         </View>
 
         {statusError ? <Text style={tw`mt-4 text-sm font-semibold text-red-700`}>{statusError}</Text> : null}
