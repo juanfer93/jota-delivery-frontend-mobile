@@ -19,6 +19,12 @@ jest.mock('@/core/storage/token.storage', () => ({
   },
 }));
 
+jest.mock('@/core/repositories/delivery.repository', () => ({
+  DeliveryRepository: {
+    setCourierAvailability: jest.fn(),
+  },
+}));
+
 describe('auth store', () => {
   it('revalida la sesion con el endpoint real del perfil', async () => {
     const usuario = {

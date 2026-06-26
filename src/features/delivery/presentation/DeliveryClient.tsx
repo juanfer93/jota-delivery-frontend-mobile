@@ -10,6 +10,7 @@ import { CourierAvailableOrders } from './CourierAvailableOrders';
 import { CourierCurrentDeliveryShortcut } from './CourierCurrentDeliveryShortcut';
 import { formatMoney, formatRouteSummary } from './delivery.utils';
 import { useDeliveryPolling } from './useDeliveryPolling';
+import { getBackendCourierAvailability } from '@/features/delivery/domain/courier-availability';
 
 const EstadoOpciones = [
   { label: 'En proceso', value: PedidoEstado.EN_PROCESO },
@@ -34,6 +35,8 @@ export function DeliveryClient() {
   const isAdmin = isAdminRole(user?.rol);
   const [domiciliarioFilter, setDomiciliarioFilter] = useState('');
   const [comercioFilter, setComercioFilter] = useState('');
+  const backendAvailability = getBackendCourierAvailability(user);
+  const isCourierAvailable = !isDomiciliario || backendAvailability !== 'offline';
 
   useDeliveryPolling(refreshPedidosHoy, 60000, !isDomiciliario);
   useDeliveryPolling(loadCurrentDelivery, 45000, isDomiciliario);
@@ -77,7 +80,9 @@ export function DeliveryClient() {
             currentDelivery={currentDelivery}
             onPress={() => router.push('/(app)/delivery/current-delivery' as any)}
           />
-          <CourierAvailableOrders />
+          <CourierAvailableOrders
+            isCourierAvailable={isCourierAvailable}
+          />
         </>
       ) : null}
 

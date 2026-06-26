@@ -4,6 +4,7 @@ import { initializeNotifications } from '../notification.service';
 import { useNotificationStore } from '../application/notification.store';
 import { NotificationPedidoModal } from './NotificationPedidoModal';
 import { NotificationPayload } from '../domain/notification.types';
+import { CourierPresenceHeartbeat } from '@/features/delivery/presentation/CourierPresenceHeartbeat';
 
 export function NotificationCoordinator({ children }: PropsWithChildren) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -33,6 +34,7 @@ export function NotificationCoordinator({ children }: PropsWithChildren) {
   return (
     <>
       {children}
+      <CourierPresenceHeartbeat />
       <NotificationPedidoModal />
     </>
   );

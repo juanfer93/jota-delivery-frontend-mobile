@@ -84,6 +84,7 @@ export function NotificationPedidoModal() {
     ganancia: pedido?.ganancia ?? notification?.ganancia,
     valorDomicilio: pedido?.valorDomicilio ?? notification?.valorDomicilio,
   });
+  const earningsLabel = `$${formatMoney(earnings)}`;
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={closeNotification}>
@@ -120,8 +121,12 @@ export function NotificationPedidoModal() {
                         {routeSummary}
                       </Text>
                     ) : null}
-                    <Text style={tw`mt-3 text-lg font-bold text-jjBlueDark`}>
-                      Ganancia ${formatMoney(earnings)}
+                    <Text
+                      testID="notification-earnings"
+                      accessibilityLabel={`Ganancia ${earningsLabel}`}
+                      style={tw`mt-3 text-lg font-bold text-jjBlueDark`}
+                    >
+                      Ganancia {earningsLabel}
                     </Text>
                   </View>
                 ) : amount ? (
@@ -139,9 +144,6 @@ export function NotificationPedidoModal() {
                   <View style={tw`rounded-3xl bg-white p-5 shadow-sm`}>
                     <Text style={tw`mb-3 text-sm font-bold uppercase tracking-[1.5px] text-jjBlueDark/60`}>
                       Detalles del servicio
-                    </Text>
-                    <Text style={tw`text-sm text-jjBlueDark`}>
-                      <Text style={tw`font-bold`}>Pedido: </Text>{notification?.pedidoId}
                     </Text>
                     {pedido?.comercio?.nombre ? (
                       <Text style={tw`mt-2 text-sm text-jjBlueDark`}>
@@ -173,6 +175,13 @@ export function NotificationPedidoModal() {
                         <Text style={tw`font-bold`}>Domiciliario: </Text>{notification.domiciliarioNombre}
                       </Text>
                     ) : null}
+                    <Text
+                      testID="notification-earnings"
+                      accessibilityLabel={`Ganancia ${earningsLabel}`}
+                      style={tw`mt-2 text-sm text-jjBlueDark`}
+                    >
+                      <Text style={tw`font-bold`}>Ganancia: </Text>{earningsLabel}
+                    </Text>
                     {estado ? (
                       <Text style={tw`mt-2 text-sm text-jjBlueDark`}>
                         <Text style={tw`font-bold`}>Estado: </Text>
@@ -197,22 +206,24 @@ export function NotificationPedidoModal() {
             {actionError ? <Text style={tw`mt-4 text-sm text-red-700`}>{actionError}</Text> : null}
 
             <View style={tw`mt-6 flex-row gap-3`}>
-              <TouchableOpacity
-                testID="notification-dismiss-button"
-                onPress={closeNotification}
-                style={tw`flex-1 items-center rounded-2xl border border-jjBlueDark/20 bg-white px-4 py-3.5`}
-              >
-                <Text style={tw`font-bold text-jjBlueDark`}>
-                  No tomar ahora
-                </Text>
-              </TouchableOpacity>
+              {isDomiciliario ? (
+                <TouchableOpacity
+                  testID="notification-dismiss-button"
+                  onPress={closeNotification}
+                  style={tw`flex-1 items-center rounded-2xl border border-jjBlueDark/20 bg-white px-4 py-3.5`}
+                >
+                  <Text style={tw`font-bold text-jjBlueDark`}>
+                    No tomar ahora
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
               <TouchableOpacity
                 testID="notification-primary-action"
                 onPress={handlePrimaryAction}
                 style={tw`flex-1 items-center rounded-2xl bg-jjBlue px-4 py-3.5`}
               >
                 <Text style={tw`font-bold text-white`}>
-                  {isDomiciliario ? 'Tomar servicio' : 'Ver pedido'}
+                  {isDomiciliario ? 'Tomar servicio' : 'Aceptar'}
                 </Text>
               </TouchableOpacity>
             </View>

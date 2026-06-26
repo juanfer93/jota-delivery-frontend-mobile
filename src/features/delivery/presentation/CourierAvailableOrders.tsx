@@ -7,7 +7,15 @@ import { Pedido } from '@/features/delivery/domain/delivery.types';
 import { formatMoney, formatRouteSummary, getCourierEarnings } from './delivery.utils';
 import { useDeliveryPolling } from './useDeliveryPolling';
 
-export function CourierAvailableOrders() {
+interface CourierAvailableOrdersProps {
+  isCourierAvailable?: boolean;
+  isAvailabilityLoading?: boolean;
+}
+
+export function CourierAvailableOrders({
+  isCourierAvailable = true,
+  isAvailabilityLoading = false,
+}: CourierAvailableOrdersProps) {
   const router = useRouter();
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(false);
@@ -28,7 +36,7 @@ export function CourierAvailableOrders() {
     }
   }, []);
 
-  useDeliveryPolling(loadAvailable, 60000);
+  useDeliveryPolling(loadAvailable, 60000, isCourierAvailable && !isAvailabilityLoading);
 
   const acceptOrder = async (pedidoId: string) => {
     setAcceptingId(pedidoId);
@@ -50,13 +58,36 @@ export function CourierAvailableOrders() {
     <View>
       <View style={tw`mb-5 rounded-3xl border border-jjBlueDark/10 bg-white p-5`}>
         <Text style={tw`text-xl font-bold text-jjBlueDark`}>Pedidos disponibles</Text>
-        <Text style={tw`mt-2 text-sm text-jjBlueDark/60`}>Recoge el primer pedido libre que puedas atender.</Text>
-        <TouchableOpacity testID="refresh-available-orders" onPress={() => void loadAvailable()} style={tw`mt-4 rounded-2xl border border-jjBlueDark px-4 py-3`}>
+        <Text style={tw`mt-2 text-sm text-jjBlueDark/60`}>
+          {isCourierAvailable
+            ? 'Recoge el primer pedido libre que puedas atender.'
+            : isAvailabilityLoading
+              ? 'Verificando tu disponibilidad antes de cargar pedidos.'
+            : 'Estas desconectado y no recibiras pedidos libres desde este dispositivo.'}
+        </Text>
+        <TouchableOpacity
+          testID="refresh-available-orders"
+          onPress={() => void loadAvailable()}
+          disabled={!isCourierAvailable || isAvailabilityLoading}
+          style={tw`mt-4 rounded-2xl border border-jjBlueDark px-4 py-3 ${isCourierAvailable && !isAvailabilityLoading ? '' : 'opacity-50'}`}
+        >
           <Text style={tw`text-center font-bold text-jjBlueDark`}>Actualizar lista</Text>
         </TouchableOpacity>
       </View>
 
-      {loading ? (
+      {isAvailabilityLoading ? (
+        <View style={tw`items-center justify-center py-16`}>
+          <ActivityIndicator size="large" color={tw.color('jj-blue')} />
+          <Text style={tw`mt-3 text-jjBlueDark/70`}>Verificando disponibilidad...</Text>
+        </View>
+      ) : !isCourierAvailable ? (
+        <View style={tw`items-center justify-center rounded-3xl border border-dashed border-red-200 bg-white px-5 py-12`}>
+          <Text style={tw`text-center text-base font-bold text-red-600`}>Estado desconectado</Text>
+          <Text style={tw`mt-2 text-center text-sm text-jjBlueDark/60`}>
+            Activa tu disponibilidad desde Perfil para volver a tomar pedidos.
+          </Text>
+        </View>
+      ) : loading ? (
         <View style={tw`items-center justify-center py-16`}>
           <ActivityIndicator size="large" color={tw.color('jj-blue')} />
           <Text style={tw`mt-3 text-jjBlueDark/70`}>Cargando pedidos...</Text>

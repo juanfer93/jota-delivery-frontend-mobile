@@ -8,6 +8,10 @@ interface PreviewItem {
   detail?: string;
   meta?: string;
   badge?: string;
+  statusIndicator?: {
+    label: string;
+    color: string;
+  };
   actionLabel?: string;
   actionDisabled?: boolean;
   onAction?: () => void;
@@ -29,6 +33,7 @@ export function EntityPreviewCard({ title, emptyMessage, items }: EntityPreviewC
 
     return items.filter((item) => (
       [item.name, item.detail, item.meta, item.badge]
+        .concat(item.statusIndicator?.label)
         .filter(Boolean)
         .join(' ')
         .toLocaleLowerCase('es-CO')
@@ -68,15 +73,33 @@ export function EntityPreviewCard({ title, emptyMessage, items }: EntityPreviewC
       ) : (
         visibleItems.map((item) => (
           <View key={item.id} style={tw`mb-3 flex-row items-center`}>
-            <View style={tw`mr-3 h-9 w-9 items-center justify-center rounded-full bg-jjBlueDark`}>
+            <View style={tw`relative mr-3 h-9 w-9 items-center justify-center rounded-full bg-jjBlueDark`}>
               <Text style={tw`text-sm font-bold text-jjBeige`}>
                 {item.name.trim().charAt(0).toUpperCase() || '?'}
               </Text>
+              {item.statusIndicator ? (
+                <View
+                  accessibilityLabel={`Estado ${item.statusIndicator.label}`}
+                  style={[
+                    tw`absolute -right-0.5 -top-0.5 h-3.5 w-3.5 rounded-full border-2 border-white`,
+                    { backgroundColor: item.statusIndicator.color },
+                  ]}
+                />
+              ) : null}
             </View>
             <View style={tw`flex-1`}>
-              <Text numberOfLines={1} style={tw`text-sm font-bold text-jjBlueDark`}>
-                {item.name}
-              </Text>
+              <View style={tw`flex-row items-center`}>
+                <Text numberOfLines={1} style={tw`min-w-0 flex-1 text-sm font-bold text-jjBlueDark`}>
+                  {item.name}
+                </Text>
+                {item.statusIndicator ? (
+                  <View style={tw`ml-2 rounded-full bg-jjBeigeSoft px-2 py-0.5`}>
+                    <Text style={tw`text-[10px] font-bold text-jjBlueDark`}>
+                      {item.statusIndicator.label}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
               {item.detail ? (
                 <Text numberOfLines={1} style={tw`mt-0.5 text-xs text-jjBlueDark/60`}>
                   {item.detail}

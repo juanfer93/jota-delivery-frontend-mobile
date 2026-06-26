@@ -7,12 +7,15 @@ const mockLogout = jest.fn();
 const mockCheckAuth = jest.fn();
 const mockGetNotificationPermissionState = jest.fn();
 const mockRequestNotificationPermission = jest.fn();
+const mockLoadCurrentDelivery = jest.fn();
+const mockSetCourierAvailability = jest.fn();
 let mockUser = {
   id: 'admin-uuid',
   nombre: 'Admin Jota',
   email: 'admin@test.com',
   rol: 'admin',
   gananciaDia: undefined as number | undefined,
+  disponibilidad: undefined as 'available' | 'offline' | undefined,
 };
 
 jest.mock('expo-router', () => ({
@@ -28,6 +31,19 @@ jest.mock('@/features/auth/application/auth.store', () => ({
     user: mockUser,
     logout: mockLogout,
     checkAuth: mockCheckAuth,
+  }),
+}));
+
+jest.mock('@/core/repositories/delivery.repository', () => ({
+  DeliveryRepository: {
+    setCourierAvailability: (...args: unknown[]) => mockSetCourierAvailability(...args),
+  },
+}));
+
+jest.mock('@/features/delivery/application/delivery.store', () => ({
+  useDeliveryStore: () => ({
+    currentDelivery: null,
+    loadCurrentDelivery: mockLoadCurrentDelivery,
   }),
 }));
 
@@ -47,10 +63,13 @@ describe('AdminProfileClient', () => {
       email: 'admin@test.com',
       rol: 'admin',
       gananciaDia: undefined,
+      disponibilidad: undefined,
     };
     mockGetNotificationPermissionState.mockResolvedValue('undetermined');
     mockRequestNotificationPermission.mockResolvedValue('granted');
     mockCheckAuth.mockResolvedValue(undefined);
+    mockLoadCurrentDelivery.mockResolvedValue(undefined);
+    mockSetCourierAvailability.mockResolvedValue(undefined);
   });
 
   it('muestra opciones de notificaciones en el perfil', async () => {
@@ -80,13 +99,37 @@ describe('AdminProfileClient', () => {
       email: 'domi@test.com',
       rol: 'domiciliario',
       gananciaDia: 18000,
+      disponibilidad: 'available',
     };
 
     render(<AdminProfileClient />);
 
     expect(await screen.findByText(/Ganancias de hoy:/)).toBeTruthy();
     expect(screen.getByText(/\$\s*18\.000/)).toBeTruthy();
+    expect(await screen.findByText('Estado: Disponible')).toBeTruthy();
+    expect(screen.getByTestId('courier-availability-switch')).toBeTruthy();
     expect(mockCheckAuth).toHaveBeenCalled();
+  });
+
+  it('permite marcar al domiciliario como desconectado desde perfil', async () => {
+    mockUser = {
+      id: 'domi-uuid',
+      nombre: 'Domi Jota',
+      email: 'domi@test.com',
+      rol: 'domiciliario',
+      gananciaDia: 18000,
+      disponibilidad: 'available',
+    };
+
+    render(<AdminProfileClient />);
+
+    const switchControl = await screen.findByTestId('courier-availability-switch');
+    fireEvent(switchControl, 'valueChange', false);
+
+    await waitFor(() => {
+      expect(mockSetCourierAvailability).toHaveBeenCalledWith('offline');
+    });
+    expect(screen.getByText('Estado: Desconectado')).toBeTruthy();
   });
 
   it('refresca el perfil cuando la pantalla toma foco', async () => {
@@ -96,6 +139,7 @@ describe('AdminProfileClient', () => {
       email: 'domi@test.com',
       rol: 'domiciliario',
       gananciaDia: 27000,
+      disponibilidad: 'available',
     };
 
     render(<AdminProfileClient />);

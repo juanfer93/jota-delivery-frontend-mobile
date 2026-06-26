@@ -20,6 +20,8 @@ export interface User {
   nombre: string;
   email: string;
   rol: UserRole;
+  disponibilidad?: 'available' | 'offline';
+  availabilityStatus?: 'available' | 'offline';
   codigo?: string;
   saldo?: number;
   gananciaDia?: number;

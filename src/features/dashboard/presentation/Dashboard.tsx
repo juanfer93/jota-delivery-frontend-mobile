@@ -1,20 +1,31 @@
-import { useEffect } from 'react';
+import { useMemo } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { router } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
+import {
+  COURIER_AVAILABILITY_COLORS,
+  COURIER_AVAILABILITY_LABELS,
+  getBackendCourierAvailability,
+  getBusyDomiciliarioIds,
+  resolveCourierAvailabilityStatus,
+} from '@/features/delivery/domain/courier-availability';
+import { useDeliveryPolling } from '@/features/delivery/presentation/useDeliveryPolling';
 import { EntityPreviewCard } from './components/EntityPreviewCard';
 import { formatColombiaDateTime } from '@/core/time/colombia-time';
 
 export default function Dashboard() {
   const {
-    domiciliarios = [], comercios = [], loadData, status, error,
+    domiciliarios = [], comercios = [], pedidosHoy = [], loadData, status, error,
     blockingDomiciliarioId, toggleDomiciliarioBloqueo,
   } = useDeliveryStore();
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useDeliveryPolling(loadData, 15000);
+
+  const busyDomiciliarioIds = useMemo(
+    () => getBusyDomiciliarioIds(pedidosHoy),
+    [pedidosHoy],
+  );
 
   return (
     <ScrollView style={tw`flex-1 bg-jjBeigeSoft`} contentContainerStyle={tw`p-6 pb-10`}>
@@ -72,6 +83,17 @@ export default function Dashboard() {
                 ? `Creado: ${formatColombiaDateTime(item.createdAt)}`
                 : undefined,
               badge: item.bloqueado ? 'Bloqueado' : 'Activo',
+              statusIndicator: (() => {
+                const availabilityStatus = resolveCourierAvailabilityStatus({
+                  hasActiveDelivery: busyDomiciliarioIds.has(item.id),
+                  backendStatus: getBackendCourierAvailability(item),
+                });
+
+                return {
+                  label: COURIER_AVAILABILITY_LABELS[availabilityStatus],
+                  color: COURIER_AVAILABILITY_COLORS[availabilityStatus],
+                };
+              })(),
               actionLabel: item.bloqueado ? 'Desbloquear' : 'Bloquear',
               actionDisabled: blockingDomiciliarioId === item.id,
               onAction: () => void toggleDomiciliarioBloqueo(item.id, !item.bloqueado),

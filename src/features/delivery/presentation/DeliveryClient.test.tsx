@@ -8,7 +8,7 @@ const mockGetPedidosDisponibles = jest.fn();
 const mockTomarPedidoDisponible = jest.fn();
 const mockPush = jest.fn();
 const mockAuthState = {
-  user: { rol: 'domiciliario' },
+  user: { id: 'domi-actual', rol: 'domiciliario', disponibilidad: 'available' },
 };
 const mockDeliveryState: { currentDelivery: any } = {
   currentDelivery: {
@@ -109,6 +109,7 @@ describe('DeliveryClient', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockAuthState.user.rol = 'domiciliario';
+    mockAuthState.user.disponibilidad = 'available';
     mockDeliveryState.currentDelivery = {
       id: 'pedido-actual',
       valorFinal: 35000,
@@ -158,6 +159,17 @@ describe('DeliveryClient', () => {
 
     expect(await screen.findByText('Pedidos disponibles')).toBeTruthy();
     expect(screen.queryByTestId('view-current-delivery')).toBeNull();
+  });
+
+  it('pausa la lista libre cuando el domiciliario esta desconectado', async () => {
+    mockDeliveryState.currentDelivery = null;
+    mockAuthState.user.disponibilidad = 'offline';
+
+    render(<DeliveryClient />);
+
+    expect(await screen.findByText('Estado desconectado')).toBeTruthy();
+    expect(screen.getByText('Activa tu disponibilidad desde Perfil para volver a tomar pedidos.')).toBeTruthy();
+    expect(mockGetPedidosDisponibles).not.toHaveBeenCalled();
   });
 
   it('avisa si otro domiciliario ya tomo el pedido', async () => {

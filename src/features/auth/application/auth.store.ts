@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 import api from '@/core/api/axios.instance';
+import { DeliveryRepository } from '@/core/repositories/delivery.repository';
 import { TokenStorage } from '@/core/storage/token.storage';
 import {
   User,
   RawLoginResponse,
   SetPasswordDTO,
   ChangePasswordDTO,
+  isDomiciliarioRole,
 } from '@/features/auth/domain/auth.types';
 
 const USE_FAKE_API = process.env.JOTA_USE_FAKE_API === 'true';
@@ -32,7 +34,7 @@ interface AuthState {
   clearPasswordMessages: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
@@ -95,6 +97,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: async () => {
+    const currentUser = get().user;
+
+    if (isDomiciliarioRole(currentUser?.rol) && currentUser?.id) {
+      await DeliveryRepository.setCourierAvailability('offline').catch((error: unknown) => {
+        console.error('[AUTH] No se pudo marcar el domiciliario como desconectado.', error);
+      });
+    }
+
     set({
       user: null,
       isAuthenticated: false,

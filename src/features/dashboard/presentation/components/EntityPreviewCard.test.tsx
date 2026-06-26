@@ -40,4 +40,23 @@ describe('EntityPreviewCard', () => {
     fireEvent.press(screen.getByTestId('toggle-comercios'));
     expect(screen.getByText('Comercio 4')).toBeTruthy();
   });
+
+  it('muestra el estado operativo del domiciliario', () => {
+    render(
+      <EntityPreviewCard
+        title="Domiciliarios"
+        emptyMessage="Sin domiciliarios"
+        items={[
+          {
+            id: '1',
+            name: 'Ana',
+            statusIndicator: { label: 'Ocupado', color: '#EAB308' },
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText('Ocupado')).toBeTruthy();
+    expect(screen.getByLabelText('Estado Ocupado')).toBeTruthy();
+  });
 });

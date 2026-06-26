@@ -8,6 +8,12 @@ const mockLoadCurrentDelivery = jest.fn();
 const mockLoadData = jest.fn();
 const mockUpdateEstado = jest.fn();
 const mockMarkAsRead = jest.fn();
+let mockAuthUser = {
+  id: 'domi-uuid',
+  nombre: 'Domi Libre',
+  email: 'domi@test.com',
+  rol: 'Domiciliario',
+};
 
 let mockNotification: any = {
   notificationId: 'notif-uuid',
@@ -28,12 +34,7 @@ jest.mock('expo-router', () => ({
 jest.mock('@/features/auth/application/auth.store', () => ({
   useAuthStore: (selector: any) =>
     selector({
-      user: {
-        id: 'domi-uuid',
-        nombre: 'Domi Libre',
-        email: 'domi@test.com',
-        rol: 'Domiciliario',
-      },
+      user: mockAuthUser,
     }),
 }));
 
@@ -89,6 +90,12 @@ describe('NotificationPedidoModal', () => {
     };
     mockMarkAsRead.mockResolvedValue(undefined);
     mockUpdateEstado.mockResolvedValue(true);
+    mockAuthUser = {
+      id: 'domi-uuid',
+      nombre: 'Domi Libre',
+      email: 'domi@test.com',
+      rol: 'Domiciliario',
+    };
   });
 
   it('muestra el pedido asignado como ventana de servicio y permite tomarlo', async () => {
@@ -128,6 +135,38 @@ describe('NotificationPedidoModal', () => {
     expect(screen.getByText('Recoger en Buffalo Grill, Cra 1 # 2-3. Entregar en Calle 5 # 6-7.')).toBeTruthy();
     expect(screen.getByText('Ganancia $8.000')).toBeTruthy();
     expect(screen.queryByTestId('notification-status-HECHO')).toBeNull();
+  });
+
+  it('para admin solo muestra la accion de aceptar', async () => {
+    mockAuthUser = {
+      id: 'admin-uuid',
+      nombre: 'Admin Jota',
+      email: 'admin@test.com',
+      rol: 'admin',
+    };
+    mockNotification = {
+      notificationId: 'notif-admin',
+      type: 'PEDIDO_ESTADO_ACTUALIZADO',
+      pedidoId: 'pedido-uuid',
+      title: 'Pedido actualizado',
+      body: 'Juanchito 2 cambio el estado a HECHO.',
+      estado: PedidoEstado.HECHO,
+      domiciliarioNombre: 'Juanchito 2',
+      ganancia: 1000,
+      createdAt: '2026-06-17T20:00:00.000Z',
+    };
+
+    render(<NotificationPedidoModal />);
+
+    expect(await screen.findByText('Actualizacion de pedido')).toBeTruthy();
+    expect(screen.getByText('Aceptar')).toBeTruthy();
+    expect(screen.queryByText('Ver pedido')).toBeNull();
+    expect(screen.getByTestId('notification-earnings')).toBeTruthy();
+    expect(screen.getByLabelText('Ganancia $1.000')).toBeTruthy();
+    expect(screen.queryByText('Pedido: ')).toBeNull();
+    expect(screen.queryByText('pedido-uuid')).toBeNull();
+    expect(screen.queryByText('No tomar ahora')).toBeNull();
+    expect(screen.queryByTestId('notification-dismiss-button')).toBeNull();
   });
 
   it('permite finalizar el servicio desde la ventana', async () => {

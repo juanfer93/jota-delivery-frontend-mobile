@@ -10,8 +10,18 @@ import {
 } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import tw from '@/lib/tailwind';
+import { DeliveryRepository } from '@/core/repositories/delivery.repository';
 import { useAuthStore } from '@/features/auth/application/auth.store';
 import { isDomiciliarioRole } from '@/features/auth/domain/auth.types';
+import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
+import { PedidoEstado } from '@/features/delivery/domain/delivery.types';
+import {
+  COURIER_AVAILABILITY_COLORS,
+  COURIER_AVAILABILITY_LABELS,
+  CourierManualAvailability,
+  getBackendCourierAvailability,
+  resolveCourierAvailabilityStatus,
+} from '@/features/delivery/domain/courier-availability';
 import {
   getNotificationPermissionState,
   NotificationPermissionState,
@@ -20,12 +30,24 @@ import {
 
 export default function AdminProfileClient() {
   const { user, logout, checkAuth } = useAuthStore();
+  const { currentDelivery, loadCurrentDelivery } = useDeliveryStore();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [notificationPermission, setNotificationPermission] =
     useState<NotificationPermissionState>('undetermined');
   const [isRequestingNotifications, setIsRequestingNotifications] = useState(false);
+  const [manualAvailability, setManualAvailability] =
+    useState<CourierManualAvailability>('available');
+  const [isSavingAvailability, setIsSavingAvailability] = useState(false);
 
   const isDomiciliario = isDomiciliarioRole(user?.rol);
+  const hasActiveDelivery = currentDelivery?.estado === PedidoEstado.EN_PROCESO;
+  const availabilityStatus = resolveCourierAvailabilityStatus({
+    hasActiveDelivery,
+    backendStatus: getBackendCourierAvailability(user),
+    manualStatus: manualAvailability,
+  });
+  const availabilityLabel = COURIER_AVAILABILITY_LABELS[availabilityStatus];
+  const availabilityColor = COURIER_AVAILABILITY_COLORS[availabilityStatus];
   const name =
     user?.nombre || user?.email || (isDomiciliario ? 'Domiciliario' : 'Administrador');
   const gananciaDia = Number(user?.gananciaDia ?? 0);
@@ -59,6 +81,21 @@ export default function AdminProfileClient() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isDomiciliario || !user?.id) return undefined;
+
+    const backendStatus = getBackendCourierAvailability(user);
+    if (backendStatus === 'available' || backendStatus === 'offline') {
+      setManualAvailability(backendStatus);
+    } else {
+      setManualAvailability('available');
+    }
+
+    void loadCurrentDelivery();
+
+    return undefined;
+  }, [isDomiciliario, loadCurrentDelivery, user?.id]);
+
   const handleNotificationToggle = async (enabled: boolean) => {
     if (!enabled || notificationPermission === 'granted') return;
 
@@ -66,6 +103,21 @@ export default function AdminProfileClient() {
     const state = await requestNotificationPermission();
     setNotificationPermission(state);
     setIsRequestingNotifications(false);
+  };
+
+  const handleAvailabilityToggle = async (enabled: boolean) => {
+    if (!user?.id || hasActiveDelivery) return;
+
+    const nextStatus: CourierManualAvailability = enabled ? 'available' : 'offline';
+    setManualAvailability(nextStatus);
+    setIsSavingAvailability(true);
+
+    try {
+      await DeliveryRepository.setCourierAvailability(nextStatus);
+      await checkAuth();
+    } finally {
+      setIsSavingAvailability(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -144,6 +196,43 @@ export default function AdminProfileClient() {
               />
             )}
           </View>
+
+          {isDomiciliario ? (
+            <View style={tw`mt-5 border-t border-jj-blueDark/10 pt-5`}>
+              <View style={tw`mb-4 flex-row items-center justify-between`}>
+                <View style={tw`flex-1 pr-4`}>
+                  <View style={tw`mb-1 flex-row items-center`}>
+                    <View
+                      style={[
+                        tw`mr-2 h-3 w-3 rounded-full`,
+                        { backgroundColor: availabilityColor },
+                      ]}
+                    />
+                    <Text style={tw`text-base font-semibold text-jjBlueDark`}>
+                      Estado: {availabilityLabel}
+                    </Text>
+                  </View>
+                  <Text style={tw`text-xs text-jjBlueDark/60`}>
+                    {hasActiveDelivery
+                      ? 'Se marca ocupado automaticamente mientras tienes un pedido en transito.'
+                      : 'Activa o desactiva tu disponibilidad para recibir pedidos.'}
+                  </Text>
+                </View>
+                {isSavingAvailability ? (
+                  <ActivityIndicator color="#174A8B" />
+                ) : (
+                  <Switch
+                    testID="courier-availability-switch"
+                    value={manualAvailability === 'available' && !hasActiveDelivery}
+                    disabled={hasActiveDelivery}
+                    onValueChange={handleAvailabilityToggle}
+                    trackColor={{ false: '#EF4444', true: '#22C55E' }}
+                    thumbColor="#FFFFFF"
+                  />
+                )}
+              </View>
+            </View>
+          ) : null}
         </View>
 
         <TouchableOpacity

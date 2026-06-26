@@ -6,6 +6,7 @@ import {
   CurrentDeliveryItem
 } from '@/features/delivery/domain/delivery.types';
 import { DomiciliarioItem, Comercio } from '@/features/admin/domain/admin.types';
+import { CourierManualAvailability } from '@/features/delivery/domain/courier-availability';
 
 export const DeliveryRepository = {
   getPedidosHoy: async (): Promise<Pedido[]> => {
@@ -107,5 +108,22 @@ export const DeliveryRepository = {
       url: `/usuarios/domiciliarios/${id}/bloqueo`,
       data: { bloqueado },
     });
-  }
+  },
+
+  setCourierAvailability: async (
+    disponibilidad: CourierManualAvailability,
+  ): Promise<DomiciliarioItem> => {
+    return await apiRequest<DomiciliarioItem>({
+      method: 'PATCH',
+      url: '/usuarios/perfil/disponibilidad',
+      data: { disponibilidad },
+    });
+  },
+
+  touchCourierPresence: async (): Promise<void> => {
+    await apiRequest<void>({
+      method: 'PATCH',
+      url: '/usuarios/perfil/presencia',
+    });
+  },
 };
