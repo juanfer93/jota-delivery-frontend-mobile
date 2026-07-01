@@ -10,7 +10,10 @@ import { CourierAvailableOrders } from './CourierAvailableOrders';
 import { CourierCurrentDeliveryShortcut } from './CourierCurrentDeliveryShortcut';
 import { formatMoney, formatRouteSummary } from './delivery.utils';
 import { useDeliveryPolling } from './useDeliveryPolling';
-import { getBackendCourierAvailability } from '@/features/delivery/domain/courier-availability';
+import {
+  getBackendCourierAvailability,
+  MAX_ACTIVE_DELIVERIES_PER_COURIER,
+} from '@/features/delivery/domain/courier-availability';
 
 const EstadoOpciones = [
   { label: 'En proceso', value: PedidoEstado.EN_PROCESO },
@@ -26,6 +29,7 @@ export function DeliveryClient() {
     status,
     error,
     currentDelivery,
+    currentDeliveries,
     refreshPedidosHoy,
     loadCurrentDelivery,
     updateEstado,
@@ -36,7 +40,11 @@ export function DeliveryClient() {
   const [domiciliarioFilter, setDomiciliarioFilter] = useState('');
   const [comercioFilter, setComercioFilter] = useState('');
   const backendAvailability = getBackendCourierAvailability(user);
-  const isCourierAvailable = !isDomiciliario || backendAvailability !== 'offline';
+  const activeDeliveryCount = currentDeliveries.filter(
+    (delivery) => delivery.estado === PedidoEstado.EN_PROCESO,
+  ).length;
+  const isAtDeliveryCapacity = activeDeliveryCount >= MAX_ACTIVE_DELIVERIES_PER_COURIER;
+  const isCourierAvailable = !isDomiciliario || (backendAvailability !== 'offline' && !isAtDeliveryCapacity);
 
   useDeliveryPolling(refreshPedidosHoy, 60000, !isDomiciliario);
   useDeliveryPolling(loadCurrentDelivery, 45000, isDomiciliario);
@@ -78,10 +86,12 @@ export function DeliveryClient() {
         <>
           <CourierCurrentDeliveryShortcut
             currentDelivery={currentDelivery}
+            currentDeliveries={currentDeliveries}
             onPress={() => router.push('/(app)/delivery/current-delivery' as any)}
           />
           <CourierAvailableOrders
             isCourierAvailable={isCourierAvailable}
+            unavailableReason={isAtDeliveryCapacity ? 'capacity' : 'offline'}
           />
         </>
       ) : null}

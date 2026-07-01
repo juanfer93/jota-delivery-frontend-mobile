@@ -10,7 +10,7 @@ const mockPush = jest.fn();
 const mockAuthState = {
   user: { id: 'domi-actual', rol: 'domiciliario', disponibilidad: 'available' },
 };
-const mockDeliveryState: { currentDelivery: any } = {
+const mockDeliveryState: { currentDelivery: any; currentDeliveries: any[] } = {
   currentDelivery: {
     id: 'pedido-actual',
     valorFinal: 35000,
@@ -21,6 +21,7 @@ const mockDeliveryState: { currentDelivery: any } = {
     createdAt: '2026-06-13T20:00:00.000Z',
     comercio: { id: 'comercio-current', nombre: 'Comercio actual', direccion: 'Cra 1' },
   },
+  currentDeliveries: [],
 };
 
 jest.mock('expo-router', () => ({
@@ -81,6 +82,9 @@ jest.mock('../application/delivery.store', () => ({
     status: 'success',
     error: null,
     currentDelivery: mockDeliveryState.currentDelivery,
+    currentDeliveries: mockDeliveryState.currentDeliveries.length > 0
+      ? mockDeliveryState.currentDeliveries
+      : mockDeliveryState.currentDelivery ? [mockDeliveryState.currentDelivery] : [],
     refreshPedidosHoy: mockRefreshPedidosHoy,
     loadCurrentDelivery: mockLoadCurrentDelivery,
     updateEstado: mockUpdateEstado,
@@ -120,6 +124,7 @@ describe('DeliveryClient', () => {
       createdAt: '2026-06-13T20:00:00.000Z',
       comercio: { id: 'comercio-current', nombre: 'Comercio actual', direccion: 'Cra 1' },
     };
+    mockDeliveryState.currentDeliveries = [];
     mockGetPedidosDisponibles.mockResolvedValue([availablePedido]);
     mockTomarPedidoDisponible.mockResolvedValue({ ...availablePedido, domiciliarioId: 'domi-actual' });
   });
@@ -169,6 +174,19 @@ describe('DeliveryClient', () => {
 
     expect(await screen.findByText('Estado desconectado')).toBeTruthy();
     expect(screen.getByText('Activa tu disponibilidad desde Perfil para volver a tomar pedidos.')).toBeTruthy();
+    expect(mockGetPedidosDisponibles).not.toHaveBeenCalled();
+  });
+
+  it('pausa la lista libre cuando el domiciliario tiene 3 pedidos activos', async () => {
+    mockDeliveryState.currentDeliveries = [0, 1, 2].map((index) => ({
+      ...mockDeliveryState.currentDelivery,
+      id: `pedido-actual-${index}`,
+    }));
+
+    render(<DeliveryClient />);
+
+    expect(await screen.findByText('Cupo completo')).toBeTruthy();
+    expect(screen.getByText('Finaliza uno de tus servicios en curso para liberar cupo.')).toBeTruthy();
     expect(mockGetPedidosDisponibles).not.toHaveBeenCalled();
   });
 

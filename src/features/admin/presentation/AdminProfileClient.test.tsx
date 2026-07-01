@@ -43,6 +43,7 @@ jest.mock('@/core/repositories/delivery.repository', () => ({
 jest.mock('@/features/delivery/application/delivery.store', () => ({
   useDeliveryStore: () => ({
     currentDelivery: null,
+    currentDeliveries: [],
     loadCurrentDelivery: mockLoadCurrentDelivery,
   }),
 }));

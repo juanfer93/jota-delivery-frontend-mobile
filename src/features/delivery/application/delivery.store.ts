@@ -16,6 +16,7 @@ interface DeliveryState {
   historyError: string | null;
   currentDeliveryError: string | null;
   currentDelivery: CurrentDeliveryItem | null;
+  currentDeliveries: CurrentDeliveryItem[];
   blockingDomiciliarioId: string | null;
 
   loadData: () => Promise<void>;
@@ -44,6 +45,7 @@ export const useDeliveryStore = create<DeliveryState>((set, get) => ({
   historyError: null,
   currentDeliveryError: null,
   currentDelivery: null,
+  currentDeliveries: [],
   blockingDomiciliarioId: null,
 
   loadData: async () => {
@@ -95,8 +97,12 @@ export const useDeliveryStore = create<DeliveryState>((set, get) => ({
   loadCurrentDelivery: async () => {
     set({ currentDeliveryStatus: 'loading', currentDeliveryError: null });
     try {
-      const data = await DeliveryRepository.getCurrentDelivery();
-      set({ currentDelivery: data, currentDeliveryStatus: 'success' });
+      const data = await DeliveryRepository.getCurrentDeliveries();
+      set({
+        currentDeliveries: data,
+        currentDelivery: data[0] ?? null,
+        currentDeliveryStatus: 'success',
+      });
     } catch (e: any) {
       set({ currentDeliveryStatus: 'error', currentDeliveryError: 'Error cargando pedido actual' });
     }

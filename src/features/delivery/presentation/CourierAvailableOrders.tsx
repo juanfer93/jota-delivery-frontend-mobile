@@ -10,11 +10,13 @@ import { useDeliveryPolling } from './useDeliveryPolling';
 interface CourierAvailableOrdersProps {
   isCourierAvailable?: boolean;
   isAvailabilityLoading?: boolean;
+  unavailableReason?: 'offline' | 'capacity';
 }
 
 export function CourierAvailableOrders({
   isCourierAvailable = true,
   isAvailabilityLoading = false,
+  unavailableReason = 'offline',
 }: CourierAvailableOrdersProps) {
   const router = useRouter();
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
@@ -63,7 +65,9 @@ export function CourierAvailableOrders({
             ? 'Recoge el primer pedido libre que puedas atender.'
             : isAvailabilityLoading
               ? 'Verificando tu disponibilidad antes de cargar pedidos.'
-            : 'Estas desconectado y no recibiras pedidos libres desde este dispositivo.'}
+              : unavailableReason === 'capacity'
+                ? 'Ya tienes 3 pedidos en curso. Finaliza uno para volver a tomar pedidos.'
+                : 'Estas desconectado y no recibiras pedidos libres desde este dispositivo.'}
         </Text>
         <TouchableOpacity
           testID="refresh-available-orders"
@@ -82,9 +86,13 @@ export function CourierAvailableOrders({
         </View>
       ) : !isCourierAvailable ? (
         <View style={tw`items-center justify-center rounded-3xl border border-dashed border-red-200 bg-white px-5 py-12`}>
-          <Text style={tw`text-center text-base font-bold text-red-600`}>Estado desconectado</Text>
+          <Text style={tw`text-center text-base font-bold text-red-600`}>
+            {unavailableReason === 'capacity' ? 'Cupo completo' : 'Estado desconectado'}
+          </Text>
           <Text style={tw`mt-2 text-center text-sm text-jjBlueDark/60`}>
-            Activa tu disponibilidad desde Perfil para volver a tomar pedidos.
+            {unavailableReason === 'capacity'
+              ? 'Finaliza uno de tus servicios en curso para liberar cupo.'
+              : 'Activa tu disponibilidad desde Perfil para volver a tomar pedidos.'}
           </Text>
         </View>
       ) : loading ? (

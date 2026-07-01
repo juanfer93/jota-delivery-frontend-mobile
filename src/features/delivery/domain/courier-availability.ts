@@ -4,6 +4,8 @@ import { Pedido, PedidoEstado } from '@/features/delivery/domain/delivery.types'
 export type CourierAvailabilityStatus = 'available' | 'busy' | 'offline';
 export type CourierManualAvailability = 'available' | 'offline';
 
+export const MAX_ACTIVE_DELIVERIES_PER_COURIER = 3;
+
 export const COURIER_AVAILABILITY_LABELS: Record<CourierAvailabilityStatus, string> = {
   available: 'Disponible',
   busy: 'Ocupado',
@@ -30,12 +32,25 @@ export function getPedidoDomiciliarioId(pedido: Pedido): string | null {
   return pedido.domiciliarioId ?? pedido.usuario?.id ?? pedido.usuarioId ?? null;
 }
 
+export function getActiveDeliveryCountByDomiciliario(pedidos: Pedido[]): Map<string, number> {
+  return pedidos.reduce((counts, pedido) => {
+    if (pedido.estado !== PedidoEstado.EN_PROCESO) return counts;
+
+    const id = getPedidoDomiciliarioId(pedido);
+    if (!id) return counts;
+
+    counts.set(id, (counts.get(id) ?? 0) + 1);
+    return counts;
+  }, new Map<string, number>());
+}
+
 export function getBusyDomiciliarioIds(pedidos: Pedido[]): Set<string> {
+  const counts = getActiveDeliveryCountByDomiciliario(pedidos);
+
   return new Set(
-    pedidos
-      .filter((pedido) => pedido.estado === PedidoEstado.EN_PROCESO)
-      .map(getPedidoDomiciliarioId)
-      .filter((id): id is string => Boolean(id)),
+    Array.from(counts.entries())
+      .filter(([, count]) => count >= MAX_ACTIVE_DELIVERIES_PER_COURIER)
+      .map(([id]) => id),
   );
 }
 

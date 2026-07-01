@@ -6,8 +6,9 @@ import { useDeliveryStore } from '@/features/delivery/application/delivery.store
 import {
   COURIER_AVAILABILITY_COLORS,
   COURIER_AVAILABILITY_LABELS,
+  getActiveDeliveryCountByDomiciliario,
   getBackendCourierAvailability,
-  getBusyDomiciliarioIds,
+  MAX_ACTIVE_DELIVERIES_PER_COURIER,
   resolveCourierAvailabilityStatus,
 } from '@/features/delivery/domain/courier-availability';
 import { useDeliveryPolling } from '@/features/delivery/presentation/useDeliveryPolling';
@@ -22,8 +23,8 @@ export default function Dashboard() {
 
   useDeliveryPolling(loadData, 15000);
 
-  const busyDomiciliarioIds = useMemo(
-    () => getBusyDomiciliarioIds(pedidosHoy),
+  const activeDeliveryCounts = useMemo(
+    () => getActiveDeliveryCountByDomiciliario(pedidosHoy),
     [pedidosHoy],
   );
 
@@ -84,13 +85,16 @@ export default function Dashboard() {
                 : undefined,
               badge: item.bloqueado ? 'Bloqueado' : 'Activo',
               statusIndicator: (() => {
+                const activeDeliveryCount = activeDeliveryCounts.get(item.id) ?? 0;
                 const availabilityStatus = resolveCourierAvailabilityStatus({
-                  hasActiveDelivery: busyDomiciliarioIds.has(item.id),
+                  hasActiveDelivery: activeDeliveryCount >= MAX_ACTIVE_DELIVERIES_PER_COURIER,
                   backendStatus: getBackendCourierAvailability(item),
                 });
 
                 return {
-                  label: COURIER_AVAILABILITY_LABELS[availabilityStatus],
+                  label: activeDeliveryCount > 0
+                    ? `${COURIER_AVAILABILITY_LABELS[availabilityStatus]} (${activeDeliveryCount}/${MAX_ACTIVE_DELIVERIES_PER_COURIER})`
+                    : COURIER_AVAILABILITY_LABELS[availabilityStatus],
                   color: COURIER_AVAILABILITY_COLORS[availabilityStatus],
                 };
               })(),

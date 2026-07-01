@@ -91,13 +91,30 @@ export const DeliveryRepository = {
 
   getCurrentDelivery: async (): Promise<CurrentDeliveryItem | null> => {
     try {
-      const response = await apiRequest<CurrentDeliveryItem | null>({
-        method: 'GET',
-        url: '/pedidos/admin/domiciliarios/current'
-      });
-      return response;
+      const response = await DeliveryRepository.getCurrentDeliveries();
+      return response[0] ?? null;
     } catch (e: any) {
       if (e?.response?.status === 404) return null;
+      throw e;
+    }
+  },
+
+  getCurrentDeliveries: async (): Promise<CurrentDeliveryItem[]> => {
+    try {
+      return await apiListRequest<CurrentDeliveryItem>({
+        method: 'GET',
+        url: '/pedidos/admin/domiciliarios/current/list',
+      });
+    } catch (e: any) {
+      if (e?.response?.status === 404) {
+        const current = await apiRequest<CurrentDeliveryItem | null>({
+          method: 'GET',
+          url: '/pedidos/admin/domiciliarios/current',
+        });
+
+        return current ? [current] : [];
+      }
+
       throw e;
     }
   },

@@ -13,7 +13,10 @@ import {
 import { useRouter } from 'expo-router';
 import tw from '@/lib/tailwind';
 import { useDeliveryStore } from '@/features/delivery/application/delivery.store';
-import { PedidoEstado } from '@/features/delivery/domain/delivery.types';
+import {
+  getActiveDeliveryCountByDomiciliario,
+  MAX_ACTIVE_DELIVERIES_PER_COURIER,
+} from '@/features/delivery/domain/courier-availability';
 
 type AssignmentMode = 'queue' | 'manual';
 
@@ -44,13 +47,8 @@ export default function CreatePedido() {
     }
   }, [comercios.length, domiciliarios.length, loadData]);
 
-  const busyIds = useMemo(
-    () => new Set(
-      pedidosHoy
-        .filter((pedido) => pedido.estado === PedidoEstado.EN_PROCESO && !!(pedido.domiciliarioId ?? pedido.usuarioId))
-        .map((pedido) => pedido.domiciliarioId ?? pedido.usuarioId)
-        .filter(Boolean),
-    ),
+  const activeDeliveryCounts = useMemo(
+    () => getActiveDeliveryCountByDomiciliario(pedidosHoy),
     [pedidosHoy],
   );
 
@@ -93,8 +91,12 @@ export default function CreatePedido() {
       return;
     }
 
-    if (assignmentMode === 'manual' && selectedDomiciliarioId && busyIds.has(selectedDomiciliarioId)) {
-      setErrorMsg('Ese domiciliario ya tiene un pedido activo.');
+    if (
+      assignmentMode === 'manual'
+      && selectedDomiciliarioId
+      && (activeDeliveryCounts.get(selectedDomiciliarioId) ?? 0) >= MAX_ACTIVE_DELIVERIES_PER_COURIER
+    ) {
+      setErrorMsg(`Ese domiciliario ya tiene ${MAX_ACTIVE_DELIVERIES_PER_COURIER} pedidos activos.`);
       setManualPanelOpen(true);
       return;
     }
@@ -200,14 +202,23 @@ export default function CreatePedido() {
                 <View style={tw`rounded-3xl border border-jj-blueDark/10 bg-white p-4 shadow-sm mb-6`}>
                   {filteredDomiciliarios.length === 0 ? <Text style={tw`text-sm text-jj-blueDark/70`}>No hay domiciliarios que coincidan.</Text> : null}
                   {filteredDomiciliarios.map((domiciliario) => {
-                    const isBusy = busyIds.has(domiciliario.id);
+                    const activeDeliveryCount = activeDeliveryCounts.get(domiciliario.id) ?? 0;
+                    const isAtCapacity = activeDeliveryCount >= MAX_ACTIVE_DELIVERIES_PER_COURIER;
                     const isUnconfirmed = domiciliario.email_confirmado === false;
-                    const disabled = isBusy || isUnconfirmed || !!domiciliario.bloqueado;
+                    const disabled = isAtCapacity || isUnconfirmed || !!domiciliario.bloqueado;
+                    const capacityLabel = activeDeliveryCount > 0
+                      ? `${activeDeliveryCount}/${MAX_ACTIVE_DELIVERIES_PER_COURIER} pedidos activos`
+                      : domiciliario.email;
+
                     return renderChoice(
                       {
                         id: domiciliario.id,
                         label: domiciliario.nombre || domiciliario.email,
-                        sublabel: isBusy ? 'Ocupado con pedido activo' : isUnconfirmed ? 'Pendiente por confirmar correo' : domiciliario.email,
+                        sublabel: isAtCapacity
+                          ? `Cupo lleno (${MAX_ACTIVE_DELIVERIES_PER_COURIER}/${MAX_ACTIVE_DELIVERIES_PER_COURIER})`
+                          : isUnconfirmed
+                            ? 'Pendiente por confirmar correo'
+                            : capacityLabel,
                         disabled,
                       },
                       selectedDomiciliarioId,

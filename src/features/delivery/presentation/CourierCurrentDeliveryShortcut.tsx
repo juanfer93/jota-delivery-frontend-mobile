@@ -5,14 +5,21 @@ import { formatMoney, formatRouteSummary, getCourierEarnings } from './delivery.
 
 interface CourierCurrentDeliveryShortcutProps {
   currentDelivery: CurrentDeliveryItem | null;
+  currentDeliveries?: CurrentDeliveryItem[];
   onPress: () => void;
 }
 
 export function CourierCurrentDeliveryShortcut({
   currentDelivery,
+  currentDeliveries = currentDelivery ? [currentDelivery] : [],
   onPress,
 }: CourierCurrentDeliveryShortcutProps) {
-  if (!currentDelivery || currentDelivery.estado !== PedidoEstado.EN_PROCESO) {
+  const activeDeliveries = currentDeliveries.filter(
+    (delivery) => delivery.estado === PedidoEstado.EN_PROCESO,
+  );
+  const primaryDelivery = activeDeliveries[0] ?? null;
+
+  if (!primaryDelivery) {
     return null;
   }
 
@@ -20,9 +27,11 @@ export function CourierCurrentDeliveryShortcut({
     <View style={tw`mb-5 overflow-hidden rounded-3xl border border-jjBlueDark/10 bg-white shadow-sm`}>
       <View style={tw`bg-jjBlueDark px-5 py-4`}>
         <Text style={tw`text-xs font-bold uppercase tracking-[2px] text-jjBeige/80`}>Servicio activo</Text>
-        <Text style={tw`mt-1 text-xl font-bold text-jjBeige`}>Pedido en proceso</Text>
+        <Text style={tw`mt-1 text-xl font-bold text-jjBeige`}>
+          {activeDeliveries.length > 1 ? `${activeDeliveries.length} pedidos en proceso` : 'Pedido en proceso'}
+        </Text>
         <Text style={tw`mt-2 text-sm font-semibold leading-5 text-jjBeige`}>
-          {formatRouteSummary(currentDelivery)}
+          {formatRouteSummary(primaryDelivery)}
         </Text>
       </View>
 
@@ -32,10 +41,10 @@ export function CourierCurrentDeliveryShortcut({
             Detalles del servicio
           </Text>
           <Text style={tw`mt-2 text-sm text-jjBlueDark`}>
-            <Text style={tw`font-bold`}>Comercio: </Text>{currentDelivery.comercio?.nombre ?? 'Comercio'}
+            <Text style={tw`font-bold`}>Comercio: </Text>{primaryDelivery.comercio?.nombre ?? 'Comercio'}
           </Text>
           <Text style={tw`mt-2 text-sm text-jjBlueDark`}>
-            <Text style={tw`font-bold`}>Ganancia: </Text>${formatMoney(getCourierEarnings(currentDelivery))}
+            <Text style={tw`font-bold`}>Ganancia: </Text>${formatMoney(getCourierEarnings(primaryDelivery))}
           </Text>
         </View>
       </View>

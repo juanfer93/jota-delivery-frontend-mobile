@@ -29,7 +29,19 @@ jest.mock('@/features/delivery/application/delivery.store', () => ({
     error: null,
     pedidosHoy: [
       {
-        id: 'pedido-activo',
+        id: 'pedido-activo-1',
+        usuarioId: 'domi-busy',
+        domiciliarioId: 'domi-busy',
+        estado: 'EN_PROCESO',
+      },
+      {
+        id: 'pedido-activo-2',
+        usuarioId: 'domi-busy',
+        domiciliarioId: 'domi-busy',
+        estado: 'EN_PROCESO',
+      },
+      {
+        id: 'pedido-activo-3',
         usuarioId: 'domi-busy',
         domiciliarioId: 'domi-busy',
         estado: 'EN_PROCESO',
@@ -166,13 +178,14 @@ test('E2E: Crear pedido con asignacion manual manda domiciliarioId libre desde p
   });
 });
 
-test('E2E: No permite escoger domiciliario ocupado en manual', async () => {
+test('E2E: No permite escoger domiciliario que ya llego al cupo de 3 pedidos', async () => {
   render(<CreatePedido />);
 
   fireEvent.press(screen.getByTestId('open-manual-assignment-button'));
 
   const busyOption = await screen.findByTestId('domiciliario-option-domi-busy');
 
+  expect(screen.getByText('Cupo lleno (3/3)')).toBeTruthy();
   fireEvent.press(busyOption);
 
   expect(mockAssignPedido).not.toHaveBeenCalled();

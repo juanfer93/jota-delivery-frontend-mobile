@@ -20,6 +20,7 @@ import {
   COURIER_AVAILABILITY_LABELS,
   CourierManualAvailability,
   getBackendCourierAvailability,
+  MAX_ACTIVE_DELIVERIES_PER_COURIER,
   resolveCourierAvailabilityStatus,
 } from '@/features/delivery/domain/courier-availability';
 import {
@@ -30,7 +31,7 @@ import {
 
 export default function AdminProfileClient() {
   const { user, logout, checkAuth } = useAuthStore();
-  const { currentDelivery, loadCurrentDelivery } = useDeliveryStore();
+  const { currentDeliveries, loadCurrentDelivery } = useDeliveryStore();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [notificationPermission, setNotificationPermission] =
     useState<NotificationPermissionState>('undetermined');
@@ -40,9 +41,12 @@ export default function AdminProfileClient() {
   const [isSavingAvailability, setIsSavingAvailability] = useState(false);
 
   const isDomiciliario = isDomiciliarioRole(user?.rol);
-  const hasActiveDelivery = currentDelivery?.estado === PedidoEstado.EN_PROCESO;
+  const activeDeliveryCount = currentDeliveries.filter(
+    (delivery) => delivery.estado === PedidoEstado.EN_PROCESO,
+  ).length;
+  const isAtDeliveryCapacity = activeDeliveryCount >= MAX_ACTIVE_DELIVERIES_PER_COURIER;
   const availabilityStatus = resolveCourierAvailabilityStatus({
-    hasActiveDelivery,
+    hasActiveDelivery: isAtDeliveryCapacity,
     backendStatus: getBackendCourierAvailability(user),
     manualStatus: manualAvailability,
   });
@@ -106,7 +110,7 @@ export default function AdminProfileClient() {
   };
 
   const handleAvailabilityToggle = async (enabled: boolean) => {
-    if (!user?.id || hasActiveDelivery) return;
+    if (!user?.id || isAtDeliveryCapacity) return;
 
     const nextStatus: CourierManualAvailability = enabled ? 'available' : 'offline';
     setManualAvailability(nextStatus);
@@ -213,8 +217,8 @@ export default function AdminProfileClient() {
                     </Text>
                   </View>
                   <Text style={tw`text-xs text-jjBlueDark/60`}>
-                    {hasActiveDelivery
-                      ? 'Se marca ocupado automaticamente mientras tienes un pedido en transito.'
+                    {isAtDeliveryCapacity
+                      ? `Se marca ocupado automaticamente cuando tienes ${MAX_ACTIVE_DELIVERIES_PER_COURIER} pedidos en transito.`
                       : 'Activa o desactiva tu disponibilidad para recibir pedidos.'}
                   </Text>
                 </View>
@@ -223,8 +227,8 @@ export default function AdminProfileClient() {
                 ) : (
                   <Switch
                     testID="courier-availability-switch"
-                    value={manualAvailability === 'available' && !hasActiveDelivery}
-                    disabled={hasActiveDelivery}
+                    value={manualAvailability === 'available' && !isAtDeliveryCapacity}
+                    disabled={isAtDeliveryCapacity}
                     onValueChange={handleAvailabilityToggle}
                     trackColor={{ false: '#EF4444', true: '#22C55E' }}
                     thumbColor="#FFFFFF"
